@@ -57,8 +57,8 @@ class ClaudeExecutor:
         if task.skill:
             try:
                 skill = self._skill_registry.get(task.skill)
-                # Use working_dir as arguments for skill
-                prompt = str(task.working_dir)
+                # Use task.prompt as arguments for skill (replaces $ARGUMENTS in skill content)
+                prompt = task.prompt or ""
             except SkillNotFoundError:
                 raise ExecutionError(
                     f"Skill not found: {task.skill}",
