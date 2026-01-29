@@ -1,0 +1,93 @@
+site_name: CodeGeass Documentation
+site_description: Claude Code Scheduler Framework - Orchestrate automated Claude Code sessions
+site_url: https://dontizi.github.io/codegeass/
+repo_url: https://github.com/dontizi/codegeass
+repo_name: dontizi/codegeass
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+  icon:
+    repo: fontawesome/brands/github
+  custom_dir: docs/overrides
+
+extra_css:
+  - stylesheets/extra.css
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.snippets
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+  - mkdocs-click
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/dontizi/codegeass
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+    - Configuration: getting-started/configuration.md
+  - Concepts:
+    - Tasks: concepts/tasks.md
+    - Skills: concepts/skills.md
+    - Scheduling: concepts/scheduling.md
+    - Execution Modes: concepts/execution.md
+    - Plan Mode: concepts/plan-mode.md
+    - Notifications: concepts/notifications.md
+  - CLI Reference:
+    - Overview: cli/index.md
+    - task: cli/task.md
+    - skill: cli/skill.md
+    - scheduler: cli/scheduler.md
+    - logs: cli/logs.md
+    - notification: cli/notification.md
+    - approval: cli/approval.md
+    - cron: cli/cron.md
+    - execution: cli/execution.md
+  - Guides:
+    - Creating Tasks: guides/create-task.md
+    - Notifications Setup: guides/setup-notifications.md
+    - Plan Mode Workflow: guides/plan-mode-workflow.md
+    - CRON Automation: guides/cron-setup.md
+  - Reference:
+    - Configuration Files: reference/config-files.md
+    - Environment Variables: reference/environment.md
+  - Troubleshooting: troubleshooting.md
