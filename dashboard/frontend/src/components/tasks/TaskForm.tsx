@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/DropdownMenu';
 import { api } from '@/lib/api';
 import { useSkillsStore, useNotificationsStore } from '@/stores';
-import { Bell, X, ChevronDown } from 'lucide-react';
+import { Bell, X, ChevronDown, Shield, MessageSquare } from 'lucide-react';
 
 // Provider icons/colors for visual distinction
 const PROVIDER_CONFIG: Record<string, { color: string; label: string }> = {
@@ -81,6 +81,9 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
     timeout: 300,
     enabled: true,
     notifications: null,
+    plan_mode: false,
+    plan_timeout: 3600,
+    plan_max_iterations: 5,
     ...initialData,
   });
 
@@ -322,11 +325,109 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
             </div>
           </div>
 
+          {/* Plan Mode */}
+          <div className="space-y-4 border-t pt-4">
+            <div className="flex items-center gap-2">
+              <Shield className="h-4 w-4" />
+              <Label className="text-base font-medium">Plan Mode</Label>
+              <span className="text-xs text-muted-foreground">(Interactive approval)</span>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="plan_mode"
+                checked={formData.plan_mode || false}
+                onCheckedChange={(checked) =>
+                  setFormData((prev) => ({ ...prev, plan_mode: checked }))
+                }
+              />
+              <Label htmlFor="plan_mode" className="text-sm">
+                Enable Plan Mode
+              </Label>
+            </div>
+
+            {formData.plan_mode && (
+              <div className="space-y-4 pl-6 border-l-2 border-primary/20">
+                <p className="text-sm text-muted-foreground">
+                  When enabled, Claude will first create a plan in read-only mode.
+                  You'll receive a notification with <strong>Approve</strong>, <strong>Discuss</strong>,
+                  and <strong>Cancel</strong> buttons before any changes are made.
+                </p>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="plan_timeout" className="text-sm">
+                      Approval Timeout
+                    </Label>
+                    <Select
+                      value={String(formData.plan_timeout || 3600)}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, plan_timeout: parseInt(value) }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1800">30 minutes</SelectItem>
+                        <SelectItem value="3600">1 hour</SelectItem>
+                        <SelectItem value="7200">2 hours</SelectItem>
+                        <SelectItem value="14400">4 hours</SelectItem>
+                        <SelectItem value="28800">8 hours</SelectItem>
+                        <SelectItem value="86400">24 hours</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Plan expires if not approved within this time
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="plan_max_iterations" className="text-sm">
+                      Max Discuss Rounds
+                    </Label>
+                    <Select
+                      value={String(formData.plan_max_iterations || 5)}
+                      onValueChange={(value) =>
+                        setFormData((prev) => ({ ...prev, plan_max_iterations: parseInt(value) }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1 round</SelectItem>
+                        <SelectItem value="3">3 rounds</SelectItem>
+                        <SelectItem value="5">5 rounds</SelectItem>
+                        <SelectItem value="10">10 rounds</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">
+                      How many times you can refine the plan
+                    </p>
+                  </div>
+                </div>
+
+                {selectedChannels.length === 0 && (
+                  <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/30 rounded-md">
+                    <MessageSquare className="h-4 w-4 text-warning" />
+                    <p className="text-sm text-warning">
+                      Plan Mode requires notifications. Please select at least one channel below.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Notifications */}
           <div className="space-y-4 border-t pt-4">
             <div className="flex items-center gap-2">
               <Bell className="h-4 w-4" />
               <Label className="text-base font-medium">Notifications</Label>
+              {formData.plan_mode && (
+                <span className="text-xs text-primary font-medium">(Required for Plan Mode)</span>
+              )}
             </div>
 
             {channels.length === 0 ? (

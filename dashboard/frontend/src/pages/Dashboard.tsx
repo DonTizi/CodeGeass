@@ -1,15 +1,19 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ListTodo, CheckCircle, XCircle, Clock, ArrowRight } from 'lucide-react';
+import { ListTodo, CheckCircle, XCircle, Clock, ArrowRight, Activity } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { useTasksStore, useLogsStore, useSchedulerStore } from '@/stores';
+import { useTasksStore, useLogsStore, useSchedulerStore, useExecutionsStore } from '@/stores';
 import { formatRelativeTime, getStatusBgColor, getStatusIcon, cn } from '@/lib/utils';
+import { ExecutionMonitor } from '@/components/executions';
 
 export function Dashboard() {
   const { tasks, fetchTasks } = useTasksStore();
   const { stats, fetchStats } = useLogsStore();
   const { upcoming, fetchUpcoming, status } = useSchedulerStore();
+  const activeExecutions = useExecutionsStore((state) =>
+    Object.values(state.activeExecutions)
+  );
 
   useEffect(() => {
     fetchTasks();
@@ -25,6 +29,21 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Currently Running Executions */}
+      {activeExecutions.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Activity className="h-5 w-5 text-blue-500 animate-pulse" />
+            <h2 className="text-lg font-semibold">Currently Running</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2">
+            {activeExecutions.map((execution) => (
+              <ExecutionMonitor key={execution.execution_id} execution={execution} />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>

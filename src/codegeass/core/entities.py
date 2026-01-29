@@ -203,6 +203,11 @@ class Task:
     # Notification configuration
     notifications: dict[str, Any] | None = None  # NotificationConfig as dict
 
+    # Plan mode configuration
+    plan_mode: bool = False  # Enable interactive plan approval
+    plan_timeout: int = 3600  # Approval timeout in seconds (default 1 hour)
+    plan_max_iterations: int = 5  # Max discuss rounds before auto-cancel
+
     def __post_init__(self) -> None:
         """Validate task configuration."""
         # Validate CRON expression
@@ -258,6 +263,9 @@ class Task:
             last_run=data.get("last_run"),
             last_status=data.get("last_status"),
             notifications=data.get("notifications"),
+            plan_mode=data.get("plan_mode", False),
+            plan_timeout=data.get("plan_timeout", 3600),
+            plan_max_iterations=data.get("plan_max_iterations", 5),
         )
 
     def to_dict(self) -> dict:
@@ -281,6 +289,10 @@ class Task:
         }
         if self.notifications:
             result["notifications"] = self.notifications
+        if self.plan_mode:
+            result["plan_mode"] = self.plan_mode
+            result["plan_timeout"] = self.plan_timeout
+            result["plan_max_iterations"] = self.plan_max_iterations
         return result
 
     @property

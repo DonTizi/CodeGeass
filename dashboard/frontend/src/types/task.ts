@@ -25,6 +25,10 @@ export interface Task {
   last_status: TaskStatus | null;
   next_run: string | null;
   schedule_description: string | null;
+  // Plan mode configuration
+  plan_mode: boolean;
+  plan_timeout: number;
+  plan_max_iterations: number;
 }
 
 export interface TaskSummary {
@@ -52,6 +56,10 @@ export interface TaskCreate {
   enabled?: boolean;
   variables?: Record<string, unknown>;
   notifications?: TaskNotificationConfig | null;
+  // Plan mode configuration
+  plan_mode?: boolean;
+  plan_timeout?: number;
+  plan_max_iterations?: number;
 }
 
 export interface TaskUpdate {
@@ -68,6 +76,10 @@ export interface TaskUpdate {
   enabled?: boolean;
   variables?: Record<string, unknown>;
   notifications?: TaskNotificationConfig | null;
+  // Plan mode configuration
+  plan_mode?: boolean;
+  plan_timeout?: number;
+  plan_max_iterations?: number;
 }
 
 export interface TaskStats {

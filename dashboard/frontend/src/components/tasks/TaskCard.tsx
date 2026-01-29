@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Switch } from '@/components/ui/Switch';
 import { cn, formatRelativeTime, getStatusBgColor, getStatusIcon } from '@/lib/utils';
-import { useTasksStore } from '@/stores';
+import { useTasksStore, useExecutionsStore } from '@/stores';
 import { toast } from '@/components/ui/Toaster';
 import {
   DropdownMenu,
@@ -15,6 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu';
+import { ActiveExecutionBadge } from '@/components/executions';
 
 interface TaskCardProps {
   task: Task;
@@ -23,6 +24,8 @@ interface TaskCardProps {
 
 export function TaskCard({ task, onDelete }: TaskCardProps) {
   const { enableTask, disableTask, runTask } = useTasksStore();
+  const activeExecution = useExecutionsStore((state) => state.getByTaskId(task.id));
+  const isRunning = !!activeExecution;
 
   const handleToggleEnabled = async () => {
     try {
@@ -67,9 +70,13 @@ export function TaskCard({ task, onDelete }: TaskCardProps) {
             >
               {task.name}
             </Link>
-            <Badge variant={task.enabled ? 'success' : 'secondary'}>
-              {task.enabled ? 'Enabled' : 'Disabled'}
-            </Badge>
+            {isRunning ? (
+              <ActiveExecutionBadge execution={activeExecution} showDuration />
+            ) : (
+              <Badge variant={task.enabled ? 'success' : 'secondary'}>
+                {task.enabled ? 'Enabled' : 'Disabled'}
+              </Badge>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <Switch checked={task.enabled} onCheckedChange={handleToggleEnabled} />
@@ -147,9 +154,9 @@ export function TaskCard({ task, onDelete }: TaskCardProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-2 mt-4">
-          <Button variant="outline" size="sm" onClick={handleRun}>
+          <Button variant="outline" size="sm" onClick={handleRun} disabled={isRunning}>
             <Play className="h-4 w-4 mr-1" />
-            Run
+            {isRunning ? 'Running...' : 'Run'}
           </Button>
           <Button variant="ghost" size="sm" asChild>
             <Link to={`/tasks/${task.id}`}>View Details</Link>

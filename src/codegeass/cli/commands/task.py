@@ -81,6 +81,10 @@ def show_task(ctx: Context, name: str) -> None:
 [bold]Prompt:[/bold] {t.prompt or '-'}
 [bold]Model:[/bold] {t.model}
 [bold]Autonomous:[/bold] {t.autonomous}
+[bold]Plan Mode:[/bold] {t.plan_mode}"""
+    if t.plan_mode:
+        details += f" (timeout: {t.plan_timeout}s, max iterations: {t.plan_max_iterations})"
+    details += f"""
 [bold]Timeout:[/bold] {t.timeout}s
 [bold]Max Turns:[/bold] {t.max_turns or 'unlimited'}
 [bold]Enabled:[/bold] {t.enabled}
@@ -97,7 +101,7 @@ def show_task(ctx: Context, name: str) -> None:
         notif = t.notifications
         channels = ", ".join(notif.get("channels", []))
         events = ", ".join(notif.get("events", []))
-        details += f"\n[bold]Notifications:[/bold]"
+        details += "\n[bold]Notifications:[/bold]"
         details += f"\n  Channels: {channels or 'none'}"
         details += f"\n  Events: {events or 'none'}"
         if notif.get("include_output"):
@@ -131,6 +135,9 @@ def show_task(ctx: Context, name: str) -> None:
     help="Events to notify on (can specify multiple)",
 )
 @click.option("--notify-include-output", is_flag=True, help="Include task output in notifications")
+@click.option("--plan-mode", is_flag=True, help="Enable plan mode (requires approval before execution)")
+@click.option("--plan-timeout", type=int, default=3600, help="Plan approval timeout in seconds (default: 3600)")
+@click.option("--plan-max-iterations", type=int, default=5, help="Max discuss iterations (default: 5)")
 @pass_context
 def create_task(
     ctx: Context,
@@ -148,6 +155,9 @@ def create_task(
     notify: tuple[str, ...],
     notify_on: tuple[str, ...],
     notify_include_output: bool,
+    plan_mode: bool,
+    plan_timeout: int,
+    plan_max_iterations: int,
 ) -> None:
     """Create a new scheduled task."""
     # Validate inputs
@@ -203,6 +213,9 @@ def create_task(
         allowed_tools=allowed_tools,
         enabled=not disabled,
         notifications=notifications,
+        plan_mode=plan_mode,
+        plan_timeout=plan_timeout,
+        plan_max_iterations=plan_max_iterations,
     )
 
     ctx.task_repo.save(new_task)
@@ -211,6 +224,8 @@ def create_task(
     console.print(f"ID: {new_task.id}")
     console.print(f"Schedule: {schedule} ({CronParser.describe(schedule)})")
     console.print(f"Next run: {CronParser.get_next(schedule).strftime('%Y-%m-%d %H:%M')}")
+    if plan_mode:
+        console.print(f"[cyan]Plan Mode: enabled (timeout: {plan_timeout}s, max iterations: {plan_max_iterations})[/cyan]")
 
 
 @task.command("run")
@@ -236,23 +251,23 @@ def run_task(ctx: Context, name: str, dry_run: bool) -> None:
             log_repository=ctx.log_repo,
         )
         command = executor.get_command(t)
-        console.print(f"[yellow]Dry run - would execute:[/yellow]")
+        console.print("[yellow]Dry run - would execute:[/yellow]")
         console.print(" ".join(command))
         return
 
     result = ctx.scheduler.run_task(t)
 
     if result.is_success:
-        console.print(f"[green]Task completed successfully[/green]")
+        console.print("[green]Task completed successfully[/green]")
         console.print(f"Duration: {result.duration_seconds:.1f}s")
     else:
         console.print(f"[red]Task failed: {result.status.value}[/red]")
         if result.error:
             console.print(f"Error: {result.error}")
 
-    if result.output:
+    if result.clean_output:
         console.print("\n[bold]Output:[/bold]")
-        console.print(result.output[:2000])
+        console.print(result.clean_output[:2000])
 
 
 @task.command("enable")
@@ -306,3 +321,101 @@ def delete_task(ctx: Context, name: str, yes: bool) -> None:
 
     ctx.task_repo.delete_by_name(name)
     console.print(f"[red]Task deleted: {name}[/red]")
+
+
+@task.command("update")
+@click.argument("name")
+@click.option("--schedule", "-s", help="New CRON expression")
+@click.option("--prompt", "-p", help="New prompt")
+@click.option("--skill", "-k", help="New skill")
+@click.option("--model", "-m", help="New model (haiku, sonnet, opus)")
+@click.option("--timeout", "-t", type=int, help="New timeout in seconds")
+@click.option("--max-turns", type=int, help="New max agentic turns")
+@click.option("--autonomous/--no-autonomous", default=None, help="Enable/disable autonomous mode")
+@click.option("--plan-mode/--no-plan-mode", default=None, help="Enable/disable plan mode")
+@click.option("--plan-timeout", type=int, help="Plan approval timeout in seconds")
+@click.option("--plan-max-iterations", type=int, help="Max discuss iterations")
+@pass_context
+def update_task(
+    ctx: Context,
+    name: str,
+    schedule: str | None,
+    prompt: str | None,
+    skill: str | None,
+    model: str | None,
+    timeout: int | None,
+    max_turns: int | None,
+    autonomous: bool | None,
+    plan_mode: bool | None,
+    plan_timeout: int | None,
+    plan_max_iterations: int | None,
+) -> None:
+    """Update an existing task."""
+    t = ctx.task_repo.find_by_name(name)
+
+    if not t:
+        console.print(f"[red]Task not found: {name}[/red]")
+        raise SystemExit(1)
+
+    # Validate new schedule if provided
+    if schedule:
+        if not CronParser.validate(schedule):
+            console.print(f"[red]Error: Invalid CRON expression: {schedule}[/red]")
+            raise SystemExit(1)
+        t.schedule = schedule
+
+    # Update fields
+    if prompt is not None:
+        t.prompt = prompt
+    if skill is not None:
+        t.skill = skill
+    if model is not None:
+        t.model = model
+    if timeout is not None:
+        t.timeout = timeout
+    if max_turns is not None:
+        t.max_turns = max_turns
+    if autonomous is not None:
+        t.autonomous = autonomous
+    if plan_mode is not None:
+        t.plan_mode = plan_mode
+    if plan_timeout is not None:
+        t.plan_timeout = plan_timeout
+    if plan_max_iterations is not None:
+        t.plan_max_iterations = plan_max_iterations
+
+    ctx.task_repo.update(t)
+    console.print(f"[green]Task updated: {name}[/green]")
+
+
+@task.command("stats")
+@click.argument("name")
+@pass_context
+def stats_task(ctx: Context, name: str) -> None:
+    """Show execution statistics for a task."""
+    t = ctx.task_repo.find_by_name(name)
+
+    if not t:
+        console.print(f"[red]Task not found: {name}[/red]")
+        raise SystemExit(1)
+
+    stats = ctx.log_repo.get_task_stats(t.id)
+
+    if stats["total_runs"] == 0:
+        console.print(f"[yellow]No execution history for task: {name}[/yellow]")
+        return
+
+    # Build stats panel
+    rate_color = "green" if stats["success_rate"] >= 90 else "yellow" if stats["success_rate"] >= 70 else "red"
+
+    details = f"""[bold]Task:[/bold] {name}
+[bold]Total Runs:[/bold] {stats['total_runs']}
+[bold]Successful:[/bold] {stats['success_count']}
+[bold]Failed:[/bold] {stats['failure_count']}
+[bold]Timeouts:[/bold] {stats.get('timeout_count', 0)}
+[bold]Success Rate:[/bold] [{rate_color}]{stats['success_rate']:.1f}%[/{rate_color}]
+[bold]Avg Duration:[/bold] {stats['avg_duration']:.1f}s
+[bold]Last Run:[/bold] {stats['last_run'][:19] if stats['last_run'] else 'never'}
+[bold]Last Status:[/bold] {stats['last_status'] or '-'}"""
+
+    console.print(Panel(details, title=f"Statistics: {name}"))

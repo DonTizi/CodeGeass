@@ -1,41 +1,16 @@
 """Message formatter for notifications."""
 
-import json
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from jinja2 import Template
 
+from codegeass.execution.output_parser import extract_clean_text
 from codegeass.notifications.models import NotificationEvent
 
 if TYPE_CHECKING:
     from codegeass.core.entities import Task
     from codegeass.core.value_objects import ExecutionResult
-
-
-def _extract_result_text(raw_output: str) -> str:
-    """Extract the readable result from Claude CLI JSON output.
-
-    Claude CLI outputs JSON like: {"type":"result","result":"Hello world.",...}
-    We extract the "result" field for human-readable output.
-    """
-    if not raw_output:
-        return ""
-
-    try:
-        data = json.loads(raw_output)
-        if isinstance(data, dict):
-            # Try to get the actual result text
-            if "result" in data:
-                return str(data["result"])
-            # Fallback to error if present
-            if "error" in data:
-                return str(data["error"])
-    except (json.JSONDecodeError, TypeError):
-        pass
-
-    # If not JSON or no result field, return truncated raw output
-    return raw_output[:500] if len(raw_output) > 500 else raw_output
 
 
 class MessageFormatter:
@@ -138,7 +113,7 @@ Success: {{ successes }} | Failed: {{ failures }} | Rate: {{ success_rate }}%
         if result:
             context["status"] = result.status.value
             # Extract human-readable output from Claude CLI JSON
-            context["output"] = _extract_result_text(result.output) if include_output else None
+            context["output"] = extract_clean_text(result.output, max_length=1000) if include_output else None
             context["error"] = result.error
             context["duration"] = f"{result.duration_seconds:.1f}"
             context["started_at"] = result.started_at.strftime("%Y-%m-%d %H:%M:%S")

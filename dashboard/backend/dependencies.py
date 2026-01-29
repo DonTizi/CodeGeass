@@ -12,22 +12,33 @@ sys.path.insert(0, str(settings.PROJECT_DIR / "src"))
 from codegeass.storage.task_repository import TaskRepository
 from codegeass.storage.log_repository import LogRepository
 from codegeass.storage.channel_repository import ChannelRepository
+from codegeass.storage.approval_repository import PendingApprovalRepository
 from codegeass.factory.registry import SkillRegistry
 from codegeass.scheduling.scheduler import Scheduler
 from codegeass.execution.session import SessionManager
 
-from services import TaskService, SkillService, LogService, SchedulerService, NotificationService
+from services import (
+    TaskService,
+    SkillService,
+    LogService,
+    SchedulerService,
+    NotificationService,
+    ApprovalService,
+)
 
 
 # Singleton instances
 _task_repo: TaskRepository | None = None
 _log_repo: LogRepository | None = None
 _channel_repo: ChannelRepository | None = None
+_approval_repo: PendingApprovalRepository | None = None
 _skill_registry: SkillRegistry | None = None
 _session_manager: SessionManager | None = None
 _scheduler: Scheduler | None = None
 _core_notification_service = None  # Core NotificationService for task execution
 _notification_service = None  # Dashboard NotificationService wrapper for API
+_approval_service = None  # ApprovalService for plan mode
+_execution_tracker = None  # ExecutionTracker for real-time monitoring
 
 
 def get_task_repo() -> TaskRepository:
@@ -62,6 +73,15 @@ def get_session_manager() -> SessionManager:
     return _session_manager
 
 
+def get_execution_tracker():
+    """Get or create ExecutionTracker singleton."""
+    global _execution_tracker
+    if _execution_tracker is None:
+        from codegeass.execution.tracker import get_execution_tracker as core_get_tracker
+        _execution_tracker = core_get_tracker(settings.DATA_DIR)
+    return _execution_tracker
+
+
 def get_scheduler() -> Scheduler:
     """Get or create Scheduler singleton."""
     global _scheduler
@@ -72,6 +92,7 @@ def get_scheduler() -> Scheduler:
             session_manager=get_session_manager(),
             log_repository=get_log_repo(),
             max_concurrent=1,
+            tracker=get_execution_tracker(),
         )
         # Register notification handler
         _setup_notification_handler(_scheduler)
@@ -85,11 +106,19 @@ def _setup_notification_handler(scheduler: Scheduler) -> None:
 
         # Use core singleton service to preserve message_ids state across executions
         core_service = get_core_notification_service()
-        handler = NotificationHandler(core_service)
+
+        # Pass approval and channel repos for plan mode support
+        handler = NotificationHandler(
+            service=core_service,
+            approval_repo=get_approval_repo(),
+            channel_repo=get_channel_repo(),
+        )
         handler.register_with_scheduler(scheduler)
     except Exception as e:
         # Don't fail if notifications can't be set up
         print(f"Warning: Could not setup notifications: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 # Service factories
@@ -148,3 +177,23 @@ def get_notification_service() -> NotificationService:
             core_service=get_core_notification_service(),
         )
     return _notification_service
+
+
+def get_approval_repo() -> PendingApprovalRepository:
+    """Get or create PendingApprovalRepository singleton."""
+    global _approval_repo
+    if _approval_repo is None:
+        approvals_path = settings.DATA_DIR / "approvals.yaml"
+        _approval_repo = PendingApprovalRepository(approvals_path)
+    return _approval_repo
+
+
+def get_approval_service() -> ApprovalService:
+    """Get or create ApprovalService singleton."""
+    global _approval_service
+    if _approval_service is None:
+        _approval_service = ApprovalService(
+            approval_repo=get_approval_repo(),
+            channel_repo=get_channel_repo(),
+        )
+    return _approval_service

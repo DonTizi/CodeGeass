@@ -3,7 +3,7 @@
 import asyncio
 from datetime import datetime
 from pathlib import Path
-from typing import Awaitable, Callable, Union
+from typing import TYPE_CHECKING, Awaitable, Callable, Union
 
 from codegeass.core.entities import Task
 from codegeass.core.value_objects import ExecutionResult, ExecutionStatus
@@ -15,9 +15,13 @@ from codegeass.scheduling.job import DryRunJob, TaskJob
 from codegeass.storage.log_repository import LogRepository
 from codegeass.storage.task_repository import TaskRepository
 
+if TYPE_CHECKING:
+    from codegeass.execution.tracker import ExecutionTracker
+
 # Type for callbacks that can be sync or async
 StartCallback = Callable[[Task], Union[None, Awaitable[None]]]
 CompleteCallback = Callable[[Task, ExecutionResult], Union[None, Awaitable[None]]]
+PlanApprovalCallback = Callable[[Task, ExecutionResult], Union[None, Awaitable[None]]]
 
 
 class Scheduler:
@@ -37,33 +41,53 @@ class Scheduler:
         session_manager: SessionManager,
         log_repository: LogRepository,
         max_concurrent: int = 1,
+        tracker: "ExecutionTracker | None" = None,
     ):
-        """Initialize scheduler with dependencies."""
+        """Initialize scheduler with dependencies.
+
+        Args:
+            task_repository: Repository for task storage
+            skill_registry: Registry for loading skills
+            session_manager: Manager for execution sessions
+            log_repository: Repository for storing execution logs
+            max_concurrent: Maximum concurrent executions (default 1)
+            tracker: Optional execution tracker for real-time monitoring
+        """
         self._task_repo = task_repository
         self._skill_registry = skill_registry
         self._session_manager = session_manager
         self._log_repo = log_repository
         self._max_concurrent = max_concurrent
 
-        # Create executor
+        # Create executor with optional tracker
         self._executor = ClaudeExecutor(
             skill_registry=skill_registry,
             session_manager=session_manager,
             log_repository=log_repository,
+            tracker=tracker,
         )
 
         # Callbacks (can be sync or async)
         self._on_task_start: StartCallback | None = None
         self._on_task_complete: CompleteCallback | None = None
+        self._on_plan_approval: PlanApprovalCallback | None = None
 
     def set_callbacks(
         self,
         on_start: StartCallback | None = None,
         on_complete: CompleteCallback | None = None,
+        on_plan_approval: PlanApprovalCallback | None = None,
     ) -> None:
-        """Set execution callbacks."""
+        """Set execution callbacks.
+
+        Args:
+            on_start: Called when a task starts execution
+            on_complete: Called when a task completes (success or failure)
+            on_plan_approval: Called when a plan mode task needs approval
+        """
         self._on_task_start = on_start
         self._on_task_complete = on_complete
+        self._on_plan_approval = on_plan_approval
 
     def _run_callback(self, callback_result) -> None:
         """Run a callback result, handling async if needed.
@@ -90,27 +114,63 @@ class Scheduler:
         return self._task_repo.find_due(window_seconds)
 
     def run_task(self, task: Task, dry_run: bool = False) -> ExecutionResult:
-        """Run a single task."""
+        """Run a single task.
+
+        For tasks with plan_mode=True:
+        - Executes in plan mode (read-only)
+        - Calls on_plan_approval callback instead of on_complete
+        - Returns the plan result (not the final execution)
+
+        Args:
+            task: The task to run
+            dry_run: If True, only show what would run
+
+        Returns:
+            ExecutionResult from execution or plan mode
+        """
         if self._on_task_start:
             result = self._on_task_start(task)
             self._run_callback(result)
 
         if dry_run:
             job = DryRunJob(task, self._executor)
+            result = job.run()
+        elif task.plan_mode:
+            # Plan mode: execute read-only planning, then trigger approval
+            result = self._run_plan_mode_task(task)
         else:
             job = TaskJob(task, self._executor)
-
-        result = job.run()
+            result = job.run()
 
         # Update task state in repository
         task.update_last_run(result.status.value)
         self._task_repo.update(task)
 
-        if self._on_task_complete:
-            callback_result = self._on_task_complete(task, result)
-            self._run_callback(callback_result)
+        # For plan mode tasks, call on_plan_approval instead of on_complete
+        if task.plan_mode and not dry_run:
+            if self._on_plan_approval:
+                callback_result = self._on_plan_approval(task, result)
+                self._run_callback(callback_result)
+        else:
+            if self._on_task_complete:
+                callback_result = self._on_task_complete(task, result)
+                self._run_callback(callback_result)
 
         return result
+
+    def _run_plan_mode_task(self, task: Task) -> ExecutionResult:
+        """Run a task in plan mode.
+
+        The executor handles worktree isolation automatically.
+        For plan mode tasks, the worktree is preserved until approval/cancel.
+
+        Args:
+            task: The task to run in plan mode
+
+        Returns:
+            ExecutionResult containing the plan and worktree_path in metadata
+        """
+        return self._executor.execute_plan_mode(task)
 
     def run_due(self, window_seconds: int = 60, dry_run: bool = False) -> list[ExecutionResult]:
         """Run all tasks due for execution.
@@ -184,12 +244,14 @@ class Scheduler:
         - running: Whether the scheduler cron job is installed
         - enabled_tasks: Count of enabled tasks
         - disabled_tasks: Count of disabled tasks
+        - plan_mode_tasks: Count of tasks with plan_mode enabled
         - due_tasks: List of currently due task names
         - next_runs: Dict of task names to next run times
         """
         all_tasks = self._task_repo.find_all()
         enabled = [t for t in all_tasks if t.enabled]
         disabled = [t for t in all_tasks if not t.enabled]
+        plan_mode = [t for t in all_tasks if t.plan_mode]
         due = self.find_due_tasks()
 
         next_runs = {}
@@ -204,6 +266,7 @@ class Scheduler:
             "running": running,
             "enabled_tasks": len(enabled),
             "disabled_tasks": len(disabled),
+            "plan_mode_tasks": len(plan_mode),
             "due_tasks": [t.name for t in due],
             "next_runs": next_runs,
             "current_time": datetime.now().isoformat(),

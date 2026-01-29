@@ -145,3 +145,12 @@ import { LucideIcon } from 'lucide-react';
 Python 3.11+ required. Key dependencies: pydantic, click, rich, pyyaml, jinja2, croniter.
 
 ruff line-length: 100, mypy strict mode enabled.
+
+## Architecture Principle: CLI is the Source of Truth
+
+**CRITICAL**: The CLI (`src/codegeass/`) is ALWAYS the source of truth. The Dashboard is just a UI layer.
+
+- ALL features must be implemented in the CLI first
+- The Dashboard backend should ONLY call CLI/library code
+- Never implement business logic in the Dashboard that doesn't exist in CLI
+- Telegram callbacks, plan approvals, notifications - everything must work from CLI

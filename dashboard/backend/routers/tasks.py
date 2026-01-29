@@ -1,11 +1,17 @@
 """Task API router."""
 
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+
 from fastapi import APIRouter, HTTPException, Query
 
 from models import Task, TaskCreate, TaskUpdate, TaskSummary, TaskStats, ExecutionResult
 from dependencies import get_task_service, get_scheduler_service
 
 router = APIRouter(prefix="/api/tasks", tags=["tasks"])
+
+# Thread pool for running blocking tasks
+_executor = ThreadPoolExecutor(max_workers=4)
 
 
 @router.get("", response_model=list[Task])
@@ -84,9 +90,20 @@ async def run_task(
     task_id: str,
     dry_run: bool = Query(False, description="Simulate execution without running"),
 ):
-    """Run a task manually."""
+    """Run a task manually.
+
+    Uses a thread pool to avoid blocking the async event loop,
+    allowing real-time execution events to be broadcast via WebSocket.
+    """
     scheduler_service = get_scheduler_service()
-    result = scheduler_service.run_task(task_id, dry_run=dry_run)
+
+    # Run in thread pool to avoid blocking the event loop
+    loop = asyncio.get_event_loop()
+    result = await loop.run_in_executor(
+        _executor,
+        lambda: scheduler_service.run_task(task_id, dry_run=dry_run)
+    )
+
     if not result:
         raise HTTPException(status_code=404, detail="Task not found")
     return result
