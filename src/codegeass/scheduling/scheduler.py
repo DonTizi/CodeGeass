@@ -165,10 +165,23 @@ class Scheduler:
 
         return self.run_task(task, dry_run=dry_run)
 
+    def _is_cron_installed(self) -> bool:
+        """Check if scheduler cron job is installed."""
+        import subprocess
+
+        try:
+            result = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
+            if result.returncode != 0:
+                return False
+            return "codegeass" in result.stdout
+        except Exception:
+            return False
+
     def status(self) -> dict:
         """Get scheduler status.
 
         Returns dict with:
+        - running: Whether the scheduler cron job is installed
         - enabled_tasks: Count of enabled tasks
         - disabled_tasks: Count of disabled tasks
         - due_tasks: List of currently due task names
@@ -184,7 +197,11 @@ class Scheduler:
             next_time = CronParser.get_next(task.schedule)
             next_runs[task.name] = next_time.isoformat()
 
+        # Check if cron is installed
+        running = self._is_cron_installed()
+
         return {
+            "running": running,
             "enabled_tasks": len(enabled),
             "disabled_tasks": len(disabled),
             "due_tasks": [t.name for t in due],

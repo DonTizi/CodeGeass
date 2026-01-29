@@ -6,6 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Never add "Co-Authored-By: Claude" or similar attribution lines in commits or messages**
 
+- **CLI + Dashboard Sync**: When implementing new features for the CLI backend, always consider if they need to be exposed in the dashboard. If so, implement the full stack:
+  1. CLI command in `src/codegeass/cli/`
+  2. Backend API endpoint in `dashboard/backend/routers/`
+  3. Frontend UI in `dashboard/frontend/src/`
+
+- **Always verify before completion**: After implementing changes, start both frontend and backend to confirm they work. If they fail, troubleshoot until fixed.
+
 ## Project Overview
 
 CodeGeass is a Claude Code Scheduler Framework - a system for orchestrating automated Claude Code sessions using CRON jobs with Claude Pro/Max subscriptions. Users define reusable AI-powered tasks that run on schedules, execute skills, and track execution history.
