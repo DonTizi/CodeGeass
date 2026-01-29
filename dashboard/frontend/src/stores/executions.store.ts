@@ -9,6 +9,7 @@ interface ExtendedExecution extends ActiveExecution {
   exitCode?: number;
   error?: string;
   success?: boolean;
+  approval_id?: string | null;
 }
 
 interface ExecutionsState {
@@ -54,6 +55,13 @@ export const useExecutionsStore = create<ExecutionsState>((set, get) => ({
 
       switch (type) {
         case 'execution.started': {
+          // Remove any completed executions for the same task
+          // This ensures new execution (e.g., approval after plan) takes precedence
+          for (const [id, ex] of Object.entries(executions)) {
+            if (ex.task_id === task_id && ex.completed) {
+              delete executions[id];
+            }
+          }
           // Add new execution
           executions[execution_id] = {
             execution_id,
@@ -128,6 +136,20 @@ export const useExecutionsStore = create<ExecutionsState>((set, get) => ({
           }
           break;
         }
+
+        case 'execution.waiting_approval': {
+          // Plan mode task waiting for user approval
+          const exec = executions[execution_id];
+          if (exec) {
+            executions[execution_id] = {
+              ...exec,
+              status: 'waiting_approval',
+              current_phase: 'waiting for approval',
+              approval_id: (data.approval_id as string) || null,
+            };
+          }
+          break;
+        }
       }
 
       return { activeExecutions: executions };
@@ -144,7 +166,18 @@ export const useExecutionsStore = create<ExecutionsState>((set, get) => ({
 
   getByTaskId: (taskId: string) => {
     const { activeExecutions } = get();
-    return Object.values(activeExecutions).find((ex) => ex.task_id === taskId);
+    const executions = Object.values(activeExecutions).filter((ex) => ex.task_id === taskId);
+
+    if (executions.length === 0) return undefined;
+
+    // Prefer running executions over completed ones
+    const running = executions.find((ex) => !ex.completed);
+    if (running) return running;
+
+    // If all are completed, return the most recent one
+    return executions.sort((a, b) =>
+      new Date(b.started_at).getTime() - new Date(a.started_at).getTime()
+    )[0];
   },
 
   dismissExecution: (executionId: string) => {

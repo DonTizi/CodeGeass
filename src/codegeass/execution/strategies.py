@@ -569,6 +569,8 @@ class ResumeWithApprovalStrategy(BaseStrategy):
 
         # Add output format - stream-json for consistent parsing
         cmd.extend(["--output-format", "stream-json", "--verbose"])
+        # Include partial messages for real-time streaming
+        cmd.append("--include-partial-messages")
 
         return cmd
 
@@ -609,5 +611,7 @@ class ResumeWithFeedbackStrategy(BaseStrategy):
 
         # Add output format - stream-json for consistent parsing
         cmd.extend(["--output-format", "stream-json", "--verbose"])
+        # Include partial messages for real-time streaming
+        cmd.append("--include-partial-messages")
 
         return cmd

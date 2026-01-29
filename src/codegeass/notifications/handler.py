@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Coroutine, Any
 
 from codegeass.execution.output_parser import parse_stream_json
+from codegeass.execution.tracker import get_execution_tracker
 from codegeass.notifications.models import NotificationConfig, NotificationEvent
 from codegeass.notifications.service import NotificationService
 from codegeass.notifications.interactive import (
@@ -207,6 +208,20 @@ class NotificationHandler:
             # Update approval with message refs
             self._approval_repo.save(approval)
             print(f"[Notifications] Approval {approval.id} saved with {len(approval.channel_messages)} message refs")
+
+            # Set execution to waiting_approval state
+            # This keeps it visible in the dashboard with "Waiting for Approval" status
+            execution_id = result.metadata.get("execution_id") if result.metadata else None
+            if execution_id:
+                tracker = get_execution_tracker()
+                tracker.set_waiting_approval(
+                    execution_id=execution_id,
+                    approval_id=approval.id,
+                    plan_text=plan_text[:500] if plan_text else None,  # Truncate for display
+                )
+                print(f"[Notifications] Execution {execution_id} set to waiting_approval")
+            else:
+                print(f"[Notifications] No execution_id in result metadata - cannot set waiting_approval")
 
         except Exception as e:
             print(f"[Notifications] Failed to create plan approval: {e}")

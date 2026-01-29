@@ -14,6 +14,7 @@ class ExecutionEventType(str, Enum):
     PROGRESS = "execution.progress"
     COMPLETED = "execution.completed"
     FAILED = "execution.failed"
+    WAITING_APPROVAL = "execution.waiting_approval"
 
 
 @dataclass
@@ -139,4 +140,22 @@ class ExecutionEvent:
             task_id=task_id,
             task_name=task_name,
             data={"error": error, "exit_code": exit_code},
+        )
+
+    @classmethod
+    def waiting_approval(
+        cls,
+        execution_id: str,
+        task_id: str,
+        task_name: str,
+        approval_id: str,
+        plan_text: str | None = None,
+    ) -> "ExecutionEvent":
+        """Create a WAITING_APPROVAL event for plan mode tasks."""
+        return cls(
+            type=ExecutionEventType.WAITING_APPROVAL,
+            execution_id=execution_id,
+            task_id=task_id,
+            task_name=task_name,
+            data={"approval_id": approval_id, "plan_text": plan_text},
         )

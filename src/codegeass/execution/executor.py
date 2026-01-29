@@ -276,8 +276,14 @@ class ClaudeExecutor:
                 # Execute
                 result = strategy.execute(context)
 
-                # For plan mode, include worktree path in metadata
-                if is_plan_mode and env.is_isolated:
+                # For plan mode, include worktree path and execution_id in metadata
+                # so the approval handler can call set_waiting_approval
+                if is_plan_mode:
+                    metadata = result.metadata or {}
+                    if env.is_isolated:
+                        metadata["worktree_path"] = env.worktree_path
+                    if execution_id:
+                        metadata["execution_id"] = execution_id
                     result = ExecutionResult(
                         task_id=result.task_id,
                         session_id=result.session_id,
@@ -287,7 +293,7 @@ class ClaudeExecutor:
                         finished_at=result.finished_at,
                         error=result.error,
                         exit_code=result.exit_code,
-                        metadata={"worktree_path": env.worktree_path},
+                        metadata=metadata,
                     )
 
             # Update task state
@@ -304,14 +310,19 @@ class ClaudeExecutor:
             # Save to logs
             self._log_repository.save(result)
 
-            # Finish tracking
+            # Finish tracking - but NOT for plan mode (waiting for approval)
+            # Plan mode tasks will be finished by the approval handler
             if self._tracker and execution_id:
-                self._tracker.finish_execution(
-                    execution_id=execution_id,
-                    success=result.is_success,
-                    exit_code=result.exit_code,
-                    error=result.error,
-                )
+                if is_plan_mode and result.is_success:
+                    # Don't finish - will be set to waiting_approval by handler
+                    logger.info(f"Plan mode execution {execution_id} awaiting approval handler")
+                else:
+                    self._tracker.finish_execution(
+                        execution_id=execution_id,
+                        success=result.is_success,
+                        exit_code=result.exit_code,
+                        error=result.error,
+                    )
 
             return result
 
