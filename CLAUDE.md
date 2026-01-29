@@ -154,3 +154,57 @@ ruff line-length: 100, mypy strict mode enabled.
 - The Dashboard backend should ONLY call CLI/library code
 - Never implement business logic in the Dashboard that doesn't exist in CLI
 - Telegram callbacks, plan approvals, notifications - everything must work from CLI
+
+## Testing Procedure for Features
+
+**When testing a new feature or debugging an existing one, follow this procedure:**
+
+1. **Create a test task**
+   ```bash
+   codegeass task create --name test-<feature> --schedule "0 0 * * *" --prompt "<test prompt>" --working-dir /home/dontizi/Projects/codegeass
+   ```
+
+2. **Run the task and observe**
+   ```bash
+   codegeass task run test-<feature>
+   ```
+
+3. **Verify execution logs**
+   ```bash
+   codegeass logs list --limit 5
+   codegeass task show test-<feature>
+   ```
+
+4. **Check session data**
+   ```bash
+   ls -lt data/sessions/ | head -5
+   cat data/sessions/<latest-session>.json | python -m json.tool
+   ```
+
+5. **Test through the Dashboard**
+   - Start dashboard: `cd dashboard && ./run.sh`
+   - Open http://localhost:5173
+   - Verify the feature works in the UI
+
+6. **Keep test tasks until user confirms**
+   - Do NOT delete test tasks automatically
+   - Wait for user confirmation that everything works
+   - Only then: `codegeass task delete test-<feature> --yes`
+
+### Example: Testing Isolation
+```bash
+# Create test task
+codegeass task create --name test-isolation --schedule "0 0 * * *" --prompt "just say hello"
+
+# Check worktrees before
+git worktree list | wc -l
+
+# Run and observe
+codegeass task run test-isolation
+
+# Check worktrees during/after execution
+git worktree list
+
+# Verify session metadata shows isolation
+cat data/sessions/<session>.json | grep -E "isolated|worktree"
+```
