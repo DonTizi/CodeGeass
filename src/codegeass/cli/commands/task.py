@@ -93,6 +93,16 @@ def show_task(ctx: Context, name: str) -> None:
     if t.variables:
         details += f"\n[bold]Variables:[/bold] {t.variables}"
 
+    if t.notifications:
+        notif = t.notifications
+        channels = ", ".join(notif.get("channels", []))
+        events = ", ".join(notif.get("events", []))
+        details += f"\n[bold]Notifications:[/bold]"
+        details += f"\n  Channels: {channels or 'none'}"
+        details += f"\n  Events: {events or 'none'}"
+        if notif.get("include_output"):
+            details += "\n  Include output: yes"
+
     # Show next scheduled runs
     next_runs = CronParser.get_next_n(t.schedule, 3)
     next_runs_str = "\n".join([f"  - {r.strftime('%Y-%m-%d %H:%M')}" for r in next_runs])
@@ -113,6 +123,14 @@ def show_task(ctx: Context, name: str) -> None:
 @click.option("--max-turns", type=int, help="Max agentic turns")
 @click.option("--tools", help="Comma-separated list of allowed tools")
 @click.option("--disabled", is_flag=True, help="Create task as disabled")
+@click.option("--notify", multiple=True, help="Channel IDs to notify (can specify multiple)")
+@click.option(
+    "--notify-on",
+    multiple=True,
+    type=click.Choice(["start", "complete", "success", "failure"]),
+    help="Events to notify on (can specify multiple)",
+)
+@click.option("--notify-include-output", is_flag=True, help="Include task output in notifications")
 @pass_context
 def create_task(
     ctx: Context,
@@ -127,6 +145,9 @@ def create_task(
     max_turns: int | None,
     tools: str | None,
     disabled: bool,
+    notify: tuple[str, ...],
+    notify_on: tuple[str, ...],
+    notify_include_output: bool,
 ) -> None:
     """Create a new scheduled task."""
     # Validate inputs
@@ -158,6 +179,16 @@ def create_task(
     # Parse tools
     allowed_tools = [t.strip() for t in tools.split(",")] if tools else []
 
+    # Build notification config if specified
+    notifications = None
+    if notify:
+        events = [f"task_{e}" for e in notify_on] if notify_on else ["task_failure"]
+        notifications = {
+            "channels": list(notify),
+            "events": events,
+            "include_output": notify_include_output,
+        }
+
     # Create task
     new_task = Task.create(
         name=name,
@@ -171,6 +202,7 @@ def create_task(
         max_turns=max_turns,
         allowed_tools=allowed_tools,
         enabled=not disabled,
+        notifications=notifications,
     )
 
     ctx.task_repo.save(new_task)

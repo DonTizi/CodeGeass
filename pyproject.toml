@@ -32,6 +32,10 @@ dev = [
     "mypy>=1.0",
     "ruff>=0.1.0",
 ]
+notifications = [
+    "python-telegram-bot>=21.0",
+    "discord-webhook>=1.4",
+]
 
 [project.scripts]
 codegeass = "codegeass.cli.main:cli"

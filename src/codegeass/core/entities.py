@@ -83,7 +83,7 @@ class Skill:
 
     def get_dynamic_commands(self) -> list[str]:
         """Extract dynamic context commands (!`command`) from content."""
-        pattern = r"!\`([^`]+)\`"
+        pattern = r"!`([^`]+)`"
         return re.findall(pattern, self.content)
 
     def to_dict(self) -> dict:
@@ -200,6 +200,9 @@ class Task:
     last_run: str | None = None  # ISO timestamp
     last_status: str | None = None
 
+    # Notification configuration
+    notifications: dict[str, Any] | None = None  # NotificationConfig as dict
+
     def __post_init__(self) -> None:
         """Validate task configuration."""
         # Validate CRON expression
@@ -254,11 +257,12 @@ class Task:
             variables=data.get("variables", {}),
             last_run=data.get("last_run"),
             last_status=data.get("last_status"),
+            notifications=data.get("notifications"),
         )
 
     def to_dict(self) -> dict:
         """Convert to dictionary for serialization."""
-        return {
+        result = {
             "id": self.id,
             "name": self.name,
             "schedule": self.schedule,
@@ -275,6 +279,9 @@ class Task:
             "last_run": self.last_run,
             "last_status": self.last_status,
         }
+        if self.notifications:
+            result["notifications"] = self.notifications
+        return result
 
     @property
     def cron(self) -> CronExpression:

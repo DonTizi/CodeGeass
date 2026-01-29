@@ -5,6 +5,7 @@ import { Tasks } from '@/pages/Tasks'
 import { TaskDetail } from '@/pages/TaskDetail'
 import { Skills } from '@/pages/Skills'
 import { Logs } from '@/pages/Logs'
+import { Settings } from '@/pages/Settings'
 import { Toaster } from '@/components/ui/Toaster'
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
           <Route path="tasks/:taskId" element={<TaskDetail />} />
           <Route path="skills" element={<Skills />} />
           <Route path="logs" element={<Logs />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
       <Toaster />

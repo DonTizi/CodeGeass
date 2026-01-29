@@ -21,6 +21,15 @@ from .scheduler import (
     SchedulerStatus,
     UpcomingRun,
 )
+from .notification import (
+    Channel,
+    ChannelCreate,
+    ChannelUpdate,
+    NotificationConfig,
+    NotificationEvent,
+    ProviderInfo,
+    TestResult,
+)
 
 __all__ = [
     # Task
@@ -40,4 +49,12 @@ __all__ = [
     # Scheduler
     "SchedulerStatus",
     "UpcomingRun",
+    # Notification
+    "Channel",
+    "ChannelCreate",
+    "ChannelUpdate",
+    "NotificationConfig",
+    "NotificationEvent",
+    "ProviderInfo",
+    "TestResult",
 ]
