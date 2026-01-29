@@ -68,7 +68,7 @@ class SchedulerService:
                     task_id=task.id,
                     task_name=task.name,
                     schedule=task.schedule,
-                    next_run=item["next_run"],
+                    next_run=item["scheduled_at"],
                     skill=task.skill,
                     enabled=task.enabled,
                 ))
