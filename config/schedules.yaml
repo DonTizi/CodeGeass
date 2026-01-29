@@ -2,7 +2,7 @@ tasks:
 - id: 741ae11a
   name: test-notif
   schedule: 0 0 * * *
-  working_dir: /home/dontizi/Projects/codegueass
+  working_dir: /home/dontizi/Projects/codegeass
   skill: null
   prompt: Say hello world
   allowed_tools: []
@@ -12,7 +12,7 @@ tasks:
   timeout: 300
   enabled: true
   variables: {}
-  last_run: '2026-01-29T03:16:47.198991'
+  last_run: '2026-01-29T09:54:25.331522'
   last_status: success
   notifications:
     channels:
@@ -25,17 +25,17 @@ tasks:
 - id: 8b2c9f3d
   name: ClawdBot Review
   schedule: 0 9 * * *
-  working_dir: /home/dontizi/Projects/codegueass
+  working_dir: /home/dontizi/Projects/codegeass
   skill: trend-research
   prompt: AI
   allowed_tools: []
   model: sonnet
   autonomous: false
   max_turns: null
-  timeout: 300
+  timeout: 600
   enabled: true
   variables: {}
-  last_run: '2026-01-29T03:15:55.474854'
+  last_run: '2026-01-29T10:04:51.395737'
   last_status: success
   notifications:
     channels:
