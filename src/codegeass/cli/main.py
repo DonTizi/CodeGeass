@@ -53,6 +53,8 @@ class Context:
         self._skill_registry = None
         self._session_manager = None
         self._scheduler = None
+        self._channel_repo = None
+        self._notification_service = None
 
     @property
     def schedules_file(self) -> Path:
@@ -103,6 +105,24 @@ class Context:
         return self._session_manager
 
     @property
+    def channel_repo(self):
+        if self._channel_repo is None:
+            from codegeass.storage.channel_repository import ChannelRepository
+
+            notifications_file = self.config_dir / "notifications.yaml"
+            if notifications_file.exists():
+                self._channel_repo = ChannelRepository(notifications_file)
+        return self._channel_repo
+
+    @property
+    def notification_service(self):
+        if self._notification_service is None and self.channel_repo is not None:
+            from codegeass.notifications.service import NotificationService
+
+            self._notification_service = NotificationService(self.channel_repo)
+        return self._notification_service
+
+    @property
     def scheduler(self):
         if self._scheduler is None:
             from codegeass.scheduling.scheduler import Scheduler
@@ -122,15 +142,11 @@ class Context:
     def _setup_notification_handler(self, scheduler) -> None:
         """Setup notification handler for the scheduler."""
         try:
-            from codegeass.storage.channel_repository import ChannelRepository
-            from codegeass.notifications.service import NotificationService
             from codegeass.notifications.handler import NotificationHandler
 
-            notifications_file = self.config_dir / "notifications.yaml"
-            if notifications_file.exists():
-                channel_repo = ChannelRepository(notifications_file)
-                service = NotificationService(channel_repo)
-                handler = NotificationHandler(service)
+            # Use singleton notification_service to preserve message_ids state
+            if self.notification_service is not None:
+                handler = NotificationHandler(self.notification_service)
                 handler.register_with_scheduler(scheduler)
         except Exception as e:
             # Don't fail if notifications can't be set up

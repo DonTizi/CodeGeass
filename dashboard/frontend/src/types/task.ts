@@ -1,5 +1,11 @@
 export type TaskStatus = 'success' | 'failure' | 'timeout' | 'skipped' | 'running';
 
+export interface TaskNotificationConfig {
+  channels: string[];
+  events: string[];
+  include_output: boolean;
+}
+
 export interface Task {
   id: string;
   name: string;
@@ -14,6 +20,7 @@ export interface Task {
   timeout: number;
   enabled: boolean;
   variables: Record<string, unknown>;
+  notifications: TaskNotificationConfig | null;
   last_run: string | null;
   last_status: TaskStatus | null;
   next_run: string | null;
@@ -44,6 +51,7 @@ export interface TaskCreate {
   timeout?: number;
   enabled?: boolean;
   variables?: Record<string, unknown>;
+  notifications?: TaskNotificationConfig | null;
 }
 
 export interface TaskUpdate {
@@ -59,6 +67,7 @@ export interface TaskUpdate {
   timeout?: number;
   enabled?: boolean;
   variables?: Record<string, unknown>;
+  notifications?: TaskNotificationConfig | null;
 }
 
 export interface TaskStats {

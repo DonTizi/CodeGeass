@@ -26,6 +26,8 @@ _channel_repo: ChannelRepository | None = None
 _skill_registry: SkillRegistry | None = None
 _session_manager: SessionManager | None = None
 _scheduler: Scheduler | None = None
+_core_notification_service = None  # Core NotificationService for task execution
+_notification_service = None  # Dashboard NotificationService wrapper for API
 
 
 def get_task_repo() -> TaskRepository:
@@ -79,12 +81,11 @@ def get_scheduler() -> Scheduler:
 def _setup_notification_handler(scheduler: Scheduler) -> None:
     """Setup notification handler for the scheduler."""
     try:
-        from codegeass.notifications.service import NotificationService
         from codegeass.notifications.handler import NotificationHandler
 
-        channel_repo = get_channel_repo()
-        service = NotificationService(channel_repo)
-        handler = NotificationHandler(service)
+        # Use core singleton service to preserve message_ids state across executions
+        core_service = get_core_notification_service()
+        handler = NotificationHandler(core_service)
         handler.register_with_scheduler(scheduler)
     except Exception as e:
         # Don't fail if notifications can't be set up
@@ -121,6 +122,29 @@ def get_channel_repo() -> ChannelRepository:
     return _channel_repo
 
 
+def get_core_notification_service():
+    """Get or create core NotificationService singleton.
+
+    This is the core service used by the notification handler for task execution.
+    It preserves message_ids state across task start/complete notifications.
+    """
+    global _core_notification_service
+    if _core_notification_service is None:
+        from codegeass.notifications.service import NotificationService as CoreNotificationService
+        _core_notification_service = CoreNotificationService(get_channel_repo())
+    return _core_notification_service
+
+
 def get_notification_service() -> NotificationService:
-    """Get NotificationService instance."""
-    return NotificationService(get_channel_repo())
+    """Get or create dashboard NotificationService singleton.
+
+    This is the dashboard wrapper that provides API-compatible methods.
+    It uses the core singleton to ensure message_ids are shared.
+    """
+    global _notification_service
+    if _notification_service is None:
+        _notification_service = NotificationService(
+            channel_repo=get_channel_repo(),
+            core_service=get_core_notification_service(),
+        )
+    return _notification_service

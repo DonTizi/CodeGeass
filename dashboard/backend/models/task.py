@@ -7,6 +7,13 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 
+class TaskNotificationConfig(BaseModel):
+    """Notification configuration for a task."""
+    channels: list[str] = Field(default_factory=list, description="Channel IDs to notify")
+    events: list[str] = Field(default_factory=list, description="Events to notify on")
+    include_output: bool = Field(False, description="Include task output in notification")
+
+
 class TaskStatus(str, Enum):
     """Task execution status."""
     SUCCESS = "success"
@@ -43,6 +50,7 @@ class Task(BaseModel):
     timeout: int = 300
     enabled: bool = True
     variables: dict[str, Any] = Field(default_factory=dict)
+    notifications: TaskNotificationConfig | None = None
     last_run: str | None = None
     last_status: str | None = None
 
@@ -65,6 +73,7 @@ class TaskCreate(BaseModel):
     timeout: int = Field(300, ge=30, le=3600)
     enabled: bool = True
     variables: dict[str, Any] = Field(default_factory=dict)
+    notifications: TaskNotificationConfig | None = None
 
 
 class TaskUpdate(BaseModel):
@@ -81,6 +90,7 @@ class TaskUpdate(BaseModel):
     timeout: int | None = Field(None, ge=30, le=3600)
     enabled: bool | None = None
     variables: dict[str, Any] | None = None
+    notifications: TaskNotificationConfig | None = None
 
 
 class TaskStats(BaseModel):
