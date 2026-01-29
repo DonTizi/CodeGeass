@@ -27,9 +27,10 @@ class ActiveExecution:
     task_name: str
     session_id: str | None
     started_at: datetime
-    status: Literal["starting", "running", "finishing"] = "starting"
+    status: Literal["starting", "running", "finishing", "waiting_approval"] = "starting"
     output_lines: list[str] = field(default_factory=list)
     current_phase: str = "initializing"
+    approval_id: str | None = None  # For plan mode tasks waiting for approval
 
     # Buffer for output lines (keep last 1000)
     _max_output_lines: int = 1000
@@ -51,6 +52,7 @@ class ActiveExecution:
             "status": self.status,
             "output_lines": self.output_lines[-20:],  # Only serialize last 20 lines
             "current_phase": self.current_phase,
+            "approval_id": self.approval_id,
         }
 
     @classmethod
@@ -65,6 +67,7 @@ class ActiveExecution:
             status=data.get("status", "running"),
             output_lines=data.get("output_lines", []),
             current_phase=data.get("current_phase", "unknown"),
+            approval_id=data.get("approval_id"),
         )
 
 
@@ -331,6 +334,59 @@ class ExecutionTracker:
         self._emit(event)
         logger.info(f"Finished execution {execution_id} (success={success})")
 
+    def set_waiting_approval(
+        self,
+        execution_id: str,
+        approval_id: str,
+        plan_text: str | None = None,
+    ) -> None:
+        """Set execution to waiting_approval state for plan mode tasks.
+
+        Unlike finish_execution, this keeps the execution active and visible
+        until the approval is handled (approved, cancelled, or expired).
+
+        Args:
+            execution_id: The execution to update
+            approval_id: The approval ID for this plan
+            plan_text: Optional plan text summary
+        """
+        with self._data_lock:
+            execution = self._active.get(execution_id)
+            if not execution:
+                logger.warning(f"Execution {execution_id} not found")
+                return
+
+            execution.status = "waiting_approval"
+            execution.approval_id = approval_id
+            execution.current_phase = "waiting for approval"
+            self._save_active()
+
+        # Emit waiting_approval event
+        event = ExecutionEvent.waiting_approval(
+            execution_id=execution_id,
+            task_id=execution.task_id,
+            task_name=execution.task_name,
+            approval_id=approval_id,
+            plan_text=plan_text,
+        )
+        self._emit(event)
+        logger.info(f"Execution {execution_id} waiting for approval: {approval_id}")
+
+    def get_by_approval(self, approval_id: str) -> ActiveExecution | None:
+        """Get execution by approval ID.
+
+        Args:
+            approval_id: The approval ID
+
+        Returns:
+            The execution waiting for this approval, or None
+        """
+        with self._data_lock:
+            for execution in self._active.values():
+                if execution.approval_id == approval_id:
+                    return execution
+        return None
+
     def get_active(self) -> list[ActiveExecution]:
         """Get all active executions.
 
@@ -373,6 +429,36 @@ class ExecutionTracker:
             self._active.clear()
             if self._persistence_file.exists():
                 self._persistence_file.unlink()
+
+    def cleanup_stale_executions(self, valid_approval_ids: set[str] | None = None) -> int:
+        """Clean up stale executions that are waiting for approvals that no longer exist.
+
+        Args:
+            valid_approval_ids: Set of approval IDs that are still pending.
+                               If None, removes all waiting_approval executions.
+
+        Returns:
+            Number of executions removed
+        """
+        removed = 0
+        with self._data_lock:
+            to_remove = []
+            for exec_id, execution in self._active.items():
+                if execution.status == "waiting_approval":
+                    if valid_approval_ids is None:
+                        to_remove.append(exec_id)
+                    elif execution.approval_id and execution.approval_id not in valid_approval_ids:
+                        to_remove.append(exec_id)
+                        logger.info(f"Removing stale execution {exec_id} (approval {execution.approval_id} no longer pending)")
+
+            for exec_id in to_remove:
+                del self._active[exec_id]
+                removed += 1
+
+            if removed > 0:
+                self._save_active()
+
+        return removed
 
 
 # Global accessor function

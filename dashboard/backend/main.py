@@ -46,6 +46,24 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     get_skill_registry()
     get_scheduler()
 
+    # Clean up stale executions (waiting_approval with expired/cancelled approvals)
+    try:
+        from codegeass.execution.tracker import get_execution_tracker
+
+        approval_repo = get_approval_repo()
+        tracker = get_execution_tracker()
+
+        # Get all pending approval IDs
+        pending_approvals = approval_repo.list_pending()
+        valid_ids = {a.id for a in pending_approvals}
+
+        # Clean up executions waiting for approvals that no longer exist
+        removed = tracker.cleanup_stale_executions(valid_ids)
+        if removed > 0:
+            print(f"[Startup] Cleaned up {removed} stale execution(s)")
+    except Exception as e:
+        print(f"[Startup] Warning: Could not clean stale executions: {e}")
+
     # Start execution broadcast loop for real-time monitoring
     try:
         from services.execution_service import get_execution_manager

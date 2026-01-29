@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Terminal, Activity, Clock, X, CheckCircle, XCircle, Wrench, MessageSquare } from 'lucide-react';
+import { Terminal, Activity, Clock, X, CheckCircle, XCircle, Wrench, MessageSquare, PauseCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -14,6 +14,7 @@ interface ExtendedExecution extends ActiveExecution {
   exitCode?: number;
   error?: string;
   success?: boolean;
+  approval_id?: string | null;
 }
 
 // Parsed output line with type information
@@ -148,6 +149,7 @@ export function ExecutionMonitor({
 
   const isCompleted = execution.completed;
   const isSuccess = execution.success;
+  const isWaitingApproval = execution.status === 'waiting_approval';
 
   // Parse and format output lines for better readability
   const formattedOutput = useMemo(() => {
@@ -212,31 +214,39 @@ export function ExecutionMonitor({
   };
 
   // Determine border and icon colors based on state
-  const borderColor = isCompleted
-    ? isSuccess
-      ? 'border-green-500/30'
-      : 'border-red-500/30'
-    : 'border-blue-500/30';
+  const borderColor = isWaitingApproval
+    ? 'border-orange-500/30'
+    : isCompleted
+      ? isSuccess
+        ? 'border-green-500/30'
+        : 'border-red-500/30'
+      : 'border-blue-500/30';
 
-  const StatusIcon = isCompleted
-    ? isSuccess
-      ? CheckCircle
-      : XCircle
-    : Activity;
+  const StatusIcon = isWaitingApproval
+    ? PauseCircle
+    : isCompleted
+      ? isSuccess
+        ? CheckCircle
+        : XCircle
+      : Activity;
 
-  const iconColor = isCompleted
-    ? isSuccess
-      ? 'text-green-500'
-      : 'text-red-500'
-    : 'text-blue-500 animate-pulse';
+  const iconColor = isWaitingApproval
+    ? 'text-orange-500 animate-pulse'
+    : isCompleted
+      ? isSuccess
+        ? 'text-green-500'
+        : 'text-red-500'
+      : 'text-blue-500 animate-pulse';
 
-  const statusText = isCompleted
-    ? isSuccess
-      ? 'Completed'
-      : 'Failed'
-    : execution.status === 'starting'
-    ? 'Starting'
-    : 'Running';
+  const statusText = isWaitingApproval
+    ? 'Waiting for Approval'
+    : isCompleted
+      ? isSuccess
+        ? 'Completed'
+        : 'Failed'
+      : execution.status === 'starting'
+        ? 'Starting'
+        : 'Running';
 
   return (
     <Card className={cn(borderColor, className)}>
@@ -254,15 +264,16 @@ export function ExecutionMonitor({
             <Badge
               variant="secondary"
               className={cn(
-                !isCompleted && execution.status === 'starting' && 'bg-yellow-500/20 text-yellow-600',
-                !isCompleted && execution.status === 'running' && 'bg-blue-500/20 text-blue-600',
+                !isCompleted && !isWaitingApproval && execution.status === 'starting' && 'bg-yellow-500/20 text-yellow-600',
+                !isCompleted && !isWaitingApproval && execution.status === 'running' && 'bg-blue-500/20 text-blue-600',
+                isWaitingApproval && 'bg-orange-500/20 text-orange-600',
                 isCompleted && isSuccess && 'bg-green-500/20 text-green-600',
                 isCompleted && !isSuccess && 'bg-red-500/20 text-red-600'
               )}
             >
-              {isCompleted ? (isSuccess ? 'success' : 'failed') : execution.status}
+              {isWaitingApproval ? 'needs approval' : isCompleted ? (isSuccess ? 'success' : 'failed') : execution.status}
             </Badge>
-            {isCompleted && (
+            {(isCompleted || isWaitingApproval) && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -275,9 +286,13 @@ export function ExecutionMonitor({
             )}
           </div>
         </div>
-        {!isCompleted && (
+        {(!isCompleted || isWaitingApproval) && (
           <p className="text-sm text-muted-foreground mt-1">
-            Phase: <span className="font-mono">{execution.current_phase}</span>
+            {isWaitingApproval ? (
+              <span className="text-orange-500">Check Telegram to approve or discuss the plan</span>
+            ) : (
+              <>Phase: <span className="font-mono">{execution.current_phase}</span></>
+            )}
           </p>
         )}
         {isCompleted && execution.error && (

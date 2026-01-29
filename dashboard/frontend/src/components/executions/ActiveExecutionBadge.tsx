@@ -31,13 +31,18 @@ export function ActiveExecutionBadge({
     starting: 'Starting',
     running: 'Running',
     finishing: 'Finishing',
+    waiting_approval: 'Needs Approval',
   }[execution.status];
+
+  const isWaitingApproval = execution.status === 'waiting_approval';
 
   return (
     <Badge
       variant="default"
       className={cn(
-        'bg-blue-500/20 text-blue-600 border-blue-500/30',
+        isWaitingApproval
+          ? 'bg-orange-500/20 text-orange-600 border-orange-500/30'
+          : 'bg-blue-500/20 text-blue-600 border-blue-500/30',
         'flex items-center gap-1.5 animate-pulse',
         className
       )}

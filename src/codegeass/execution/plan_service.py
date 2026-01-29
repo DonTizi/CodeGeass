@@ -19,6 +19,7 @@ from codegeass.execution.strategies import (
     ResumeWithApprovalStrategy,
     ResumeWithFeedbackStrategy,
 )
+from codegeass.execution.tracker import get_execution_tracker
 from codegeass.execution.worktree import WorktreeManager
 from codegeass.notifications.interactive import (
     InteractiveMessage,
@@ -235,25 +236,54 @@ class PlanApprovalService:
         execution_dir = Path(approval.worktree_path) if approval.worktree_path else Path(approval.working_dir)
         logger.info(f"Executing approved plan in: {execution_dir}")
 
+        # Get tracker and find the existing execution (waiting_approval)
+        tracker = get_execution_tracker()
+        existing_execution = tracker.get_by_approval(approval.id)
+
+        if existing_execution:
+            # Resume the existing execution
+            execution_id = existing_execution.execution_id
+            tracker.update_execution(execution_id, status="running", phase="executing approved plan")
+            logger.info(f"Resuming existing execution {execution_id} for approval")
+        else:
+            # Fallback: create new execution if not found
+            execution_id = tracker.start_execution(
+                task_id=approval.task_id,
+                task_name=f"{approval.task_name} (Approval)",
+                session_id=approval.session_id,
+            )
+            logger.info(f"Created new execution {execution_id} (no existing found)")
+
         try:
             # Execute with resume strategy using original task timeout
             strategy = ResumeWithApprovalStrategy(timeout=approval.task_timeout)
+            task = Task(
+                id=approval.task_id,
+                name=approval.task_name,
+                schedule="* * * * *",  # Dummy schedule
+                working_dir=execution_dir,
+                prompt="Execute approved plan",  # Placeholder (required by Task)
+                timeout=approval.task_timeout,  # Use original task timeout
+            )
             context = ExecutionContext(
-                task=Task(
-                    id=approval.task_id,
-                    name=approval.task_name,
-                    schedule="* * * * *",  # Dummy schedule
-                    working_dir=execution_dir,
-                    prompt="Execute approved plan",  # Placeholder (required by Task)
-                    timeout=approval.task_timeout,  # Use original task timeout
-                ),
+                task=task,
                 skill=None,
                 prompt="",
                 working_dir=execution_dir,
                 session_id=approval.session_id,
+                execution_id=execution_id,
+                tracker=tracker,
             )
 
             result = strategy.execute(context)
+
+            # Finish tracking
+            tracker.finish_execution(
+                execution_id=execution_id,
+                success=result.is_success,
+                exit_code=result.exit_code,
+                error=result.error,
+            )
 
             # Update approval status
             if result.is_success:
@@ -312,6 +342,12 @@ class PlanApprovalService:
             return result
 
         except Exception as e:
+            # Finish tracking with failure
+            tracker.finish_execution(
+                execution_id=execution_id,
+                success=False,
+                error=str(e),
+            )
             approval.mark_failed(str(e))
             self._approvals.update(approval)
             await self._update_approval_messages(
@@ -364,22 +400,43 @@ class PlanApprovalService:
         execution_dir = Path(approval.worktree_path) if approval.worktree_path else Path(approval.working_dir)
         logger.info(f"Processing feedback in: {execution_dir}")
 
+        # Get tracker and find the existing execution (waiting_approval)
+        tracker = get_execution_tracker()
+        existing_execution = tracker.get_by_approval(approval.id)
+
+        if existing_execution:
+            # Resume the existing execution
+            execution_id = existing_execution.execution_id
+            tracker.update_execution(execution_id, status="running", phase=f"discussing (iteration {approval.iteration + 1})")
+            logger.info(f"Resuming existing execution {execution_id} for discuss")
+        else:
+            # Fallback: create new execution if not found
+            execution_id = tracker.start_execution(
+                task_id=approval.task_id,
+                task_name=f"{approval.task_name} (Discuss #{approval.iteration + 1})",
+                session_id=approval.session_id,
+            )
+            logger.info(f"Created new execution {execution_id} (no existing found)")
+
         try:
             # Execute with feedback strategy using original task timeout
             strategy = ResumeWithFeedbackStrategy(feedback=feedback, timeout=approval.task_timeout)
+            task = Task(
+                id=approval.task_id,
+                name=approval.task_name,
+                schedule="* * * * *",
+                working_dir=execution_dir,
+                prompt=feedback,  # Use feedback as prompt (required by Task)
+                timeout=approval.task_timeout,  # Use original task timeout
+            )
             context = ExecutionContext(
-                task=Task(
-                    id=approval.task_id,
-                    name=approval.task_name,
-                    schedule="* * * * *",
-                    working_dir=execution_dir,
-                    prompt=feedback,  # Use feedback as prompt (required by Task)
-                    timeout=approval.task_timeout,  # Use original task timeout
-                ),
+                task=task,
                 skill=None,
                 prompt=feedback,
                 working_dir=execution_dir,
                 session_id=approval.session_id,
+                execution_id=execution_id,
+                tracker=tracker,
             )
 
             result = strategy.execute(context)
@@ -420,13 +477,33 @@ class PlanApprovalService:
                 approval.channel_messages = []
                 await self.send_approval_request(approval, task)
 
+                # Set execution back to waiting_approval with the new plan
+                tracker.set_waiting_approval(
+                    execution_id=execution_id,
+                    approval_id=approval.id,
+                    plan_text=new_plan[:500] if new_plan else None,
+                )
+                logger.info(f"Execution {execution_id} back to waiting_approval after discuss")
+
                 return approval
             else:
+                # Discuss failed - keep waiting for approval, just log the error
                 logger.error(f"Discuss failed: {result.error}")
+                tracker.set_waiting_approval(
+                    execution_id=execution_id,
+                    approval_id=approval.id,
+                    plan_text=f"Discuss failed: {result.error}",
+                )
                 return None
 
         except Exception as e:
+            # Error during discuss - keep waiting for approval
             logger.error(f"Error handling discuss: {e}")
+            tracker.set_waiting_approval(
+                execution_id=execution_id,
+                approval_id=approval.id,
+                plan_text=f"Error: {str(e)}",
+            )
             return None
 
     async def handle_cancel(self, approval_id: str) -> bool:
@@ -455,6 +532,17 @@ class PlanApprovalService:
             status="Cancelled",
             details="Plan was cancelled by user.",
         )
+
+        # Finish the execution as cancelled
+        tracker = get_execution_tracker()
+        existing_execution = tracker.get_by_approval(approval.id)
+        if existing_execution:
+            tracker.finish_execution(
+                execution_id=existing_execution.execution_id,
+                success=False,
+                error="Plan cancelled by user",
+            )
+            logger.info(f"Finished execution {existing_execution.execution_id} (cancelled)")
 
         # Cleanup worktree on cancel
         self._cleanup_worktree(approval)
