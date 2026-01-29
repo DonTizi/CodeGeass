@@ -31,6 +31,14 @@ from .notification import (
     ProviderInfo,
     TestResult,
 )
+from .approval import (
+    Approval,
+    ApprovalSummary,
+    ApprovalAction,
+    ApprovalActionResult,
+    ApprovalStats,
+    ApprovalStatus as ApprovalStatusModel,
+)
 
 __all__ = [
     # Task
@@ -59,4 +67,11 @@ __all__ = [
     "NotificationEvent",
     "ProviderInfo",
     "TestResult",
+    # Approval
+    "Approval",
+    "ApprovalSummary",
+    "ApprovalAction",
+    "ApprovalActionResult",
+    "ApprovalStats",
+    "ApprovalStatusModel",
 ]

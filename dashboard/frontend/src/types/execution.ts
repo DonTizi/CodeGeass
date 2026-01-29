@@ -6,6 +6,7 @@ export interface ExecutionResult {
   session_id: string | null;
   status: ExecutionStatus;
   output: string;
+  clean_output: string;  // Parsed human-readable output from stream-json
   error: string | null;
   exit_code: number | null;
   started_at: string;
@@ -37,4 +38,35 @@ export interface LogStats {
     failure: number;
     success_rate: number;
   }>;
+}
+
+// Real-time execution monitoring types
+
+export type ActiveExecutionStatus = 'starting' | 'running' | 'finishing';
+
+export interface ActiveExecution {
+  execution_id: string;
+  task_id: string;
+  task_name: string;
+  session_id: string | null;
+  started_at: string;
+  status: ActiveExecutionStatus;
+  output_lines: string[];
+  current_phase: string;
+}
+
+export type ExecutionEventType =
+  | 'execution.started'
+  | 'execution.output'
+  | 'execution.progress'
+  | 'execution.completed'
+  | 'execution.failed';
+
+export interface ExecutionEvent {
+  type: ExecutionEventType;
+  execution_id: string;
+  task_id: string;
+  task_name: string;
+  timestamp: string;
+  data: Record<string, unknown>;
 }

@@ -28,7 +28,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/AlertDialog';
-import { useTasksStore, useLogsStore } from '@/stores';
+import { useTasksStore, useLogsStore, useExecutionsStore } from '@/stores';
 import { toast } from '@/components/ui/Toaster';
 import type { TaskCreate, TaskUpdate, ExecutionResult } from '@/types';
 import {
@@ -39,6 +39,7 @@ import {
   getStatusIcon,
   cn,
 } from '@/lib/utils';
+import { ActiveExecutionBadge, ExecutionMonitor } from '@/components/executions';
 
 export function TaskDetail() {
   const { taskId } = useParams<{ taskId: string }>();
@@ -61,6 +62,12 @@ export function TaskDetail() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [running, setRunning] = useState(false);
 
+  // Get active execution for this task
+  const activeExecution = useExecutionsStore((state) =>
+    taskId ? state.getByTaskId(taskId) : undefined
+  );
+  const isRunning = !!activeExecution;
+
   useEffect(() => {
     if (taskId) {
       fetchTask(taskId);
@@ -70,6 +77,17 @@ export function TaskDetail() {
   }, [taskId, fetchTask, fetchTaskStats, fetchTaskLogs]);
 
   if (!task) {
+    // Show execution monitor even while task is loading
+    if (isRunning && activeExecution) {
+      return (
+        <div className="space-y-6">
+          <ExecutionMonitor execution={activeExecution} />
+          <div className="flex items-center justify-center h-32">
+            <p className="text-muted-foreground">Loading task details...</p>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="flex items-center justify-center h-64">
         <p className="text-muted-foreground">Loading task...</p>
@@ -157,9 +175,13 @@ export function TaskDetail() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-serif font-bold">{task.name}</h1>
-              <Badge variant={task.enabled ? 'success' : 'secondary'}>
-                {task.enabled ? 'Enabled' : 'Disabled'}
-              </Badge>
+              {isRunning ? (
+                <ActiveExecutionBadge execution={activeExecution} showDuration />
+              ) : (
+                <Badge variant={task.enabled ? 'success' : 'secondary'}>
+                  {task.enabled ? 'Enabled' : 'Disabled'}
+                </Badge>
+              )}
             </div>
             <p className="text-muted-foreground">
               {task.schedule_description || task.schedule}
@@ -172,12 +194,17 @@ export function TaskDetail() {
             <Edit className="h-4 w-4 mr-1" />
             Edit
           </Button>
-          <Button size="sm" onClick={handleRun} disabled={running}>
+          <Button size="sm" onClick={handleRun} disabled={running || isRunning}>
             <Play className="h-4 w-4 mr-1" />
-            {running ? 'Running...' : 'Run Now'}
+            {running || isRunning ? 'Running...' : 'Run Now'}
           </Button>
         </div>
       </div>
+
+      {/* Show execution monitor when task is running */}
+      {isRunning && activeExecution && (
+        <ExecutionMonitor execution={activeExecution} className="mb-6" />
+      )}
 
       <Tabs defaultValue="overview">
         <TabsList>

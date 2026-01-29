@@ -31,6 +31,7 @@ class SchedulerService:
             session_id=result.session_id,
             status=ExecutionStatus(result.status.value),
             output=result.output,
+            clean_output=result.clean_output,
             error=result.error,
             exit_code=result.exit_code,
             started_at=result.started_at.isoformat(),

@@ -4,7 +4,7 @@ tasks:
   schedule: 0 0 * * *
   working_dir: /home/dontizi/Projects/codegeass
   skill: null
-  prompt: Say hello world
+  prompt: tell me 3 tweets related to the subject AI
   allowed_tools: []
   model: sonnet
   autonomous: false
@@ -12,7 +12,7 @@ tasks:
   timeout: 300
   enabled: true
   variables: {}
-  last_run: '2026-01-29T09:54:25.331522'
+  last_run: '2026-01-29T15:13:40.564250'
   last_status: success
   notifications:
     channels:
@@ -22,6 +22,9 @@ tasks:
     - task_success
     - task_failure
     include_output: true
+  plan_mode: true
+  plan_timeout: 3600
+  plan_max_iterations: 5
 - id: 8b2c9f3d
   name: ClawdBot Review
   schedule: 0 9 * * *
@@ -35,7 +38,7 @@ tasks:
   timeout: 600
   enabled: true
   variables: {}
-  last_run: '2026-01-29T10:04:51.395737'
+  last_run: '2026-01-29T15:18:22.544437'
   last_status: success
   notifications:
     channels:
@@ -45,3 +48,32 @@ tasks:
     - task_start
     - task_success
     include_output: true
+  plan_mode: true
+  plan_timeout: 3600
+  plan_max_iterations: 5
+- id: 1b559d16
+  name: search-elyes
+  schedule: 0 8 * * 1
+  working_dir: /home/dontizi/Projects/codegeass
+  skill: null
+  prompt: Search for information about elyes
+  allowed_tools: []
+  model: opus
+  autonomous: false
+  max_turns: null
+  timeout: 600
+  enabled: true
+  variables: {}
+  last_run: '2026-01-29T15:36:05.646808'
+  last_status: success
+  notifications:
+    channels:
+    - telegram-main
+    - edcc20a4
+    events:
+    - task_start
+    - task_complete
+    include_output: false
+  plan_mode: true
+  plan_timeout: 3600
+  plan_max_iterations: 5

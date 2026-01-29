@@ -1,5 +1,8 @@
 """Scheduler CLI commands."""
 
+import asyncio
+import signal
+import sys
 from pathlib import Path
 
 import click
@@ -109,6 +112,36 @@ def upcoming_tasks(ctx: Context, hours: int) -> None:
     console.print(table)
 
 
+@scheduler.command("due")
+@click.option("--window", "-w", default=60, help="Time window in seconds (default: 60)")
+@pass_context
+def due_tasks(ctx: Context, window: int) -> None:
+    """Show tasks that are currently due for execution."""
+    tasks = ctx.scheduler.find_due_tasks(window)
+
+    if not tasks:
+        console.print(f"[yellow]No tasks due within {window} second window.[/yellow]")
+        return
+
+    table = Table(title=f"Due Tasks (window: {window}s)")
+    table.add_column("Name", style="cyan")
+    table.add_column("Schedule")
+    table.add_column("Last Run")
+
+    from codegeass.scheduling.cron_parser import CronParser
+
+    for t in tasks:
+        last_run = t.last_run[:16] if t.last_run else "never"
+        table.add_row(
+            t.name,
+            f"{t.schedule} ({CronParser.describe(t.schedule)})",
+            last_run,
+        )
+
+    console.print(table)
+    console.print(f"\n[bold]{len(tasks)} task(s) due.[/bold] Run with: codegeass scheduler run")
+
+
 @scheduler.command("install-cron")
 @click.option("--script", type=click.Path(path_type=Path), help="Path to cron-runner.sh")
 @pass_context
@@ -199,3 +232,65 @@ def test_cron(ctx: Context, verbose: bool) -> None:
         console.print("\n[bold]Environment variables:[/bold]")
         for key in ["PATH", "HOME", "USER"]:
             console.print(f"  {key}={os.environ.get(key, 'not set')}")
+
+
+@scheduler.command("daemon")
+@click.option("--poll-interval", "-p", default=1.0, help="Polling interval in seconds (default: 1.0)")
+@pass_context
+def daemon_mode(ctx: Context, poll_interval: float) -> None:
+    """Run daemon that handles Telegram callbacks for plan approvals.
+
+    This command runs continuously and polls Telegram for button clicks
+    (Approve/Discuss/Cancel) on plan approval messages.
+
+    Use Ctrl+C to stop.
+    """
+    from codegeass.execution.plan_service import PlanApprovalService
+    from codegeass.notifications.callback_handler import (
+        CallbackHandler,
+        TelegramCallbackServer,
+    )
+
+    # Check prerequisites
+    if ctx.channel_repo is None:
+        console.print("[red]No notification channels configured.[/red]")
+        console.print("Run 'codegeass notification add' first.")
+        raise SystemExit(1)
+
+    if ctx.approval_repo is None:
+        console.print("[red]Could not initialize approval repository.[/red]")
+        raise SystemExit(1)
+
+    # Initialize services
+    plan_service = PlanApprovalService(ctx.approval_repo, ctx.channel_repo)
+    callback_handler = CallbackHandler(plan_service, ctx.channel_repo)
+    callback_server = TelegramCallbackServer(
+        callback_handler,
+        ctx.channel_repo,
+        poll_interval=poll_interval,
+    )
+
+    console.print("[bold green]CodeGeass Daemon Starting...[/bold green]")
+    console.print(f"Polling interval: {poll_interval}s")
+    console.print("Listening for Telegram callbacks (Approve/Discuss/Cancel)")
+    console.print("Press Ctrl+C to stop.\n")
+
+    # Handle graceful shutdown
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    def signal_handler(sig, frame):
+        console.print("\n[yellow]Shutting down daemon...[/yellow]")
+        callback_server.stop()
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+
+    try:
+        loop.run_until_complete(callback_server.start())
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Daemon stopped.[/yellow]")
+    finally:
+        callback_server.stop()
+        loop.close()

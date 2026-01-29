@@ -54,6 +54,11 @@ class Task(BaseModel):
     last_run: str | None = None
     last_status: str | None = None
 
+    # Plan mode configuration
+    plan_mode: bool = False
+    plan_timeout: int = 3600
+    plan_max_iterations: int = 5
+
     # Computed fields for UI
     next_run: str | None = None
     schedule_description: str | None = None
@@ -74,6 +79,9 @@ class TaskCreate(BaseModel):
     enabled: bool = True
     variables: dict[str, Any] = Field(default_factory=dict)
     notifications: TaskNotificationConfig | None = None
+    plan_mode: bool = Field(False, description="Enable interactive plan approval")
+    plan_timeout: int = Field(3600, ge=300, le=86400, description="Approval timeout in seconds")
+    plan_max_iterations: int = Field(5, ge=1, le=20, description="Max discuss rounds")
 
 
 class TaskUpdate(BaseModel):
@@ -91,6 +99,9 @@ class TaskUpdate(BaseModel):
     enabled: bool | None = None
     variables: dict[str, Any] | None = None
     notifications: TaskNotificationConfig | None = None
+    plan_mode: bool | None = None
+    plan_timeout: int | None = Field(None, ge=300, le=86400)
+    plan_max_iterations: int | None = Field(None, ge=1, le=20)
 
 
 class TaskStats(BaseModel):

@@ -62,6 +62,9 @@ class TaskService:
             notifications=notifications,
             last_run=task.last_run,
             last_status=task.last_status,
+            plan_mode=task.plan_mode,
+            plan_timeout=task.plan_timeout,
+            plan_max_iterations=task.plan_max_iterations,
             next_run=next_run,
             schedule_description=schedule_description,
         )
@@ -92,6 +95,9 @@ class TaskService:
             enabled=task_create.enabled,
             variables=task_create.variables,
             notifications=notifications,
+            plan_mode=task_create.plan_mode,
+            plan_timeout=task_create.plan_timeout,
+            plan_max_iterations=task_create.plan_max_iterations,
         )
 
     def list_tasks(self) -> list[Task]:

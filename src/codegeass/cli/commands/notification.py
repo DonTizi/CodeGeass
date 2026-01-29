@@ -201,6 +201,50 @@ def remove_channel(ctx: Context, channel_id: str, yes: bool, keep_credentials: b
         raise SystemExit(1)
 
 
+@notification.command("update")
+@click.argument("channel_id")
+@click.option("--name", "-n", help="New display name")
+@click.option("--enabled/--disabled", default=None, help="Enable or disable channel")
+@click.option("--config", "-c", multiple=True, help="Update config values (format: key=value)")
+@pass_context
+def update_channel(ctx: Context, channel_id: str, name: str | None, enabled: bool | None, config: tuple[str, ...]) -> None:
+    """Update a notification channel."""
+    channel_repo = _get_channel_repo(ctx)
+    channel = channel_repo.find_by_id(channel_id)
+
+    if not channel:
+        console.print(f"[red]Channel not found: {channel_id}[/red]")
+        raise SystemExit(1)
+
+    updated = False
+
+    if name is not None:
+        channel.name = name
+        updated = True
+
+    if enabled is not None:
+        channel.enabled = enabled
+        updated = True
+
+    if config:
+        if channel.config is None:
+            channel.config = {}
+        for item in config:
+            if "=" not in item:
+                console.print(f"[red]Invalid config format: {item} (expected key=value)[/red]")
+                raise SystemExit(1)
+            key, value = item.split("=", 1)
+            channel.config[key] = value
+            updated = True
+
+    if not updated:
+        console.print("[yellow]No updates specified.[/yellow]")
+        return
+
+    channel_repo.update(channel)
+    console.print(f"[green]Channel updated: {channel_id}[/green]")
+
+
 @notification.command("test")
 @click.argument("channel_id")
 @click.option("--message", "-m", default=None, help="Custom test message")

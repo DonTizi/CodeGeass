@@ -23,6 +23,7 @@ class ExecutionResult(BaseModel):
     session_id: str | None = None
     status: ExecutionStatus
     output: str = ""
+    clean_output: str = ""  # Parsed human-readable output from stream-json
     error: str | None = None
     exit_code: int | None = None
     started_at: str

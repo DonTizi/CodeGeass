@@ -145,10 +145,10 @@ def tail_logs(ctx: Context, task_name: str, lines: int, output: bool) -> None:
         if r.error:
             console.print(f"  [red]Error:[/red] {r.error}")
 
-        if output and r.output:
-            console.print(f"  [bold]Output:[/bold]")
+        if output and r.clean_output:
+            console.print("  [bold]Output:[/bold]")
             # Truncate long output
-            out = r.output[:500] + "..." if len(r.output) > 500 else r.output
+            out = r.clean_output[:500] + "..." if len(r.clean_output) > 500 else r.clean_output
             console.print(Panel(out, border_style="dim"))
 
 

@@ -52,6 +52,10 @@ dmypy.json
 # Runtime data - DO NOT COMMIT
 data/logs/
 data/sessions/
+data/approvals.yaml
+
+# Git worktrees for isolated task execution
+.codegeass-worktrees/
 
 # Environment files
 .env

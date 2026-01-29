@@ -54,6 +54,7 @@ class Context:
         self._session_manager = None
         self._scheduler = None
         self._channel_repo = None
+        self._approval_repo = None
         self._notification_service = None
 
     @property
@@ -115,6 +116,15 @@ class Context:
         return self._channel_repo
 
     @property
+    def approval_repo(self):
+        if self._approval_repo is None:
+            from codegeass.storage.approval_repository import PendingApprovalRepository
+
+            approvals_file = self.data_dir / "approvals.yaml"
+            self._approval_repo = PendingApprovalRepository(approvals_file)
+        return self._approval_repo
+
+    @property
     def notification_service(self):
         if self._notification_service is None and self.channel_repo is not None:
             from codegeass.notifications.service import NotificationService
@@ -146,7 +156,11 @@ class Context:
 
             # Use singleton notification_service to preserve message_ids state
             if self.notification_service is not None:
-                handler = NotificationHandler(self.notification_service)
+                handler = NotificationHandler(
+                    service=self.notification_service,
+                    approval_repo=self.approval_repo,
+                    channel_repo=self.channel_repo,
+                )
                 handler.register_with_scheduler(scheduler)
         except Exception as e:
             # Don't fail if notifications can't be set up
@@ -184,13 +198,25 @@ def cli(ctx: click.Context, verbose: bool, project_dir: Path | None) -> None:
 
 
 # Import and register command groups
-from codegeass.cli.commands import logs, notification, scheduler, skill, task
+from codegeass.cli.commands import (
+    approval,
+    cron,
+    execution,
+    logs,
+    notification,
+    scheduler,
+    skill,
+    task,
+)
 
 cli.add_command(task.task)
 cli.add_command(skill.skill)
 cli.add_command(scheduler.scheduler)
 cli.add_command(logs.logs)
 cli.add_command(notification.notification)
+cli.add_command(approval.approval)
+cli.add_command(cron.cron)
+cli.add_command(execution.execution)
 
 
 @cli.command()

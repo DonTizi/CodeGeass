@@ -195,14 +195,14 @@ export function Logs() {
                       <p className="text-sm text-destructive mt-1 line-clamp-2">{log.error}</p>
                     )}
 
-                    {log.output && (
+                    {log.clean_output && (
                       <details className="mt-2">
                         <summary className="text-sm text-muted-foreground cursor-pointer hover:text-foreground">
                           Show output
                         </summary>
-                        <pre className="mt-2 p-2 bg-background rounded text-xs overflow-auto max-h-40">
-                          {log.output.slice(0, 1000)}
-                          {log.output.length > 1000 && '...'}
+                        <pre className="mt-2 p-2 bg-background rounded text-xs overflow-auto max-h-40 whitespace-pre-wrap">
+                          {log.clean_output.slice(0, 1000)}
+                          {log.clean_output.length > 1000 && '...'}
                         </pre>
                       </details>
                     )}

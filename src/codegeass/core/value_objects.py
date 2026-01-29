@@ -32,6 +32,7 @@ class ExecutionResult:
     finished_at: datetime
     error: str | None = None
     exit_code: int | None = None
+    metadata: dict | None = None  # Optional metadata (e.g., worktree_path for plan mode)
 
     @property
     def duration_seconds(self) -> float:
@@ -43,6 +44,13 @@ class ExecutionResult:
         """Check if execution was successful."""
         return self.status == ExecutionStatus.SUCCESS
 
+    @property
+    def clean_output(self) -> str:
+        """Get human-readable output (parsed from stream-json)."""
+        from codegeass.execution.output_parser import extract_clean_text
+
+        return extract_clean_text(self.output)
+
     def to_dict(self) -> dict:
         """Convert to dictionary for serialization."""
         return {
@@ -50,11 +58,13 @@ class ExecutionResult:
             "session_id": self.session_id,
             "status": self.status.value,
             "output": self.output,
+            "clean_output": self.clean_output,
             "started_at": self.started_at.isoformat(),
             "finished_at": self.finished_at.isoformat(),
             "error": self.error,
             "exit_code": self.exit_code,
             "duration_seconds": self.duration_seconds,
+            "metadata": self.metadata,
         }
 
     @classmethod
@@ -69,6 +79,7 @@ class ExecutionResult:
             finished_at=datetime.fromisoformat(data["finished_at"]),
             error=data.get("error"),
             exit_code=data.get("exit_code"),
+            metadata=data.get("metadata"),
         )
 
 

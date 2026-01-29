@@ -7,8 +7,12 @@ import { Skills } from '@/pages/Skills'
 import { Logs } from '@/pages/Logs'
 import { Settings } from '@/pages/Settings'
 import { Toaster } from '@/components/ui/Toaster'
+import { useExecutionWebSocket } from '@/hooks/useExecutionWebSocket'
 
 function App() {
+  // Initialize global WebSocket connection for execution monitoring
+  useExecutionWebSocket({ enabled: true });
+
   return (
     <>
       <Routes>
