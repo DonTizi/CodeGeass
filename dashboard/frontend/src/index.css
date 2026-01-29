@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+/* Claude Design System Theme */
+@theme {
+  /* Colors - Claude Design System */
+  --color-primary: #C15F3C;
+  --color-primary-foreground: #ffffff;
+  --color-primary-hover: #A84E30;
+
+  --color-background: #F4F3EE;
+  --color-foreground: #3d3929;
+
+  --color-card: #ffffff;
+  --color-card-foreground: #3d3929;
+
+  --color-muted: #E8E6DE;
+  --color-muted-foreground: #6b6455;
+
+  --color-border: #d4d0c4;
+  --color-input: #d4d0c4;
+
+  --color-destructive: #D64545;
+  --color-destructive-foreground: #ffffff;
+
+  --color-success: #22C55E;
+  --color-success-foreground: #ffffff;
+
+  --color-warning: #EAB308;
+  --color-warning-foreground: #1f1f1f;
+
+  --color-ring: #C15F3C;
+  --color-radius: 0.5rem;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Georgia', serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+/* Base styles */
+* {
+  @apply border-border;
+}
+
+body {
+  @apply bg-background text-foreground font-sans antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+}
+
+code, pre {
+  font-family: var(--font-mono);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-border rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/50;
+}
+
+/* Focus styles */
+:focus-visible {
+  @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+}
