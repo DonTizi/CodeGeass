@@ -35,8 +35,8 @@ fi
 # Activate virtual environment
 source "$VENV_DIR/bin/activate"
 
-# Run scheduler
-python -m codegeass.cli.main scheduler run >> "$CRON_LOG" 2>&1
+# Run scheduler (use absolute path to ensure correct Python in cron environment)
+"$VENV_DIR/bin/python" -m codegeass.cli.main scheduler run >> "$CRON_LOG" 2>&1
 EXIT_CODE=$?
 
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
