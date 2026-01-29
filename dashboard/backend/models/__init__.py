@@ -6,6 +6,7 @@ from .task import (
     TaskUpdate,
     TaskSummary,
     TaskStats,
+    TaskNotificationConfig,
 )
 from .skill import (
     Skill,
@@ -38,6 +39,7 @@ __all__ = [
     "TaskUpdate",
     "TaskSummary",
     "TaskStats",
+    "TaskNotificationConfig",
     # Skill
     "Skill",
     "SkillSummary",

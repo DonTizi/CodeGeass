@@ -118,11 +118,13 @@ export function Logs() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Tasks</SelectItem>
-            {tasks.map((task) => (
-              <SelectItem key={task.id} value={task.id}>
-                {task.name}
-              </SelectItem>
-            ))}
+            {tasks
+              .filter((task) => task.id && task.id.trim() !== '')
+              .map((task) => (
+                <SelectItem key={task.id} value={task.id}>
+                  {task.name}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
 

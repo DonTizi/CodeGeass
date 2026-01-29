@@ -25,14 +25,21 @@ from models import (
 
 
 class NotificationService:
-    """Dashboard service for managing notifications."""
+    """Dashboard service for managing notifications.
+
+    This wraps the core NotificationService to adapt it for the API models.
+    IMPORTANT: Use the core_service parameter to inject the singleton instance
+    to ensure message_ids are shared across task executions.
+    """
 
     def __init__(
         self,
         channel_repo: ChannelRepository,
+        core_service: CoreNotificationService | None = None,
     ):
         self._channel_repo = channel_repo
-        self._core_service = CoreNotificationService(channel_repo)
+        # Use provided core service (singleton) or create new one
+        self._core_service = core_service or CoreNotificationService(channel_repo)
         self._registry = get_provider_registry()
 
     def _core_to_api(self, channel: CoreChannel) -> Channel:

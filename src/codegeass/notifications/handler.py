@@ -38,18 +38,16 @@ class NotificationHandler:
             return self._loop
 
     def _run_async(self, coro) -> None:
-        """Run an async coroutine from sync context."""
+        """Run an async coroutine from sync context.
+
+        Always runs synchronously to ensure message_id is stored
+        before the next notification is sent.
+        """
+        loop = self._get_event_loop()
         try:
-            loop = asyncio.get_running_loop()
-            # Already in async context, create task
-            asyncio.create_task(coro)
-        except RuntimeError:
-            # No running loop, run in new loop
-            loop = self._get_event_loop()
-            try:
-                loop.run_until_complete(coro)
-            except Exception as e:
-                logger.error(f"Error running notification async task: {e}")
+            loop.run_until_complete(coro)
+        except Exception as e:
+            logger.error(f"Error running notification async task: {e}")
 
     def on_task_start(self, task: "Task") -> None:
         """Callback called when a task starts execution.

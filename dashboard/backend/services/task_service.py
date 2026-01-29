@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from config import settings
-from models import Task, TaskCreate, TaskUpdate, TaskSummary, TaskStats
+from models import Task, TaskCreate, TaskUpdate, TaskSummary, TaskStats, TaskNotificationConfig
 
 # Import from codegeass package
 import sys
@@ -36,6 +36,15 @@ class TaskService:
         except Exception:
             pass
 
+        # Convert notifications
+        notifications = None
+        if task.notifications:
+            notifications = TaskNotificationConfig(
+                channels=task.notifications.get("channels", []),
+                events=task.notifications.get("events", []),
+                include_output=task.notifications.get("include_output", False),
+            )
+
         return Task(
             id=task.id,
             name=task.name,
@@ -50,6 +59,7 @@ class TaskService:
             timeout=task.timeout,
             enabled=task.enabled,
             variables=task.variables or {},
+            notifications=notifications,
             last_run=task.last_run,
             last_status=task.last_status,
             next_run=next_run,
@@ -58,6 +68,15 @@ class TaskService:
 
     def _api_to_core(self, task_create: TaskCreate) -> CoreTask:
         """Convert API TaskCreate to core Task."""
+        # Convert notifications to dict format expected by core
+        notifications = None
+        if task_create.notifications:
+            notifications = {
+                "channels": task_create.notifications.channels,
+                "events": task_create.notifications.events,
+                "include_output": task_create.notifications.include_output,
+            }
+
         return CoreTask(
             id="",  # Will be generated
             name=task_create.name,
@@ -72,6 +91,7 @@ class TaskService:
             timeout=task_create.timeout,
             enabled=task_create.enabled,
             variables=task_create.variables,
+            notifications=notifications,
         )
 
     def list_tasks(self) -> list[Task]:
@@ -160,6 +180,16 @@ class TaskService:
             if value is not None:
                 if key == "working_dir":
                     setattr(task, key, Path(value))
+                elif key == "notifications":
+                    # Convert Pydantic model to dict for core
+                    if isinstance(value, dict):
+                        task.notifications = value
+                    else:
+                        task.notifications = {
+                            "channels": value.get("channels", []),
+                            "events": value.get("events", []),
+                            "include_output": value.get("include_output", False),
+                        }
                 else:
                     setattr(task, key, value)
 

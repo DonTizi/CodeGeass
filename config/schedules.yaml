@@ -12,7 +12,7 @@ tasks:
   timeout: 300
   enabled: true
   variables: {}
-  last_run: '2026-01-29T02:27:20.692524'
+  last_run: '2026-01-29T02:41:40.318766'
   last_status: success
   notifications:
     channels:
@@ -21,4 +21,27 @@ tasks:
     - task_start
     - task_success
     - task_failure
-    include_output: false
+    include_output: true
+- id: ''
+  name: ClawdBot Review
+  schedule: 0 9 * * *
+  working_dir: /home/dontizi/Projects/codegueass
+  skill: trend-research
+  prompt: null
+  allowed_tools: []
+  model: sonnet
+  autonomous: false
+  max_turns: null
+  timeout: 300
+  enabled: true
+  variables: {}
+  last_run: null
+  last_status: null
+  notifications:
+    channels:
+    - edcc20a4
+    events:
+    - task_failure
+    - task_start
+    - task_success
+    include_output: true
