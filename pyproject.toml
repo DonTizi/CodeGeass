@@ -36,6 +36,11 @@ notifications = [
     "python-telegram-bot>=21.0",
     "discord-webhook>=1.4",
 ]
+docs = [
+    "mkdocs>=1.5",
+    "mkdocs-material>=9.5",
+    "mkdocs-click>=0.8",
+]
 
 [project.scripts]
 codegeass = "codegeass.cli.main:cli"
