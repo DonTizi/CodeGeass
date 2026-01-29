@@ -1,0 +1,25 @@
+# CodeGeass Settings
+# Global configuration for the scheduler framework
+
+claude:
+  # Default model for tasks (haiku, sonnet, opus)
+  default_model: sonnet
+
+  # Default execution timeout in seconds
+  default_timeout: 300
+
+  # Always unset ANTHROPIC_API_KEY to use subscription
+  unset_api_key: true
+
+paths:
+  # Relative to project root
+  skills: .claude/skills/
+  logs: data/logs/
+  sessions: data/sessions/
+
+scheduler:
+  # How often to check for due tasks (seconds)
+  check_interval: 60
+
+  # Maximum concurrent executions (Pro/Max subscription limit)
+  max_concurrent: 1

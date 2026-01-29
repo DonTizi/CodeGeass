@@ -1,0 +1,214 @@
+# CodeGeass
+
+**Claude Code Scheduler Framework** - Orchestrate automated Claude Code sessions with templates, prompts and skills, executed via CRON with your Pro/Max subscription.
+
+## Features
+
+- **Scheduled Tasks**: Define tasks with CRON expressions for automated execution
+- **Skills Integration**: Use Claude Code skills (`.claude/skills/`) for consistent, reusable prompts
+- **Multiple Strategies**: Headless, autonomous, or skill-based execution
+- **Session Management**: Track execution history with detailed logs
+- **CLI Interface**: Full-featured command line tool for task management
+
+## Installation
+
+```bash
+cd /home/dontizi/Projects/codegeass
+
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate
+
+# Install in development mode
+pip install -e .
+
+# Verify installation
+codegeass --version
+```
+
+## Quick Start
+
+### 1. Initialize Project
+
+```bash
+codegeass init
+```
+
+### 2. Create a Task
+
+```bash
+# Using a skill
+codegeass task create \
+  --name daily-review \
+  --skill code-review \
+  --schedule "0 9 * * 1-5" \
+  --working-dir /path/to/project
+
+# Using a direct prompt
+codegeass task create \
+  --name check-tests \
+  --prompt "Run the test suite and report any failures" \
+  --schedule "0 3 * * *" \
+  --working-dir /path/to/project
+```
+
+### 3. List Tasks
+
+```bash
+codegeass task list
+```
+
+### 4. Run Task Manually
+
+```bash
+codegeass task run daily-review
+```
+
+### 5. Install CRON
+
+```bash
+codegeass scheduler install-cron
+```
+
+## CLI Commands
+
+### Tasks
+
+```bash
+codegeass task list              # List all tasks
+codegeass task show <name>       # Show task details
+codegeass task create [opts]     # Create new task
+codegeass task run <name>        # Run task manually
+codegeass task enable <name>     # Enable task
+codegeass task disable <name>    # Disable task
+codegeass task delete <name>     # Delete task
+```
+
+### Skills
+
+```bash
+codegeass skill list             # List available skills
+codegeass skill show <name>      # Show skill details
+codegeass skill validate <name>  # Validate skill format
+codegeass skill render <name>    # Preview rendered skill
+```
+
+### Scheduler
+
+```bash
+codegeass scheduler status       # Show scheduler status
+codegeass scheduler run          # Run due tasks
+codegeass scheduler run --force  # Run all enabled tasks
+codegeass scheduler upcoming     # Show upcoming tasks
+codegeass scheduler install-cron # Install crontab entry
+```
+
+### Logs
+
+```bash
+codegeass logs list              # List recent logs
+codegeass logs show <task>       # Show logs for task
+codegeass logs tail <task>       # Tail recent logs
+codegeass logs stats             # Show statistics
+```
+
+## Skills
+
+Skills are Claude Code prompt templates stored in `.claude/skills/`. They follow the [Agent Skills](https://agentskills.io) open standard.
+
+### Included Skills
+
+- **code-review**: Automated code review with security, performance, and maintainability focus
+- **security-audit**: Deep security analysis for OWASP vulnerabilities and secrets
+- **test-runner**: Execute and analyze test suites
+- **dependency-check**: Analyze dependencies for updates and vulnerabilities
+
+### Skill Format
+
+```yaml
+---
+name: my-skill
+description: What the skill does
+context: fork
+agent: Explore
+allowed-tools: Read, Grep, Glob
+---
+
+# Skill Instructions
+
+Instructions for $ARGUMENTS.
+
+## Dynamic Context
+- Status: !`git status`
+```
+
+## Configuration
+
+### config/schedules.yaml
+
+```yaml
+tasks:
+  - name: daily-code-review
+    skill: code-review
+    schedule: "0 9 * * 1-5"
+    working_dir: /home/user/projects/myapp
+
+  - name: weekly-security-audit
+    skill: security-audit
+    schedule: "0 2 * * 0"
+    working_dir: /home/user/projects/myapp
+    autonomous: true
+```
+
+### config/settings.yaml
+
+```yaml
+claude:
+  default_model: sonnet
+  default_timeout: 300
+  unset_api_key: true
+
+scheduler:
+  check_interval: 60
+  max_concurrent: 1
+```
+
+## Subscription Usage
+
+**Important**: CodeGeass is designed to use your Claude Pro/Max subscription, NOT API credits.
+
+The CRON runner script (`scripts/cron-runner.sh`) automatically unsets `ANTHROPIC_API_KEY` to ensure your subscription is used.
+
+## Architecture
+
+```
+codegeass/
+├── src/codegeass/
+│   ├── core/           # Domain entities and value objects
+│   ├── storage/        # Persistence layer (YAML, JSON)
+│   ├── factory/        # Task and skill registries
+│   ├── execution/      # Claude Code execution strategies
+│   ├── scheduling/     # CRON parsing and job scheduling
+│   └── cli/            # Click CLI commands
+├── config/             # Configuration files
+├── data/               # Runtime data (logs, sessions)
+├── scripts/            # CRON runner script
+└── .claude/skills/     # Claude Code skills
+```
+
+## Development
+
+```bash
+# Run tests
+pytest tests/ -v
+
+# Type checking
+mypy src/codegeass
+
+# Linting
+ruff check src/codegeass
+```
+
+## License
+
+MIT
