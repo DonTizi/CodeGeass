@@ -1,8 +1,9 @@
 """Main scheduler for managing and executing due tasks."""
 
+import asyncio
 from datetime import datetime
 from pathlib import Path
-from typing import Callable
+from typing import Awaitable, Callable, Union
 
 from codegeass.core.entities import Task
 from codegeass.core.value_objects import ExecutionResult, ExecutionStatus
@@ -13,6 +14,10 @@ from codegeass.scheduling.cron_parser import CronParser
 from codegeass.scheduling.job import DryRunJob, TaskJob
 from codegeass.storage.log_repository import LogRepository
 from codegeass.storage.task_repository import TaskRepository
+
+# Type for callbacks that can be sync or async
+StartCallback = Callable[[Task], Union[None, Awaitable[None]]]
+CompleteCallback = Callable[[Task, ExecutionResult], Union[None, Awaitable[None]]]
 
 
 class Scheduler:
@@ -47,18 +52,38 @@ class Scheduler:
             log_repository=log_repository,
         )
 
-        # Callbacks
-        self._on_task_start: Callable[[Task], None] | None = None
-        self._on_task_complete: Callable[[Task, ExecutionResult], None] | None = None
+        # Callbacks (can be sync or async)
+        self._on_task_start: StartCallback | None = None
+        self._on_task_complete: CompleteCallback | None = None
 
     def set_callbacks(
         self,
-        on_start: Callable[[Task], None] | None = None,
-        on_complete: Callable[[Task, ExecutionResult], None] | None = None,
+        on_start: StartCallback | None = None,
+        on_complete: CompleteCallback | None = None,
     ) -> None:
         """Set execution callbacks."""
         self._on_task_start = on_start
         self._on_task_complete = on_complete
+
+    def _run_callback(self, callback_result) -> None:
+        """Run a callback result, handling async if needed.
+
+        Ensures async callbacks complete before returning, which is critical
+        for notification message editing (message_id must be stored before
+        the completion notification is sent).
+        """
+        if asyncio.iscoroutine(callback_result):
+            # Check if we're in an async context
+            try:
+                asyncio.get_running_loop()
+                # Already in async context, run in a new thread with its own loop
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                    future = executor.submit(asyncio.run, callback_result)
+                    future.result(timeout=30)  # Wait for completion
+            except RuntimeError:
+                # No running loop, safe to use asyncio.run
+                asyncio.run(callback_result)
 
     def find_due_tasks(self, window_seconds: int = 60) -> list[Task]:
         """Find tasks due for execution."""
@@ -67,7 +92,8 @@ class Scheduler:
     def run_task(self, task: Task, dry_run: bool = False) -> ExecutionResult:
         """Run a single task."""
         if self._on_task_start:
-            self._on_task_start(task)
+            result = self._on_task_start(task)
+            self._run_callback(result)
 
         if dry_run:
             job = DryRunJob(task, self._executor)
@@ -81,7 +107,8 @@ class Scheduler:
         self._task_repo.update(task)
 
         if self._on_task_complete:
-            self._on_task_complete(task, result)
+            callback_result = self._on_task_complete(task, result)
+            self._run_callback(callback_result)
 
         return result
 

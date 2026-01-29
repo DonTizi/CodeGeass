@@ -77,8 +77,8 @@ class TaskService:
                 "include_output": task_create.notifications.include_output,
             }
 
-        return CoreTask(
-            id="",  # Will be generated
+        # Use Task.create() to get a proper generated ID
+        return CoreTask.create(
             name=task_create.name,
             schedule=task_create.schedule,
             working_dir=Path(task_create.working_dir),

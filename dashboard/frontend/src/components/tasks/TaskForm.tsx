@@ -234,7 +234,6 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
                   setFormData((prev) => ({
                     ...prev,
                     skill: value === 'none' ? null : value,
-                    prompt: value !== 'none' ? null : prev.prompt,
                   }))
                 }
               >
@@ -272,19 +271,28 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
             </div>
           </div>
 
-          {/* Prompt (if no skill) */}
-          {!formData.skill && (
-            <div className="space-y-2">
-              <Label htmlFor="prompt">Prompt</Label>
-              <Textarea
-                id="prompt"
-                value={formData.prompt || ''}
-                onChange={(e) => setFormData((prev) => ({ ...prev, prompt: e.target.value }))}
-                placeholder="Enter the task prompt..."
-                rows={4}
-              />
-            </div>
-          )}
+          {/* Prompt or Skill Arguments */}
+          <div className="space-y-2">
+            <Label htmlFor="prompt">
+              {formData.skill ? 'Skill Arguments' : 'Prompt'}
+            </Label>
+            <Textarea
+              id="prompt"
+              value={formData.prompt || ''}
+              onChange={(e) => setFormData((prev) => ({ ...prev, prompt: e.target.value }))}
+              placeholder={
+                formData.skill
+                  ? 'Arguments to pass to the skill (replaces $ARGUMENTS)...'
+                  : 'Enter the task prompt...'
+              }
+              rows={formData.skill ? 2 : 4}
+            />
+            {formData.skill && (
+              <p className="text-xs text-muted-foreground">
+                These arguments will replace <code className="bg-muted px-1 rounded">$ARGUMENTS</code> in the skill content.
+              </p>
+            )}
+          </div>
 
           {/* Timeout and Enabled */}
           <div className="grid grid-cols-2 gap-4">
