@@ -1,1 +1,24 @@
-tasks: []
+tasks:
+- id: 741ae11a
+  name: test-notif
+  schedule: 0 0 * * *
+  working_dir: /home/dontizi/Projects/codegueass
+  skill: null
+  prompt: Say hello world
+  allowed_tools: []
+  model: sonnet
+  autonomous: false
+  max_turns: null
+  timeout: 300
+  enabled: true
+  variables: {}
+  last_run: '2026-01-29T02:27:20.692524'
+  last_status: success
+  notifications:
+    channels:
+    - edcc20a4
+    events:
+    - task_start
+    - task_success
+    - task_failure
+    include_output: false

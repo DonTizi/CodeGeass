@@ -112,6 +112,72 @@ codegeass logs tail <task>       # Tail recent logs
 codegeass logs stats             # Show statistics
 ```
 
+### Notifications
+
+```bash
+codegeass notification list              # List notification channels
+codegeass notification add               # Add a channel (interactive)
+codegeass notification show <id>         # Show channel details
+codegeass notification test <id>         # Test a channel
+codegeass notification remove <id>       # Remove a channel
+codegeass notification enable <id>       # Enable a channel
+codegeass notification disable <id>      # Disable a channel
+codegeass notification providers         # List available providers
+```
+
+## Notifications
+
+Send notifications to chat platforms (Telegram, Discord) when tasks start, complete, or fail.
+
+### Setup
+
+1. **Add a notification channel**:
+
+```bash
+# Add Telegram channel (interactive prompts for bot token and chat ID)
+codegeass notification add --provider telegram --name "My Alerts"
+
+# Add Discord channel (interactive prompt for webhook URL)
+codegeass notification add --provider discord --name "DevOps Channel"
+```
+
+2. **Test the channel**:
+
+```bash
+codegeass notification test <channel-id>
+```
+
+3. **Create tasks with notifications**:
+
+```bash
+codegeass task create \
+  --name daily-backup \
+  --prompt "Run backup script" \
+  --schedule "0 2 * * *" \
+  --notify <channel-id> \
+  --notify-on start \
+  --notify-on complete \
+  --notify-on failure
+```
+
+### Supported Providers
+
+| Provider | Requirements | Features |
+|----------|--------------|----------|
+| **Telegram** | Bot token from @BotFather, Chat ID | Message editing, HTML formatting |
+| **Discord** | Webhook URL | Markdown formatting |
+
+### Configuration
+
+Channels are stored in `config/notifications.yaml` (non-sensitive config).
+Credentials are stored in `~/.codegeass/credentials.yaml` (secrets, not in repo).
+
+### Message Editing
+
+For Telegram, notifications are edited in-place rather than sending multiple messages:
+- Task start: Shows "Running..."
+- Task complete: Updates same message with result and duration
+
 ## Skills
 
 Skills are Claude Code prompt templates stored in `.claude/skills/`. They follow the [Agent Skills](https://agentskills.io) open standard.
@@ -189,7 +255,9 @@ codegeass/
 │   ├── factory/        # Task and skill registries
 │   ├── execution/      # Claude Code execution strategies
 │   ├── scheduling/     # CRON parsing and job scheduling
+│   ├── notifications/  # Chat notifications (Telegram, Discord)
 │   └── cli/            # Click CLI commands
+├── dashboard/          # Web dashboard (React + FastAPI)
 ├── config/             # Configuration files
 ├── data/               # Runtime data (logs, sessions)
 ├── scripts/            # CRON runner script

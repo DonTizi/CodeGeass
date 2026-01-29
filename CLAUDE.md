@@ -60,6 +60,9 @@ codegeass scheduler status | run | run-due | upcoming | install-cron
 
 # Logs
 codegeass logs list | show | tail | stats
+
+# Notifications
+codegeass notification list | add | show | test | remove | enable | disable | providers
 ```
 
 ## Architecture
@@ -67,15 +70,16 @@ codegeass logs list | show | tail | stats
 ```
 src/codegeass/
 ├── core/           # Domain: Task, Skill, Template, Prompt entities + value objects
-├── storage/        # YAML backend, task/log repositories (file-based, no DB)
+├── storage/        # YAML backend, task/log repositories, channel/credential managers
 ├── factory/        # SkillRegistry, TaskFactory, TaskBuilder
 ├── execution/      # HeadlessStrategy, AutonomousStrategy, SkillStrategy
 ├── scheduling/     # CronParser (croniter), Scheduler, Job wrappers
-└── cli/            # Click commands: task, skill, scheduler, logs
+├── notifications/  # Chat notifications (Telegram, Discord) with provider pattern
+└── cli/            # Click commands: task, skill, scheduler, logs, notification
 
 dashboard/
 ├── backend/        # FastAPI + Uvicorn (port 8001)
-│   ├── routers/    # tasks, skills, logs, scheduler endpoints
+│   ├── routers/    # tasks, skills, logs, scheduler, notifications endpoints
 │   └── services/   # Business logic layer
 └── frontend/       # React 18 + Vite + TypeScript + Tailwind v4 + shadcn/ui + Zustand
 ```
@@ -90,6 +94,8 @@ dashboard/
 
 - **Tasks**: `config/schedules.yaml` (YAML list)
 - **Settings**: `config/settings.yaml`
+- **Notifications**: `config/notifications.yaml` (channels, non-secret)
+- **Credentials**: `~/.codegeass/credentials.yaml` (secrets, global)
 - **Logs**: `data/logs/*.jsonl` (one JSON per line)
 - **Sessions**: `data/sessions/`
 

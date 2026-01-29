@@ -11,16 +11,18 @@ sys.path.insert(0, str(settings.PROJECT_DIR / "src"))
 
 from codegeass.storage.task_repository import TaskRepository
 from codegeass.storage.log_repository import LogRepository
+from codegeass.storage.channel_repository import ChannelRepository
 from codegeass.factory.registry import SkillRegistry
 from codegeass.scheduling.scheduler import Scheduler
 from codegeass.execution.session import SessionManager
 
-from services import TaskService, SkillService, LogService, SchedulerService
+from services import TaskService, SkillService, LogService, SchedulerService, NotificationService
 
 
 # Singleton instances
 _task_repo: TaskRepository | None = None
 _log_repo: LogRepository | None = None
+_channel_repo: ChannelRepository | None = None
 _skill_registry: SkillRegistry | None = None
 _session_manager: SessionManager | None = None
 _scheduler: Scheduler | None = None
@@ -69,7 +71,24 @@ def get_scheduler() -> Scheduler:
             log_repository=get_log_repo(),
             max_concurrent=1,
         )
+        # Register notification handler
+        _setup_notification_handler(_scheduler)
     return _scheduler
+
+
+def _setup_notification_handler(scheduler: Scheduler) -> None:
+    """Setup notification handler for the scheduler."""
+    try:
+        from codegeass.notifications.service import NotificationService
+        from codegeass.notifications.handler import NotificationHandler
+
+        channel_repo = get_channel_repo()
+        service = NotificationService(channel_repo)
+        handler = NotificationHandler(service)
+        handler.register_with_scheduler(scheduler)
+    except Exception as e:
+        # Don't fail if notifications can't be set up
+        print(f"Warning: Could not setup notifications: {e}")
 
 
 # Service factories
@@ -91,3 +110,17 @@ def get_log_service() -> LogService:
 def get_scheduler_service() -> SchedulerService:
     """Get SchedulerService instance."""
     return SchedulerService(get_scheduler(), get_task_repo())
+
+
+def get_channel_repo() -> ChannelRepository:
+    """Get or create ChannelRepository singleton."""
+    global _channel_repo
+    if _channel_repo is None:
+        notifications_path = settings.CONFIG_DIR / "notifications.yaml"
+        _channel_repo = ChannelRepository(notifications_path)
+    return _channel_repo
+
+
+def get_notification_service() -> NotificationService:
+    """Get NotificationService instance."""
+    return NotificationService(get_channel_repo())

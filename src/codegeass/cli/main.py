@@ -113,7 +113,29 @@ class Context:
                 session_manager=self.session_manager,
                 log_repository=self.log_repo,
             )
+
+            # Register notification handler if notifications are configured
+            self._setup_notification_handler(self._scheduler)
+
         return self._scheduler
+
+    def _setup_notification_handler(self, scheduler) -> None:
+        """Setup notification handler for the scheduler."""
+        try:
+            from codegeass.storage.channel_repository import ChannelRepository
+            from codegeass.notifications.service import NotificationService
+            from codegeass.notifications.handler import NotificationHandler
+
+            notifications_file = self.config_dir / "notifications.yaml"
+            if notifications_file.exists():
+                channel_repo = ChannelRepository(notifications_file)
+                service = NotificationService(channel_repo)
+                handler = NotificationHandler(service)
+                handler.register_with_scheduler(scheduler)
+        except Exception as e:
+            # Don't fail if notifications can't be set up
+            if self.verbose:
+                console.print(f"[yellow]Warning: Could not setup notifications: {e}[/yellow]")
 
 
 pass_context = click.make_pass_decorator(Context, ensure=True)
@@ -146,12 +168,13 @@ def cli(ctx: click.Context, verbose: bool, project_dir: Path | None) -> None:
 
 
 # Import and register command groups
-from codegeass.cli.commands import logs, scheduler, skill, task
+from codegeass.cli.commands import logs, notification, scheduler, skill, task
 
 cli.add_command(task.task)
 cli.add_command(skill.skill)
 cli.add_command(scheduler.scheduler)
 cli.add_command(logs.logs)
+cli.add_command(notification.notification)
 
 
 @cli.command()

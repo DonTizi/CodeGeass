@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from routers import tasks_router, skills_router, logs_router, scheduler_router
+from routers import tasks_router, skills_router, logs_router, scheduler_router, notifications_router
 
 
 @asynccontextmanager
@@ -54,6 +54,7 @@ app.include_router(tasks_router)
 app.include_router(skills_router)
 app.include_router(logs_router)
 app.include_router(scheduler_router)
+app.include_router(notifications_router)
 
 
 # Health check

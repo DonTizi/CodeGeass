@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, ListTodo, Wand2, FileText, Clock } from 'lucide-react';
+import { LayoutDashboard, ListTodo, Wand2, FileText, Clock, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSchedulerStore } from '@/stores';
 import { useEffect } from 'react';
@@ -9,6 +9,7 @@ const navItems = [
   { to: '/tasks', icon: ListTodo, label: 'Tasks' },
   { to: '/skills', icon: Wand2, label: 'Skills' },
   { to: '/logs', icon: FileText, label: 'Logs' },
+  { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 export function Sidebar() {
@@ -25,7 +26,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="p-6 border-b">
         <h1 className="text-xl font-serif font-bold text-foreground">
-          Code<span className="text-primary">Gueass</span>
+          Code<span className="text-primary">Geass</span>
         </h1>
         <p className="text-xs text-muted-foreground mt-1">Task Scheduler</p>
       </div>

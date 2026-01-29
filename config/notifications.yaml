@@ -1,0 +1,14 @@
+channels:
+- id: edcc20a4
+  name: ranma
+  provider: telegram
+  credential_key: telegram_ranma
+  config:
+    chat_id: '6717177207'
+  enabled: true
+  created_at: '2026-01-29T02:10:12.762514'
+defaults:
+  enabled: false
+  events:
+  - task_failure
+  include_output: false

@@ -523,9 +523,9 @@ Scheduler checks for due tasks (every 60s)
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `CLAUDE_MODEL` | sonnet | Default model |
-| `CODEGUEASS_CONFIG` | config/ | Config directory |
-| `CODEGUEASS_DATA` | data/ | Data directory |
-| `CODEGUEASS_SKILLS` | .claude/skills/ | Skills directory |
+| `CODEGEASS_CONFIG` | config/ | Config directory |
+| `CODEGEASS_DATA` | data/ | Data directory |
+| `CODEGEASS_SKILLS` | .claude/skills/ | Skills directory |
 
 ### Configuration Files
 
