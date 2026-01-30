@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { TaskCreate, Channel } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -30,8 +31,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu';
 import { api } from '@/lib/api';
-import { useSkillsStore, useNotificationsStore } from '@/stores';
-import { Bell, X, ChevronDown, Shield, MessageSquare } from 'lucide-react';
+import { useSkillsStore, useNotificationsStore, useProjectsStore } from '@/stores';
+import { Bell, X, ChevronDown, Shield, MessageSquare, FolderOpen } from 'lucide-react';
 
 // Provider icons/colors for visual distinction
 const PROVIDER_CONFIG: Record<string, { color: string; label: string }> = {
@@ -65,11 +66,14 @@ const CRON_EXAMPLES = [
 ] as const;
 
 export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: TaskFormProps) {
+  const navigate = useNavigate();
   const { skills, fetchSkills } = useSkillsStore();
   const { channels, fetchChannels } = useNotificationsStore();
+  const { projects, fetchProjects } = useProjectsStore();
   const [loading, setLoading] = useState(false);
   const [cronValid, setCronValid] = useState<boolean | null>(null);
   const [cronDescription, setCronDescription] = useState<string>('');
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
 
   const [formData, setFormData] = useState<TaskCreate>({
     name: '',
@@ -102,8 +106,29 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
     if (open) {
       fetchSkills();
       fetchChannels();
+      fetchProjects();
     }
-  }, [open, fetchSkills, fetchChannels]);
+  }, [open, fetchSkills, fetchChannels, fetchProjects]);
+
+  // Set initial project based on working_dir
+  useEffect(() => {
+    if (initialData?.working_dir && projects.length > 0) {
+      const matchingProject = projects.find((p) => p.path === initialData.working_dir);
+      if (matchingProject) {
+        setSelectedProjectId(matchingProject.id);
+      }
+    }
+  }, [initialData?.working_dir, projects]);
+
+  // Update working_dir when project changes
+  useEffect(() => {
+    if (selectedProjectId) {
+      const project = projects.find((p) => p.id === selectedProjectId);
+      if (project) {
+        setFormData((prev) => ({ ...prev, working_dir: project.path }));
+      }
+    }
+  }, [selectedProjectId, projects]);
 
   // Sync notification state to formData
   useEffect(() => {
@@ -215,16 +240,52 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
             </div>
           </div>
 
-          {/* Working Directory */}
+          {/* Project Selection */}
           <div className="space-y-2">
-            <Label htmlFor="working_dir">Working Directory</Label>
-            <Input
-              id="working_dir"
-              value={formData.working_dir}
-              onChange={(e) => setFormData((prev) => ({ ...prev, working_dir: e.target.value }))}
-              placeholder="/path/to/project"
-              required
-            />
+            <Label htmlFor="project">Project</Label>
+            {projects.filter((p) => p.enabled).length === 0 ? (
+              <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-md border">
+                <FolderOpen className="h-5 w-5 text-muted-foreground" />
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground">No projects registered yet</p>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    onOpenChange(false);
+                    navigate('/projects');
+                  }}
+                >
+                  Add Project
+                </Button>
+              </div>
+            ) : (
+              <Select
+                value={selectedProjectId}
+                onValueChange={setSelectedProjectId}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a project" />
+                </SelectTrigger>
+                <SelectContent>
+                  {projects
+                    .filter((p) => p.enabled)
+                    .map((project) => (
+                      <SelectItem key={project.id} value={project.id}>
+                        <div className="flex items-center gap-2">
+                          <span>{project.name}</span>
+                          <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                            {project.path}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           {/* Skill or Prompt */}
@@ -581,7 +642,7 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || cronValid === false}>
+            <Button type="submit" disabled={loading || cronValid === false || (!isEdit && !selectedProjectId)}>
               {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Task'}
             </Button>
           </DialogFooter>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, RefreshCw, Star, FolderOpen, Trash2, MoreVertical, Power, PowerOff } from 'lucide-react';
+import { Plus, RefreshCw, Star, FolderOpen, Trash2, MoreVertical, Power, PowerOff, FolderSearch } from 'lucide-react';
 import { useProjectsStore } from '@/stores';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -33,6 +33,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu';
 import type { Project, ProjectCreate } from '@/types';
+import { api } from '@/lib/api';
 
 export function Projects() {
   const {
@@ -50,10 +51,31 @@ export function Projects() {
   const [newProjectPath, setNewProjectPath] = useState('');
   const [newProjectName, setNewProjectName] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [browsing, setBrowsing] = useState(false);
 
   useEffect(() => {
     fetchProjects();
   }, [fetchProjects]);
+
+  const handleBrowseFolder = async () => {
+    setBrowsing(true);
+    try {
+      const result = await api.filesystem.pickFolder();
+      if (result.path) {
+        setNewProjectPath(result.path);
+      } else if (result.error) {
+        toast({ title: 'Browse failed', description: result.error, variant: 'destructive' });
+      }
+    } catch (e) {
+      toast({
+        title: 'Browse failed',
+        description: e instanceof Error ? e.message : 'Unknown error',
+        variant: 'destructive',
+      });
+    } finally {
+      setBrowsing(false);
+    }
+  };
 
   const handleAddProject = async () => {
     if (!newProjectPath.trim()) {
@@ -247,12 +269,24 @@ export function Projects() {
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="path">Project Path</Label>
-              <Input
-                id="path"
-                placeholder="/home/user/projects/my-project"
-                value={newProjectPath}
-                onChange={(e) => setNewProjectPath(e.target.value)}
-              />
+              <div className="flex gap-2">
+                <Input
+                  id="path"
+                  placeholder="/home/user/projects/my-project"
+                  value={newProjectPath}
+                  onChange={(e) => setNewProjectPath(e.target.value)}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleBrowseFolder}
+                  disabled={browsing}
+                  title="Browse folders"
+                >
+                  <FolderSearch className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="name">Project Name (optional)</Label>

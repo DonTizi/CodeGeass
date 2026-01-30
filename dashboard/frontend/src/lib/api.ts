@@ -307,6 +307,19 @@ const executions = {
 };
 
 /**
+ * Filesystem API
+ */
+export interface FolderPickerResult {
+  path: string | null;
+  cancelled: boolean;
+  error: string | null;
+}
+
+const filesystem = {
+  pickFolder: () => fetchApi<FolderPickerResult>('/api/fs/pick-folder', { method: 'POST' }),
+};
+
+/**
  * CRON validation API
  */
 const cron = {
@@ -340,6 +353,7 @@ export const api = {
   notifications,
   projects,
   executions,
+  filesystem,
   cron,
   health,
 };
