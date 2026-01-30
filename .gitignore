@@ -30,6 +30,9 @@ env/
 node_modules/
 dist/
 
+# Exception: include frontend lib folder
+!dashboard/frontend/src/lib/
+
 # IDE
 .idea/
 .vscode/

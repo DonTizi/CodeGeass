@@ -26,10 +26,15 @@ export function Sidebar() {
     <aside className="w-64 border-r bg-card flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b">
-        <h1 className="text-xl font-serif font-bold text-foreground">
-          Code<span className="text-primary">Geass</span>
-        </h1>
-        <p className="text-xs text-muted-foreground mt-1">Task Scheduler</p>
+        <div className="flex items-center -ml-5">
+          <img src="/logo.png" alt="CodeGeass" className="w-28 h-auto -mr-2" />
+          <div>
+            <h1 className="text-xl font-serif font-bold text-foreground">
+              Code<span className="text-primary">Geass</span>
+            </h1>
+            <p className="text-xs text-muted-foreground">Task Scheduler</p>
+          </div>
+        </div>
       </div>
 
       {/* Navigation */}

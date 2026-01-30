@@ -28,6 +28,7 @@ theme:
     - search.highlight
     - content.code.copy
     - content.tabs.link
+  favicon: assets/favicon.png
   icon:
     repo: fontawesome/brands/github
   custom_dir: docs/overrides

@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.png" alt="CodeGeass Logo" width="180" />
+</p>
+
 # CodeGeass
 
 **Claude Code Scheduler Framework** - Orchestrate automated Claude Code sessions using CRON jobs with your Claude Pro/Max subscription.

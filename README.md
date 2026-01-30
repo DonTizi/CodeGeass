@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/DonTizi/CodeGeass/main/public/logo.png" alt="CodeGeass Logo" width="200" />
+</p>
+
 # CodeGeass
 
 [![PyPI version](https://badge.fury.io/py/codegeass.svg)](https://pypi.org/project/codegeass/)

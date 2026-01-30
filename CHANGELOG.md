@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2025-01-30
+
+### Added
+
+- **New CodeGeass Logo**: Custom logo added across all platforms
+- Logo in dashboard sidebar with transparent background
+- Favicons (16x16, 32x32, 180x180, .ico) for dashboard and docs
+- Logo in MkDocs documentation header
+- Logo in README (visible on GitHub and PyPI)
+
+### Fixed
+
+- Added missing `src/lib/utils.ts` and `src/lib/api.ts` files for dashboard frontend
+- Dashboard now starts correctly without import errors
+
 ## [0.1.3] - 2025-01-29
 
 ### Added
