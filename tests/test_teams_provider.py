@@ -366,6 +366,149 @@ class TestTeamsProvider:
             assert "Connection failed" in message
 
 
+class TestTeamsInteractive:
+    """Tests for Teams interactive messages (plan approval)."""
+
+    @pytest.fixture
+    def provider(self):
+        """Create a TeamsProvider instance."""
+        return TeamsProvider()
+
+    @pytest.fixture
+    def channel_with_dashboard(self):
+        """Create a test Channel with dashboard_url config."""
+        return Channel(
+            id="test123",
+            name="Test Teams Channel",
+            provider="teams",
+            credential_key="teams_test",
+            config={"dashboard_url": "http://localhost:5173"},
+            enabled=True,
+            created_at="2025-01-01T00:00:00",
+        )
+
+    @pytest.fixture
+    def valid_credentials(self):
+        """Valid Teams webhook credentials."""
+        return {
+            "webhook_url": "https://prod-42.westus.logic.azure.com:443/workflows/abc123/triggers/manual"
+        }
+
+    @pytest.fixture
+    def interactive_message(self):
+        """Create an interactive message with buttons."""
+        from codegeass.notifications.interactive import (
+            InteractiveMessage,
+            InlineButton,
+            ButtonStyle,
+        )
+
+        message = InteractiveMessage(
+            text="<b>Plan Approval Required</b>\n\nThis is the plan text.",
+            parse_mode="HTML",
+        )
+        message.add_row(
+            InlineButton("Approve", "plan:approve:abc123", ButtonStyle.SUCCESS),
+            InlineButton("Discuss", "plan:discuss:abc123", ButtonStyle.PRIMARY),
+        )
+        message.add_row(
+            InlineButton("Cancel", "plan:cancel:abc123", ButtonStyle.DANGER),
+        )
+        return message
+
+    def test_callback_to_dashboard_url_approve(self, provider):
+        """Test converting approve callback to dashboard URL."""
+        url = provider._callback_to_dashboard_url(
+            "plan:approve:abc123", "http://localhost:5173"
+        )
+        assert url == "http://localhost:5173/approvals/abc123?action=approve"
+
+    def test_callback_to_dashboard_url_discuss(self, provider):
+        """Test converting discuss callback to dashboard URL."""
+        url = provider._callback_to_dashboard_url(
+            "plan:discuss:xyz789", "http://mydashboard.local:8080"
+        )
+        assert url == "http://mydashboard.local:8080/approvals/xyz789?action=discuss"
+
+    def test_callback_to_dashboard_url_cancel(self, provider):
+        """Test converting cancel callback to dashboard URL."""
+        url = provider._callback_to_dashboard_url(
+            "plan:cancel:test123", "http://localhost:5173"
+        )
+        assert url == "http://localhost:5173/approvals/test123?action=cancel"
+
+    def test_callback_to_dashboard_url_fallback(self, provider):
+        """Test fallback for unknown callback format."""
+        url = provider._callback_to_dashboard_url(
+            "unknown:data", "http://localhost:5173"
+        )
+        assert url == "http://localhost:5173/approvals"
+
+    def test_html_to_plain_text(self, provider):
+        """Test HTML to plain text conversion (strips formatting tags)."""
+        html = "<b>Bold</b> and <i>italic</i> with <code>code</code>"
+        result = provider._html_to_plain_text(html)
+        # Tags should be stripped, only content remains
+        assert "Bold" in result
+        assert "italic" in result
+        assert "code" in result
+        # No HTML tags should remain
+        assert "<b>" not in result
+        assert "</b>" not in result
+        assert "<i>" not in result
+        assert "<code>" not in result
+
+    def test_build_interactive_card_payload(self, provider, interactive_message):
+        """Test building interactive Adaptive Card payload."""
+        payload = provider._build_interactive_card_payload(
+            interactive_message, "CodeGeass", "http://localhost:5173"
+        )
+
+        assert payload["type"] == "message"
+        content = payload["attachments"][0]["content"]
+        assert content["type"] == "AdaptiveCard"
+        assert "actions" in content
+        assert len(content["actions"]) == 3  # Approve, Discuss, Cancel
+
+        # Check action URLs
+        actions = content["actions"]
+        assert actions[0]["type"] == "Action.OpenUrl"
+        assert "approve" in actions[0]["url"]
+        assert actions[0]["style"] == "positive"
+
+        assert "discuss" in actions[1]["url"]
+
+        assert "cancel" in actions[2]["url"]
+        assert actions[2]["style"] == "destructive"
+
+    @pytest.mark.asyncio
+    async def test_send_interactive_success(
+        self, provider, channel_with_dashboard, valid_credentials, interactive_message
+    ):
+        """Test sending interactive message."""
+        mock_response = MagicMock()
+        mock_response.raise_for_status = MagicMock()
+
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(return_value=mock_response)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
+
+        with patch("httpx.AsyncClient", return_value=mock_client):
+            result = await provider.send_interactive(
+                channel_with_dashboard, valid_credentials, interactive_message
+            )
+
+            assert result["success"] is True
+            assert result["message_id"] is None  # Teams webhooks don't return IDs
+            mock_client.post.assert_called_once()
+
+            # Verify payload contains actions
+            call_args = mock_client.post.call_args
+            payload = call_args[1]["json"]
+            assert "actions" in payload["attachments"][0]["content"]
+
+
 class TestTeamsMessageFormatter:
     """Tests for Teams message formatting in MessageFormatter."""
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Activity, Clock, X, CheckCircle, XCircle, PauseCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Activity, Clock, X, CheckCircle, XCircle, PauseCircle, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -136,6 +137,18 @@ function formatDuration(startedAt: string, endedAt?: string): string {
   const minutes = Math.floor(seconds / 60);
   const remainingSeconds = seconds % 60;
   return `${minutes}m ${remainingSeconds}s`;
+}
+
+// Link to approval page for plan mode
+function ApprovalLink({ approvalId }: { approvalId: string }) {
+  return (
+    <Link to={`/approvals/${approvalId}`}>
+      <Button size="sm" variant="outline" className="text-orange-600 border-orange-500/50 hover:bg-orange-500/10">
+        <ExternalLink className="h-4 w-4 mr-1" />
+        View Approval
+      </Button>
+    </Link>
+  );
 }
 
 export function ExecutionMonitor({
@@ -282,13 +295,17 @@ export function ExecutionMonitor({
           </div>
         </div>
         {(!isCompleted || isWaitingApproval) && (
-          <p className="text-sm text-muted-foreground mt-1">
-            {isWaitingApproval ? (
-              <span className="text-orange-500">Check Telegram to approve or discuss the plan</span>
+          <div className="mt-2">
+            {isWaitingApproval && execution.approval_id ? (
+              <ApprovalLink approvalId={execution.approval_id} />
+            ) : isWaitingApproval ? (
+              <span className="text-sm text-orange-500">Waiting for approval...</span>
             ) : (
-              <>Phase: <span className="font-mono">{execution.current_phase}</span></>
+              <p className="text-sm text-muted-foreground">
+                Phase: <span className="font-mono">{execution.current_phase}</span>
+              </p>
             )}
-          </p>
+          </div>
         )}
         {isCompleted && execution.error && (
           <p className="text-sm text-red-500 mt-1">

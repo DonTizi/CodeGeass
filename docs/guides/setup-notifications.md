@@ -1,6 +1,6 @@
 # Setting Up Notifications
 
-This guide walks through configuring Telegram and Discord notifications for CodeGeass.
+This guide walks through configuring Telegram, Discord, and Microsoft Teams notifications for CodeGeass.
 
 ## Overview
 
@@ -76,6 +76,50 @@ codegeass notification test discord
 ```
 
 You should see a test message in the Discord channel.
+
+## Microsoft Teams Setup
+
+Teams uses Power Automate Workflows webhooks (O365 Connectors were retired in December 2025).
+
+### Step 1: Create a Workflow Webhook
+
+1. Open Microsoft Teams
+2. Click the **Apps** tab (left sidebar)
+3. Search for **Workflows** and open it
+4. Search for **"Post to a channel when a webhook request is received"**
+5. Click **Add** and follow the setup wizard (select your team and channel)
+6. Copy the **HTTP POST URL** (format: `https://prod-XX.westus.logic.azure.com/workflows/...`)
+
+### Step 2: Add to CodeGeass
+
+```bash
+codegeass notification add teams \
+  --webhook-url "https://prod-XX.westus.logic.azure.com/workflows/..."
+```
+
+### Step 3: Test
+
+```bash
+codegeass notification test teams
+```
+
+You should see a test message in the Teams channel as an Adaptive Card.
+
+### Plan Mode Approvals with Teams
+
+Teams Workflows webhooks don't support callback buttons, so CodeGeass uses **Dashboard links** for approval actions:
+
+1. When a plan mode task needs approval, Teams receives a notification with **Approve**, **Discuss**, and **Cancel** buttons
+2. These buttons link to the CodeGeass Dashboard (`http://localhost:5173/approvals/{id}`)
+3. Take action in the Dashboard, and Teams will receive a status update
+
+!!! tip "Dashboard URL"
+    By default, buttons link to `http://localhost:5173`. Configure a custom URL when adding the channel:
+    ```bash
+    codegeass notification add teams \
+      --webhook-url "YOUR_URL" \
+      --config dashboard_url=https://your-dashboard.example.com
+    ```
 
 ## Configuring Events
 
@@ -196,6 +240,26 @@ chmod 600 ~/.codegeass/credentials.yaml
 **Messages not appearing:**
 - Check the channel permissions
 - Verify the webhook is for the correct channel
+
+### Microsoft Teams Issues
+
+**"Invalid webhook URL format" error:**
+- Ensure URL starts with `https://` and contains `logic.azure.com/workflows` or `api.powerplatform.com/workflows`
+- The old O365 Connector URLs (`webhook.office.com`) still work but are deprecated
+
+**Messages not appearing:**
+- Check the Workflow is active in Power Automate
+- Verify the workflow hasn't been deleted or disabled
+- Test the webhook directly with curl:
+  ```bash
+  curl -X POST "YOUR_WEBHOOK_URL" \
+    -H "Content-Type: application/json" \
+    -d '{"type":"message","attachments":[{"contentType":"application/vnd.microsoft.card.adaptive","content":{"type":"AdaptiveCard","version":"1.4","body":[{"type":"TextBlock","text":"Test"}]}}]}'
+  ```
+
+**Approval buttons don't work:**
+- Buttons link to the Dashboard - ensure it's running at `http://localhost:5173`
+- Configure custom dashboard URL if running elsewhere
 
 ### General Issues
 

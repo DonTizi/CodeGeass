@@ -21,8 +21,8 @@ class ApprovalStatus(str, Enum):
 class MessageRef(BaseModel):
     """Reference to a message in a notification channel."""
 
-    message_id: int | str
-    chat_id: str
+    message_id: int | str | None = None
+    chat_id: str | None = None
     provider: str
 
 

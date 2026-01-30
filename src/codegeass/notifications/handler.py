@@ -151,6 +151,10 @@ class NotificationHandler:
                 worktree_path = result.metadata["worktree_path"]
                 print(f"[Notifications] Using worktree for isolation: {worktree_path}")
 
+            # Get notification channels to store in approval
+            config = NotificationConfig.from_dict(task.notifications)
+            channel_ids = config.channels if config else []
+
             approval = PendingApproval.create(
                 task_id=task.id,
                 task_name=task.name,
@@ -161,6 +165,7 @@ class NotificationHandler:
                 max_iterations=task.plan_max_iterations,
                 worktree_path=worktree_path,
                 task_timeout=task.timeout,  # Store original task execution timeout
+                notification_channels=channel_ids,  # Store channel IDs for discuss flow
             )
 
             print(f"[Notifications] Created approval: {approval.id}")
@@ -178,32 +183,43 @@ class NotificationHandler:
             )
 
             # Send to all configured channels
-            config = NotificationConfig.from_dict(task.notifications)
-            if not config or not config.channels:
+            if not channel_ids:
                 print("[Notifications] No channels in notification config")
                 return
 
-            for channel_id in config.channels:
+            for channel_id in channel_ids:
+                print(f"[Notifications] Sending approval to channel: {channel_id}")
                 try:
                     msg_result = await self._send_interactive_to_channel(
                         channel_id=channel_id,
                         message=message,
                     )
+                    print(f"[Notifications] send_interactive_to_channel result: {msg_result}")
 
                     if msg_result.get("success"):
-                        # Store message reference for later editing
-                        msg_ref = MessageRef(
-                            message_id=msg_result["message_id"],
-                            chat_id=msg_result.get("chat_id", ""),
-                            provider=msg_result.get("provider", "telegram"),
-                        )
-                        approval.add_message_ref(msg_ref)
-                        mid = msg_result["message_id"]
-                        print(f"[Notifications] Sent approval to {channel_id}: msg={mid}")
+                        # Store message reference for later editing (only if we got a message_id)
+                        # Teams webhooks don't return message IDs, so we skip storing refs for them
+                        msg_id = msg_result.get("message_id")
+                        if msg_id is not None:
+                            msg_ref = MessageRef(
+                                message_id=msg_id,
+                                chat_id=msg_result.get("chat_id", ""),
+                                provider=msg_result.get("provider", "telegram"),
+                            )
+                            approval.add_message_ref(msg_ref)
+                            print(f"[Notifications] Sent approval to {channel_id}: msg={msg_id}")
+                        else:
+                            # Provider doesn't support message editing (e.g., Teams)
+                            print(f"[Notifications] Sent approval to {channel_id} (no message_id returned)")
+                    else:
+                        print(f"[Notifications] WARNING: send_interactive returned success=False for {channel_id}")
+                        print(f"[Notifications] Error: {msg_result.get('error', 'unknown')}")
 
                 except Exception as e:
-                    print(f"[Notifications] Failed to send to {channel_id}: {e}")
+                    print(f"[Notifications] EXCEPTION sending to {channel_id}: {e}")
                     logger.error(f"Failed to send approval request to {channel_id}: {e}")
+                    import traceback
+                    traceback.print_exc()
 
             # Update approval with message refs
             self._approval_repo.save(approval)
@@ -247,26 +263,43 @@ class NotificationHandler:
         """
         from codegeass.notifications.registry import get_provider_registry
 
-        # Get channel and credentials
-        channel, credentials = self._channel_repo.get_channel_with_credentials(channel_id)
+        print(f"[Notifications] _send_interactive_to_channel called for {channel_id}")
+        logger.info(f"Sending interactive message to channel {channel_id}")
 
-        if not channel.enabled:
-            return {"success": False, "error": "Channel disabled"}
+        try:
+            # Get channel and credentials
+            channel, credentials = self._channel_repo.get_channel_with_credentials(channel_id)
+            print(f"[Notifications] Got channel: provider={channel.provider}, enabled={channel.enabled}")
+            logger.debug(
+                f"Channel: provider={channel.provider}, enabled={channel.enabled}, "
+                f"credentials present={bool(credentials)}"
+            )
 
-        # Get provider
-        registry = get_provider_registry()
-        provider = registry.get(channel.provider)
+            if not channel.enabled:
+                logger.warning(f"Channel {channel_id} is disabled, skipping")
+                return {"success": False, "error": "Channel disabled"}
 
-        # Check if provider supports interactive messages
-        if not hasattr(provider, "send_interactive"):
-            logger.warning(f"Provider {channel.provider} does not support interactive messages")
-            return {"success": False, "error": "Provider does not support interactive messages"}
+            # Get provider
+            registry = get_provider_registry()
+            provider = registry.get(channel.provider)
+            logger.debug(f"Provider: {provider.name}, has send_interactive={hasattr(provider, 'send_interactive')}")
 
-        # Send the message
-        result = await provider.send_interactive(channel, credentials, message)
-        result["provider"] = channel.provider
+            # Check if provider supports interactive messages
+            if not hasattr(provider, "send_interactive"):
+                logger.warning(f"Provider {channel.provider} does not support interactive messages")
+                return {"success": False, "error": "Provider does not support interactive messages"}
 
-        return result
+            # Send the message
+            logger.info(f"Calling {provider.name}.send_interactive()")
+            result = await provider.send_interactive(channel, credentials, message)
+            result["provider"] = channel.provider
+            logger.info(f"send_interactive result: {result}")
+
+            return result
+
+        except Exception as e:
+            logger.error(f"Failed to send interactive message to {channel_id}: {e}", exc_info=True)
+            return {"success": False, "error": str(e)}
 
     def register_with_scheduler(self, scheduler: "Scheduler") -> None:
         """Register this handler's callbacks with a Scheduler.

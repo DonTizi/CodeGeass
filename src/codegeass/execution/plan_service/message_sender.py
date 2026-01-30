@@ -50,7 +50,11 @@ class ApprovalMessageSender:
         status: str,
         details: str = "",
     ) -> None:
-        """Update all notification messages for an approval."""
+        """Update all notification messages for an approval.
+
+        For providers that support message editing (Telegram), removes buttons
+        and updates text. For providers that don't (Teams), sends a new message.
+        """
         from codegeass.notifications.interactive import create_approval_status_message
         from codegeass.notifications.registry import get_provider_registry
 
@@ -61,7 +65,9 @@ class ApprovalMessageSender:
         )
 
         registry = get_provider_registry()
+        updated_channels: set[str] = set()
 
+        # First, update messages for providers that support editing
         for msg_ref in approval.channel_messages:
             try:
                 provider = registry.get(msg_ref.provider)
@@ -70,6 +76,7 @@ class ApprovalMessageSender:
                 if not channel:
                     continue
 
+                updated_channels.add(channel.id)
                 _, credentials = self._channels.get_channel_with_credentials(channel.id)
 
                 if hasattr(provider, "remove_buttons"):
@@ -82,6 +89,26 @@ class ApprovalMessageSender:
 
             except Exception as e:
                 logger.warning(f"Failed to update message {msg_ref.message_id}: {e}")
+
+        # For channels that don't support editing (like Teams), send a new message
+        for channel_id in approval.notification_channels:
+            if channel_id in updated_channels:
+                continue  # Already updated via message ref
+
+            try:
+                channel, credentials = self._channels.get_channel_with_credentials(channel_id)
+                if not channel.enabled:
+                    continue
+
+                provider = registry.get(channel.provider)
+
+                # Send new status message
+                if hasattr(provider, "send"):
+                    await provider.send(channel, credentials, message_text)
+                    logger.info(f"Sent status update to {channel_id} (new message)")
+
+            except Exception as e:
+                logger.warning(f"Failed to send status to {channel_id}: {e}")
 
     async def remove_old_message_buttons(self, approval: PendingApproval) -> None:
         """Remove buttons from old messages without changing text."""
@@ -118,7 +145,16 @@ class ApprovalMessageSender:
         return None
 
     def get_channel_ids_from_approval(self, approval: PendingApproval) -> list[str]:
-        """Get channel IDs from approval message refs."""
+        """Get channel IDs from approval.
+
+        Uses notification_channels if available (preferred), falls back to
+        extracting from channel_messages for backwards compatibility.
+        """
+        # Prefer stored notification_channels (works for Teams and other providers)
+        if approval.notification_channels:
+            return approval.notification_channels
+
+        # Fallback: extract from message refs (for existing approvals without notification_channels)
         channel_ids = []
         all_channels = self._channels.find_all()
 

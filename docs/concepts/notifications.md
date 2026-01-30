@@ -1,6 +1,6 @@
 # Notifications
 
-CodeGeass can notify you via Telegram or Discord when tasks complete, fail, or need approval.
+CodeGeass can notify you via Telegram, Discord, or Microsoft Teams when tasks complete, fail, or need approval.
 
 ## Overview
 
@@ -12,10 +12,11 @@ Notifications keep you informed about:
 
 ## Supported Providers
 
-| Provider | Events Supported | Interactive |
-|----------|-----------------|-------------|
-| Telegram | All | Yes (approve/reject via bot) |
-| Discord | All | No (webhook only) |
+| Provider | Events Supported | Interactive | Approval Flow |
+|----------|-----------------|-------------|---------------|
+| Telegram | All | Yes (approve/reject via bot) | Inline buttons |
+| Discord | All | No (webhook only) | Dashboard link |
+| Teams | All | Yes (via Dashboard) | Dashboard buttons |
 
 ## Quick Setup
 
@@ -41,6 +42,21 @@ codegeass notification add discord \
 # Test the connection
 codegeass notification test discord
 ```
+
+### Microsoft Teams
+
+```bash
+# Add Teams Workflows webhook
+codegeass notification add teams \
+  --webhook-url "https://prod-XX.westus.logic.azure.com/workflows/..."
+
+# Test the connection
+codegeass notification test teams
+```
+
+!!! note "Teams Webhooks"
+    Teams uses Power Automate Workflows webhooks (O365 Connectors were retired Dec 2025).
+    Create one via: Apps tab → Workflows → "Post to a channel when a webhook request is received"
 
 ## Configuration
 
@@ -139,6 +155,31 @@ codegeass notification add telegram \
 codegeass notification add discord \
   --webhook-url "YOUR_WEBHOOK_URL"
 ```
+
+### Microsoft Teams Setup
+
+Teams uses Power Automate Workflows webhooks (O365 Connectors were deprecated in December 2025).
+
+1. **Open your Teams channel**
+2. **Click ⋯ (three dots)** → **Workflows**
+3. **Search for** "Post to a channel when a webhook request is received"
+4. **Click Add** and configure the workflow
+5. **Copy the HTTP POST URL** (starts with `https://prod-XX.westus.logic.azure.com/workflows/...`)
+
+```bash
+codegeass notification add teams \
+  --webhook-url "YOUR_WORKFLOW_URL"
+```
+
+!!! tip "Supported URL Formats"
+    - Power Automate: `https://*.logic.azure.com/workflows/...`
+    - Power Platform: `https://*.api.powerplatform.com/workflows/...`
+    - Legacy O365 (deprecated): `https://*.webhook.office.com/webhookb2/...`
+
+!!! info "Plan Mode Approvals"
+    Teams doesn't support inline callback buttons, so approval actions link to the
+    CodeGeass Dashboard. When you receive a plan approval notification, click the
+    Approve/Discuss/Cancel buttons to open the Dashboard where you can take action.
 
 ## Message Examples
 
