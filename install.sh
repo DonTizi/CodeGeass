@@ -46,19 +46,12 @@ detect_arch() {
 }
 
 check_python() {
-    if command -v python3 &> /dev/null; then
-        PYTHON_VERSION=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-        MAJOR=$(echo $PYTHON_VERSION | cut -d. -f1)
-        MINOR=$(echo $PYTHON_VERSION | cut -d. -f2)
-        if [ "$MAJOR" -ge 3 ] && [ "$MINOR" -ge 10 ]; then
-            log_success "Python $PYTHON_VERSION found"
-            return 0
-        else
-            log_warn "Python 3.10+ required, found $PYTHON_VERSION"
-            return 1
-        fi
+    if find_python; then
+        PYTHON_VERSION=$($PYTHON_BIN -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+        log_success "Python $PYTHON_VERSION found ($PYTHON_BIN)"
+        return 0
     else
-        log_error "Python 3 not found"
+        log_warn "Python 3.10+ not found"
         return 1
     fi
 }
@@ -70,9 +63,17 @@ install_python() {
     if [ "$OS" = "macos" ]; then
         if command -v brew &> /dev/null; then
             brew install python@3.12
-            # Add to PATH
-            export PATH="/opt/homebrew/opt/python@3.12/bin:$PATH"
+            # Find the Homebrew Python path
+            if [ -f "/opt/homebrew/opt/python@3.12/bin/python3.12" ]; then
+                PYTHON_BIN="/opt/homebrew/opt/python@3.12/bin/python3.12"
+                PIP_BIN="/opt/homebrew/opt/python@3.12/bin/pip3.12"
+            elif [ -f "/usr/local/opt/python@3.12/bin/python3.12" ]; then
+                PYTHON_BIN="/usr/local/opt/python@3.12/bin/python3.12"
+                PIP_BIN="/usr/local/opt/python@3.12/bin/pip3.12"
+            fi
+            export PYTHON_BIN PIP_BIN
             log_success "Python 3.12 installed via Homebrew"
+            log_info "Using: $PYTHON_BIN"
             return 0
         else
             log_error "Homebrew not found. Install it first: https://brew.sh"
@@ -87,9 +88,45 @@ install_python() {
             log_error "Please install Python 3.10+ manually"
             return 1
         fi
+        PYTHON_BIN="python3.12"
+        PIP_BIN="pip3.12"
+        export PYTHON_BIN PIP_BIN
         log_success "Python installed"
         return 0
     fi
+    return 1
+}
+
+find_python() {
+    # Try to find a suitable Python 3.10+
+    for py in python3.12 python3.11 python3.10 python3; do
+        if command -v $py &> /dev/null; then
+            version=$($py -c 'import sys; print(f"{sys.version_info.minor}")')
+            if [ "$version" -ge 10 ]; then
+                PYTHON_BIN=$py
+                # Find corresponding pip
+                pip_name=$(echo $py | sed 's/python/pip/')
+                if command -v $pip_name &> /dev/null; then
+                    PIP_BIN=$pip_name
+                else
+                    PIP_BIN="$py -m pip"
+                fi
+                export PYTHON_BIN PIP_BIN
+                return 0
+            fi
+        fi
+    done
+
+    # Check Homebrew paths on macOS
+    for path in /opt/homebrew/opt/python@3.12/bin /usr/local/opt/python@3.12/bin; do
+        if [ -f "$path/python3.12" ]; then
+            PYTHON_BIN="$path/python3.12"
+            PIP_BIN="$path/pip3.12"
+            export PYTHON_BIN PIP_BIN
+            return 0
+        fi
+    done
+
     return 1
 }
 
@@ -141,7 +178,12 @@ install_claude_cli() {
 install_codegeass() {
     log_info "Installing CodeGeass..."
 
-    pip3 install --user --upgrade codegeass
+    # Use the correct pip
+    if [ -n "$PIP_BIN" ]; then
+        $PIP_BIN install --user --upgrade codegeass
+    else
+        pip3 install --user --upgrade codegeass
+    fi
 
     # Ensure ~/.local/bin is in PATH
     if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
