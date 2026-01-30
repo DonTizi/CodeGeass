@@ -1,7 +1,7 @@
 # CodeGeass
 
 [![PyPI version](https://badge.fury.io/py/codegeass.svg)](https://pypi.org/project/codegeass/)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Claude Code Scheduler Framework** - Orchestrate automated Claude Code sessions with templates, prompts and skills, executed via CRON with your Pro/Max subscription.

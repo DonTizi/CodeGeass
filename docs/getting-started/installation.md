@@ -4,7 +4,7 @@ This guide covers installing CodeGeass and its dependencies.
 
 ## Requirements
 
-- **Python 3.11+** - CodeGeass requires Python 3.11 or later
+- **Python 3.10+** - CodeGeass requires Python 3.10 or later
 - **Claude Code** - The Claude CLI tool must be installed and authenticated
 - **Git** - Required for version control features
 
@@ -22,7 +22,25 @@ claude --version
 
 ## Install CodeGeass
 
-### From PyPI (Recommended)
+### One-Line Installer (Recommended)
+
+The fastest way to get started with CodeGeass is using the automated installer:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DonTizi/CodeGeass/main/install.sh | bash
+```
+
+This installer will:
+
+- Check for Python 3.10+ (auto-installs on macOS via Homebrew if needed)
+- Install CodeGeass in a dedicated virtual environment at `~/.codegeass/venv`
+- Verify or prompt for Claude CLI installation
+- Set up the 24/7 scheduler service (launchd on macOS, systemd on Linux)
+- Configure all necessary directories
+
+The installer handles both fresh installations and updates automatically.
+
+### From PyPI
 
 ```bash
 pip install codegeass
@@ -86,7 +104,13 @@ Commands:
 
 ## Updating CodeGeass
 
-To update to the latest version:
+If you installed via the one-line installer, simply run it again:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DonTizi/CodeGeass/main/install.sh | bash
+```
+
+If you installed manually via pip:
 
 ```bash
 pip install --upgrade codegeass
@@ -97,6 +121,20 @@ To update to a specific version:
 ```bash
 pip install codegeass==0.2.0
 ```
+
+## Uninstalling CodeGeass
+
+To completely remove CodeGeass:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/DonTizi/CodeGeass/main/uninstall.sh | bash
+```
+
+This will:
+
+- Remove the virtual environment at `~/.codegeass/venv`
+- Uninstall the scheduler service (launchd/systemd)
+- Optionally remove configuration files (you'll be prompted)
 
 ## Installing the Scheduler Service
 
