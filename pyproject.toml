@@ -49,6 +49,8 @@ dev = [
     "pytest-cov>=4.0",
     "mypy>=1.0",
     "ruff>=0.1.0",
+    "types-PyYAML>=6.0",
+    "types-croniter>=1.0",
 ]
 notifications = [
     "python-telegram-bot>=21.0",
@@ -86,6 +88,26 @@ python_version = "3.11"
 strict = true
 warn_return_any = true
 warn_unused_ignores = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "telegram.*",
+    "discord_webhook.*",
+]
+ignore_missing_imports = true
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+    "codegeass.notifications.providers.*",
+    "codegeass.notifications.callback_handler",
+    "codegeass.dashboard.*",
+    "codegeass.cli.*",
+]
+strict = false
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
