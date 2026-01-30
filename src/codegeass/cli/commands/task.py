@@ -441,3 +441,38 @@ def stats_task(ctx: Context, name: str) -> None:
 [bold]Last Status:[/bold] {stats["last_status"] or "-"}"""
 
     console.print(Panel(details, title=f"Statistics: {name}"))
+
+
+@task.command("stop")
+@click.argument("name")
+@pass_context
+def stop_task(ctx: Context, name: str) -> None:
+    """Stop a running task execution."""
+    from codegeass.execution.tracker import get_execution_tracker
+
+    t = ctx.task_repo.find_by_name(name)
+
+    if not t:
+        console.print(f"[red]Task not found: {name}[/red]")
+        raise SystemExit(1)
+
+    # Get the execution tracker
+    data_dir = Path.cwd() / "data"
+    tracker = get_execution_tracker(data_dir)
+
+    # Check if task has an active execution
+    execution = tracker.get_by_task(t.id)
+
+    if not execution:
+        console.print(f"[yellow]No active execution found for task: {name}[/yellow]")
+        return
+
+    console.print(f"Stopping execution {execution.execution_id} for task: {name}...")
+
+    # Stop the execution
+    stopped = tracker.stop_execution(execution.execution_id)
+
+    if stopped:
+        console.print(f"[green]Task execution stopped successfully[/green]")
+    else:
+        console.print(f"[yellow]Could not stop execution (may have already finished)[/yellow]")

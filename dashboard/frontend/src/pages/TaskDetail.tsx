@@ -11,6 +11,7 @@ import {
   Timer,
   BarChart3,
   CheckCircle,
+  Square,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -54,6 +55,7 @@ export function TaskDetail() {
     enableTask,
     disableTask,
     runTask,
+    stopTask,
   } = useTasksStore();
   const { fetchTaskLogs } = useLogsStore();
 
@@ -61,6 +63,7 @@ export function TaskDetail() {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [running, setRunning] = useState(false);
+  const [stopping, setStopping] = useState(false);
 
   // Get active execution for this task
   const activeExecution = useExecutionsStore((state) =>
@@ -134,6 +137,22 @@ export function TaskDetail() {
     }
   };
 
+  const handleStop = async () => {
+    setStopping(true);
+    try {
+      await stopTask(task.id);
+      toast({ title: 'Task stopped', variant: 'default' });
+    } catch (e) {
+      toast({
+        title: 'Failed to stop task',
+        description: e instanceof Error ? e.message : 'Unknown error',
+        variant: 'destructive',
+      });
+    } finally {
+      setStopping(false);
+    }
+  };
+
   const handleUpdate = async (data: TaskCreate) => {
     try {
       await updateTask(task.id, data as TaskUpdate);
@@ -194,10 +213,22 @@ export function TaskDetail() {
             <Edit className="h-4 w-4 mr-1" />
             Edit
           </Button>
-          <Button size="sm" onClick={handleRun} disabled={running || isRunning}>
-            <Play className="h-4 w-4 mr-1" />
-            {running || isRunning ? 'Running...' : 'Run Now'}
-          </Button>
+          {isRunning ? (
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={handleStop}
+              disabled={stopping}
+            >
+              <Square className="h-4 w-4 mr-1" />
+              {stopping ? 'Stopping...' : 'Stop'}
+            </Button>
+          ) : (
+            <Button size="sm" onClick={handleRun} disabled={running}>
+              <Play className="h-4 w-4 mr-1" />
+              {running ? 'Running...' : 'Run Now'}
+            </Button>
+          )}
         </div>
       </div>
 

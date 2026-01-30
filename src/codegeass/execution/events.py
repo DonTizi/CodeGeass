@@ -15,6 +15,7 @@ class ExecutionEventType(str, Enum):
     COMPLETED = "execution.completed"
     FAILED = "execution.failed"
     WAITING_APPROVAL = "execution.waiting_approval"
+    STOPPED = "execution.stopped"
 
 
 @dataclass
@@ -158,4 +159,22 @@ class ExecutionEvent:
             task_id=task_id,
             task_name=task_name,
             data={"approval_id": approval_id, "plan_text": plan_text},
+        )
+
+    @classmethod
+    def stopped(
+        cls,
+        execution_id: str,
+        task_id: str,
+        task_name: str,
+        reason: str = "Stopped by user",
+        duration_seconds: float = 0.0,
+    ) -> "ExecutionEvent":
+        """Create a STOPPED event for manually stopped executions."""
+        return cls(
+            type=ExecutionEventType.STOPPED,
+            execution_id=execution_id,
+            task_id=task_id,
+            task_name=task_name,
+            data={"reason": reason, "duration_seconds": duration_seconds},
         )

@@ -18,6 +18,7 @@ interface TasksState {
   enableTask: (taskId: string) => Promise<void>;
   disableTask: (taskId: string) => Promise<void>;
   runTask: (taskId: string, dryRun?: boolean) => Promise<ExecutionResult>;
+  stopTask: (taskId: string) => Promise<void>;
   selectTask: (task: Task | null) => void;
 }
 
@@ -152,6 +153,14 @@ export const useTasksStore = create<TasksState>((set) => ({
         selectedTask: state.selectedTask?.id === taskId ? task : state.selectedTask,
       }));
       return result;
+    } catch (e) {
+      throw e;
+    }
+  },
+
+  stopTask: async (taskId: string) => {
+    try {
+      await api.tasks.stop(taskId);
     } catch (e) {
       throw e;
     }

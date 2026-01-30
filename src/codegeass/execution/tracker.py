@@ -27,10 +27,11 @@ class ActiveExecution:
     task_name: str
     session_id: str | None
     started_at: datetime
-    status: Literal["starting", "running", "finishing", "waiting_approval"] = "starting"
+    status: Literal["starting", "running", "finishing", "waiting_approval", "stopped"] = "starting"
     output_lines: list[str] = field(default_factory=list)
     current_phase: str = "initializing"
     approval_id: str | None = None  # For plan mode tasks waiting for approval
+    pid: int | None = None  # Process ID for the running Claude process
 
     # Buffer for output lines (keep last 1000)
     _max_output_lines: int = 1000
@@ -53,6 +54,7 @@ class ActiveExecution:
             "output_lines": self.output_lines[-20:],  # Only serialize last 20 lines
             "current_phase": self.current_phase,
             "approval_id": self.approval_id,
+            "pid": self.pid,
         }
 
     @classmethod
@@ -68,6 +70,7 @@ class ActiveExecution:
             output_lines=data.get("output_lines", []),
             current_phase=data.get("current_phase", "unknown"),
             approval_id=data.get("approval_id"),
+            pid=data.get("pid"),
         )
 
 
@@ -284,6 +287,119 @@ class ExecutionTracker:
             line=line,
         )
         self._emit(event)
+
+    def set_pid(self, execution_id: str, pid: int) -> None:
+        """Set the process ID for an execution.
+
+        Args:
+            execution_id: The execution to update
+            pid: The process ID of the running Claude process
+        """
+        with self._data_lock:
+            execution = self._active.get(execution_id)
+            if not execution:
+                logger.warning(f"Execution {execution_id} not found when setting PID")
+                return
+
+            execution.pid = pid
+            self._save_active()
+
+        logger.info(f"Set PID {pid} for execution {execution_id}")
+
+    def stop_execution(self, execution_id: str) -> bool:
+        """Stop a running execution by killing its process.
+
+        Args:
+            execution_id: The execution to stop
+
+        Returns:
+            True if the execution was stopped, False otherwise
+        """
+        import os
+        import signal
+
+        with self._data_lock:
+            execution = self._active.get(execution_id)
+            if not execution:
+                logger.warning(f"Execution {execution_id} not found")
+                return False
+
+            if execution.status in ("finishing", "stopped"):
+                logger.info(f"Execution {execution_id} already finishing/stopped")
+                return False
+
+            pid = execution.pid
+            task_id = execution.task_id
+            task_name = execution.task_name
+
+        if not pid:
+            logger.warning(f"No PID found for execution {execution_id}")
+            # Still mark as stopped and remove
+            self._mark_stopped(execution_id, task_id, task_name, "No process to stop")
+            return True
+
+        # Try to kill the process
+        try:
+            os.kill(pid, signal.SIGTERM)
+            logger.info(f"Sent SIGTERM to PID {pid} for execution {execution_id}")
+
+            # Give it a moment, then force kill if needed
+            import time
+            time.sleep(0.5)
+
+            try:
+                os.kill(pid, 0)  # Check if still running
+                os.kill(pid, signal.SIGKILL)
+                logger.info(f"Sent SIGKILL to PID {pid}")
+            except OSError:
+                pass  # Process already terminated
+
+        except OSError as e:
+            logger.warning(f"Failed to kill PID {pid}: {e}")
+
+        # Mark as stopped
+        self._mark_stopped(execution_id, task_id, task_name, "Stopped by user")
+        return True
+
+    def _mark_stopped(
+        self, execution_id: str, task_id: str, task_name: str, reason: str
+    ) -> None:
+        """Mark an execution as stopped and emit event."""
+        with self._data_lock:
+            execution = self._active.get(execution_id)
+            if execution:
+                duration = (datetime.now() - execution.started_at).total_seconds()
+                del self._active[execution_id]
+                self._save_active()
+            else:
+                duration = 0.0
+
+        # Emit STOPPED event
+        event = ExecutionEvent.stopped(
+            execution_id=execution_id,
+            task_id=task_id,
+            task_name=task_name,
+            reason=reason,
+            duration_seconds=duration,
+        )
+        self._emit(event)
+        logger.info(f"Execution {execution_id} marked as stopped: {reason}")
+
+    def stop_by_task(self, task_id: str) -> bool:
+        """Stop any active execution for a task.
+
+        Args:
+            task_id: The task ID to stop execution for
+
+        Returns:
+            True if an execution was stopped, False otherwise
+        """
+        execution = self.get_by_task(task_id)
+        if not execution:
+            logger.info(f"No active execution found for task {task_id}")
+            return False
+
+        return self.stop_execution(execution.execution_id)
 
     def finish_execution(
         self,

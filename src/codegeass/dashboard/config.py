@@ -52,3 +52,8 @@ class Settings:
 
 
 settings = Settings()
+
+
+def get_data_dir() -> Path:
+    """Get the data directory path."""
+    return settings.data_dir

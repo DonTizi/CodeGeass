@@ -220,6 +220,9 @@ class BaseStrategy(ABC):
                 bufsize=1,  # Line buffered
             )
 
+            # Save the PID for potential stop operations
+            tracker.set_pid(execution_id, process.pid)
+
             timeout_seconds = context.task.timeout or self.timeout
             deadline = datetime.now().timestamp() + timeout_seconds
 

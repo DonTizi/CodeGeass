@@ -25,6 +25,23 @@ class Settings:
     PORT: int = int(os.getenv("PORT", "8001"))
     DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
 
+    # Lowercase property aliases for compatibility
+    @property
+    def project_dir(self) -> Path:
+        return self.PROJECT_DIR
+
+    @property
+    def config_dir(self) -> Path:
+        return self.CONFIG_DIR
+
+    @property
+    def data_dir(self) -> Path:
+        return self.DATA_DIR
+
+    @property
+    def skills_dir(self) -> Path:
+        return self.SKILLS_DIR
+
     @classmethod
     def get_schedules_path(cls) -> Path:
         return cls.CONFIG_DIR / "schedules.yaml"

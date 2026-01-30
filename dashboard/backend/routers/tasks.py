@@ -117,3 +117,41 @@ async def get_task_stats(task_id: str):
     if not stats:
         raise HTTPException(status_code=404, detail="Task not found")
     return stats
+
+
+@router.post("/{task_id}/stop")
+async def stop_task(task_id: str):
+    """Stop a running task execution.
+
+    Kills the process running the task and marks the execution as stopped.
+    """
+    from codegeass.execution.tracker import get_execution_tracker
+
+    service = get_task_service()
+    task = service.get_task(task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    # Get the execution tracker
+    from dependencies import get_data_dir
+    tracker = get_execution_tracker(get_data_dir())
+
+    # Check if task has an active execution
+    execution = tracker.get_by_task(task_id)
+    if not execution:
+        raise HTTPException(status_code=404, detail="No active execution found for this task")
+
+    # Stop the execution
+    stopped = tracker.stop_execution(execution.execution_id)
+
+    if stopped:
+        return {
+            "status": "success",
+            "message": f"Task {task_id} execution stopped",
+            "execution_id": execution.execution_id,
+        }
+    else:
+        raise HTTPException(
+            status_code=409,
+            detail="Could not stop execution (may have already finished)"
+        )

@@ -41,6 +41,11 @@ _approval_service = None  # ApprovalService for plan mode
 _execution_tracker = None  # ExecutionTracker for real-time monitoring
 
 
+def get_data_dir() -> Path:
+    """Get the data directory path."""
+    return settings.data_dir
+
+
 def get_task_repo() -> TaskRepository:
     """Get or create TaskRepository singleton."""
     global _task_repo

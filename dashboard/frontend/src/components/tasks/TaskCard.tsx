@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Play, MoreVertical, Power, PowerOff, Trash2, Clock, Wand2, FolderGit2 } from 'lucide-react';
+import { Play, MoreVertical, Power, PowerOff, Trash2, Clock, Wand2, FolderGit2, Square } from 'lucide-react';
 import type { TaskBase } from '@/types';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -24,9 +24,9 @@ interface TaskCardProps {
 }
 
 export function TaskCard({ task, onDelete, projectName }: TaskCardProps) {
-  const { enableTask, disableTask, runTask } = useTasksStore();
+  const { enableTask, disableTask, runTask, stopTask } = useTasksStore();
   const activeExecution = useExecutionsStore((state) => state.getByTaskId(task.id));
-  const isRunning = !!activeExecution;
+  const isRunning = !!activeExecution && !activeExecution.completed;
 
   const handleToggleEnabled = async () => {
     try {
@@ -53,6 +53,19 @@ export function TaskCard({ task, onDelete, projectName }: TaskCardProps) {
     } catch (e) {
       toast({
         title: 'Failed to run task',
+        description: e instanceof Error ? e.message : 'Unknown error',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleStop = async () => {
+    try {
+      await stopTask(task.id);
+      toast({ title: 'Task stopped', variant: 'default' });
+    } catch (e) {
+      toast({
+        title: 'Failed to stop task',
         description: e instanceof Error ? e.message : 'Unknown error',
         variant: 'destructive',
       });
@@ -88,10 +101,17 @@ export function TaskCard({ task, onDelete, projectName }: TaskCardProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleRun}>
-                  <Play className="h-4 w-4 mr-2" />
-                  Run Now
-                </DropdownMenuItem>
+                {isRunning ? (
+                  <DropdownMenuItem onClick={handleStop}>
+                    <Square className="h-4 w-4 mr-2" />
+                    Stop
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={handleRun}>
+                    <Play className="h-4 w-4 mr-2" />
+                    Run Now
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={handleToggleEnabled}>
                   {task.enabled ? (
                     <>
@@ -163,10 +183,17 @@ export function TaskCard({ task, onDelete, projectName }: TaskCardProps) {
 
         {/* Actions */}
         <div className="flex items-center gap-2 mt-4">
-          <Button variant="outline" size="sm" onClick={handleRun} disabled={isRunning}>
-            <Play className="h-4 w-4 mr-1" />
-            {isRunning ? 'Running...' : 'Run'}
-          </Button>
+          {isRunning ? (
+            <Button variant="destructive" size="sm" onClick={handleStop}>
+              <Square className="h-4 w-4 mr-1" />
+              Stop
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" onClick={handleRun}>
+              <Play className="h-4 w-4 mr-1" />
+              Run
+            </Button>
+          )}
           <Button variant="ghost" size="sm" asChild>
             <Link to={`/tasks/${task.id}`}>View Details</Link>
           </Button>

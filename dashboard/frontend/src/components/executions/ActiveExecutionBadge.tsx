@@ -32,6 +32,7 @@ export function ActiveExecutionBadge({
     running: 'Running',
     finishing: 'Finishing',
     waiting_approval: 'Needs Approval',
+    stopped: 'Stopped',
   }[execution.status];
 
   const isWaitingApproval = execution.status === 'waiting_approval';

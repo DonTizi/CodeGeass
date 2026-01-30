@@ -42,7 +42,7 @@ export interface LogStats {
 
 // Real-time execution monitoring types
 
-export type ActiveExecutionStatus = 'starting' | 'running' | 'finishing' | 'waiting_approval';
+export type ActiveExecutionStatus = 'starting' | 'running' | 'finishing' | 'waiting_approval' | 'stopped';
 
 export interface ActiveExecution {
   execution_id: string;
@@ -54,6 +54,7 @@ export interface ActiveExecution {
   output_lines: string[];
   current_phase: string;
   approval_id?: string | null;
+  pid?: number | null;
 }
 
 export type ExecutionEventType =
@@ -62,7 +63,8 @@ export type ExecutionEventType =
   | 'execution.progress'
   | 'execution.completed'
   | 'execution.failed'
-  | 'execution.waiting_approval';
+  | 'execution.waiting_approval'
+  | 'execution.stopped';
 
 export interface ExecutionEvent {
   type: ExecutionEventType;

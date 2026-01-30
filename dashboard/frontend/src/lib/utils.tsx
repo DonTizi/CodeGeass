@@ -82,20 +82,21 @@ export function getStatusBgColor(status: ExecutionStatus | string): string {
 }
 
 /**
- * Get icon component for execution status
+ * Get icon element for execution status
  */
-export function getStatusIcon(status: ExecutionStatus | string) {
+export function getStatusIcon(status: ExecutionStatus | string, className = 'h-3 w-3') {
+  const props = { className };
   switch (status) {
     case 'success':
-      return CheckCircle;
+      return <CheckCircle {...props} />;
     case 'failure':
-      return XCircle;
+      return <XCircle {...props} />;
     case 'timeout':
-      return AlertTriangle;
+      return <AlertTriangle {...props} />;
     case 'running':
-      return Play;
+      return <Play {...props} />;
     case 'skipped':
     default:
-      return Clock;
+      return <Clock {...props} />;
   }
 }

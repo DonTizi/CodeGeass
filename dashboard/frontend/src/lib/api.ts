@@ -2,7 +2,7 @@
  * API client for CodeGeass Dashboard
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '';
 
 /**
  * Generic fetch wrapper with error handling
@@ -106,6 +106,12 @@ const tasks = {
     fetchApi<ExecutionResult>(
       `/api/tasks/${taskId}/run${buildQuery({ dry_run: dryRun })}`
       , { method: 'POST' }
+    ),
+
+  stop: (taskId: string) =>
+    fetchApi<{ status: string; message: string; execution_id: string }>(
+      `/api/tasks/${taskId}/stop`,
+      { method: 'POST' }
     ),
 
   getStats: (taskId: string) =>
@@ -298,10 +304,15 @@ const executions = {
    * Create WebSocket connection for real-time execution events
    */
   createWebSocket: (taskId?: string): WebSocket => {
-    const wsBase = API_BASE_URL.replace('http', 'ws');
     const endpoint = taskId
       ? `/api/executions/ws/${taskId}`
       : '/api/executions/ws';
+    // Use current host with ws/wss protocol when API_BASE_URL is relative
+    if (!API_BASE_URL) {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      return new WebSocket(`${protocol}//${window.location.host}${endpoint}`);
+    }
+    const wsBase = API_BASE_URL.replace('http', 'ws');
     return new WebSocket(`${wsBase}${endpoint}`);
   },
 };

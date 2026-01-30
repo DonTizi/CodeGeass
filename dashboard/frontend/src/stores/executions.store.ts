@@ -150,6 +150,23 @@ export const useExecutionsStore = create<ExecutionsState>((set, get) => ({
           }
           break;
         }
+
+        case 'execution.stopped': {
+          // Execution was manually stopped
+          const exec = executions[execution_id];
+          if (exec) {
+            executions[execution_id] = {
+              ...exec,
+              status: 'finishing',
+              current_phase: 'stopped',
+              completed: true,
+              completedAt: timestamp,
+              success: false,
+              error: (data.reason as string) || 'Stopped by user',
+            };
+          }
+          break;
+        }
       }
 
       return { activeExecutions: executions };
