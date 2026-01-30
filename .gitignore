@@ -50,9 +50,11 @@ htmlcov/
 dmypy.json
 
 # Runtime data - DO NOT COMMIT
-data/logs/
-data/sessions/
-data/approvals.yaml
+data/
+
+# User-specific config - DO NOT COMMIT (use .example.yaml as templates)
+config/notifications.yaml
+config/schedules.yaml
 
 # Git worktrees for isolated task execution
 .codegeass-worktrees/

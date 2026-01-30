@@ -1,0 +1,19 @@
+# Example notifications configuration
+# Copy this to notifications.yaml and fill in your values
+#
+# Credentials (bot tokens, etc.) are stored separately in:
+#   ~/.codegeass/credentials.yaml
+
+channels:
+  - id: my-telegram
+    name: My Alerts
+    provider: telegram
+    credential_key: telegram_main  # References ~/.codegeass/credentials.yaml
+    config:
+      chat_id: '123456789'  # Your Telegram chat ID
+
+  - id: my-discord
+    name: Dev Channel
+    provider: discord
+    credential_key: discord_main
+    config: {}

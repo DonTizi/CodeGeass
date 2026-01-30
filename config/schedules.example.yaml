@@ -1,0 +1,25 @@
+# Example task schedules configuration
+# Copy this to schedules.yaml and customize
+
+tasks:
+  - name: daily-code-review
+    description: Review recent code changes
+    schedule: "0 9 * * 1-5"  # 9 AM, Monday-Friday
+    skill: review
+    working_dir: /path/to/your/project
+    enabled: true
+
+  - name: weekly-security-scan
+    description: Deep security analysis
+    schedule: "0 2 * * 0"  # 2 AM on Sundays
+    skill: security-scan
+    working_dir: /path/to/your/project
+    autonomous: true
+    enabled: true
+
+  - name: custom-prompt-task
+    description: Run a custom prompt
+    schedule: "30 14 * * *"  # 2:30 PM daily
+    prompt: "Check for TODO comments and create issues"
+    working_dir: /path/to/your/project
+    enabled: false
