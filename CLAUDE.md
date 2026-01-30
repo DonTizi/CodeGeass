@@ -159,6 +159,58 @@ Python 3.11+ required. Key dependencies: pydantic, click, rich, pyyaml, jinja2, 
 
 ruff line-length: 100, mypy strict mode enabled.
 
+## Release Process
+
+### PyPI Distribution (v0.1.0+)
+
+The package is published on PyPI: https://pypi.org/project/codegeass/
+
+**To release a new version:**
+
+```bash
+# Use the release skill (recommended)
+/release 0.2.0
+
+# Or manually:
+# 1. Update version in pyproject.toml
+# 2. Update CHANGELOG.md
+# 3. Commit and push
+git add -A && git commit -m "Release vX.Y.Z" && git push origin main
+# 4. Create and push tag (triggers GitHub Actions)
+git tag vX.Y.Z && git push origin vX.Y.Z
+```
+
+**GitHub Actions Workflows:**
+- `ci.yml`: Runs on push/PR - lint, test, build
+- `release.yml`: Runs on tag `v*` - build, test install, publish to PyPI, create GitHub release
+- `docs.yml`: Runs on push/tag - deploy versioned docs with mike
+
+**Trusted Publishing (OIDC):**
+- No API tokens stored - uses GitHub OIDC
+- Configured on PyPI: Owner=`DonTizi`, Repo=`CodeGeass`, Workflow=`release.yml`, Environment=`pypi`
+
+### Systemd Service (24/7 Scheduling)
+
+```bash
+# Install service (auto-detects codegeass location)
+./service/install.sh
+
+# Check status
+systemctl --user status codegeass-scheduler.timer
+
+# View logs
+journalctl --user -u codegeass-scheduler -f
+
+# Uninstall
+./service/uninstall.sh
+```
+
+### Documentation
+
+- **Live docs**: https://dontizi.github.io/codegeass/
+- **Versioning**: mike (version selector in docs)
+- **Build locally**: `pip install -e ".[docs]" && mkdocs serve`
+
 ## Architecture Principle: CLI is the Source of Truth
 
 **CRITICAL**: The CLI (`src/codegeass/`) is ALWAYS the source of truth. The Dashboard is just a UI layer.

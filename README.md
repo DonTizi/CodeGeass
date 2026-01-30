@@ -1,5 +1,9 @@
 # CodeGeass
 
+[![PyPI version](https://badge.fury.io/py/codegeass.svg)](https://pypi.org/project/codegeass/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **Claude Code Scheduler Framework** - Orchestrate automated Claude Code sessions with templates, prompts and skills, executed via CRON with your Pro/Max subscription.
 
 ## Features
@@ -10,21 +14,43 @@
 - **Multiple Strategies**: Headless, autonomous, or skill-based execution
 - **Session Management**: Track execution history with detailed logs
 - **CLI Interface**: Full-featured command line tool for task management
+- **Web Dashboard**: React + FastAPI dashboard for monitoring and management
+- **Notifications**: Telegram and Discord notifications with plan approval support
+- **24/7 Service**: Systemd service for automatic scheduling
 
 ## Installation
 
+### From PyPI (Recommended)
+
 ```bash
-cd /home/dontizi/Projects/codegeass
+pip install codegeass
 
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate
+# With notification support
+pip install codegeass[notifications]
 
-# Install in development mode
-pip install -e .
-
-# Verify installation
+# Verify
 codegeass --version
+```
+
+### From Source
+
+```bash
+git clone https://github.com/DonTizi/CodeGeass.git
+cd CodeGeass
+pip install -e .
+```
+
+### Install as 24/7 Service
+
+```bash
+# Install systemd service (runs scheduler every 5 minutes)
+./service/install.sh
+
+# Check status
+systemctl --user status codegeass-scheduler.timer
+
+# View logs
+journalctl --user -u codegeass-scheduler -f
 ```
 
 ## Quick Start
@@ -292,6 +318,18 @@ codegeass/
 └── skills/             # Shared skills (all projects)
 ```
 
+## Web Dashboard
+
+A React + FastAPI dashboard for managing tasks and viewing logs.
+
+```bash
+cd dashboard
+./setup.sh    # First-time setup
+./run.sh      # Run frontend (5173) + backend (8001)
+```
+
+Then open http://localhost:5173
+
 ## Development
 
 ```bash
@@ -303,7 +341,32 @@ mypy src/codegeass
 
 # Linting
 ruff check src/codegeass
+
+# Build package
+python -m build
 ```
+
+## Documentation
+
+- **Live docs**: https://dontizi.github.io/codegeass/
+- **Build locally**: `pip install -e ".[docs]" && mkdocs serve`
+
+## Release Process
+
+Releases are automated via GitHub Actions when a tag is pushed:
+
+```bash
+# Use the release skill
+/release 0.2.0
+
+# Or manually: update version, commit, tag, push
+```
+
+The workflow will:
+1. Build and test the package
+2. Publish to PyPI (via OIDC trusted publishing)
+3. Create a GitHub release with assets
+4. Deploy versioned documentation
 
 ## License
 
