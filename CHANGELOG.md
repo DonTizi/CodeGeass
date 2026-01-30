@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2025-01-29
+
+### Added
+
+- One-line installer script for macOS and Linux (`install.sh`)
+- Uninstaller script (`uninstall.sh`)
+- launchd service support for macOS (24/7 scheduling)
+- `/release` skill for automated PyPI releases
+- Example configuration templates (`config/*.example.yaml`)
+
+### Fixed
+
+- Removed hardcoded personal paths from documentation
+- Auto-detect project directory in `cron-runner.sh`
+- Auto-detect Claude CLI path in settings
+
+### Security
+
+- Removed sensitive config files from git history
+- Added `config/notifications.yaml` and `config/schedules.yaml` to `.gitignore`
+- Repository now safe for public visibility
+
 ## [0.1.0] - 2025-01-29
 
 ### Added
@@ -73,5 +95,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANTHROPIC_API_KEY deliberately unset in CRON to use Pro/Max subscription
 - No API tokens in configuration files
 
-[Unreleased]: https://github.com/dontizi/codegeass/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/dontizi/codegeass/releases/tag/v0.1.0
+[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/DonTizi/CodeGeass/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/DonTizi/CodeGeass/releases/tag/v0.1.0
