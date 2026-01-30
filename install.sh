@@ -178,7 +178,20 @@ install_claude_cli() {
 install_codegeass() {
     log_info "Installing CodeGeass..."
 
-    # Use the correct pip
+    OS=$(detect_os)
+
+    # On macOS with Homebrew, use pipx (recommended for CLI apps)
+    if [ "$OS" = "macos" ] && command -v brew &> /dev/null; then
+        if ! command -v pipx &> /dev/null; then
+            log_info "Installing pipx..."
+            brew install pipx
+            pipx ensurepath
+        fi
+        pipx install codegeass --force
+        return
+    fi
+
+    # On Linux or without Homebrew, use pip with --user
     if [ -n "$PIP_BIN" ]; then
         $PIP_BIN install --user --upgrade codegeass
     else
