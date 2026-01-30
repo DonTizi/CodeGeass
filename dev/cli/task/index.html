@@ -990,6 +990,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#codegeass-task-stop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#codegeass-task-update" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1862,6 +1873,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#codegeass-task-stop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        stop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#codegeass-task-update" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2104,71 +2126,79 @@
 <p><strong>Options:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>  --help  Show this message and exit.
 </code></pre></div>
+<h3 id="codegeass-task-stop">codegeass task stop<a class="headerlink" href="#codegeass-task-stop" title="Permanent link">&para;</a></h3>
+<p>Stop a running task execution.</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>codegeass task stop [OPTIONS] NAME
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>  --help  Show this message and exit.
+</code></pre></div>
 <h3 id="codegeass-task-update">codegeass task update<a class="headerlink" href="#codegeass-task-update" title="Permanent link">&para;</a></h3>
 <p>Update an existing task.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>codegeass task update [OPTIONS] NAME
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>codegeass task update [OPTIONS] NAME
 </code></pre></div>
 <p><strong>Options:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>  -s, --schedule TEXT             New CRON expression
-<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>  -p, --prompt TEXT               New prompt
-<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>  -k, --skill TEXT                New skill
-<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>  -m, --model TEXT                New model (haiku, sonnet, opus)
-<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>  -t, --timeout INTEGER           New timeout in seconds
-<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>  --max-turns INTEGER             New max agentic turns
-<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>  --autonomous / --no-autonomous  Enable/disable autonomous mode
-<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>  --plan-mode / --no-plan-mode    Enable/disable plan mode
-<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a>  --plan-timeout INTEGER          Plan approval timeout in seconds
-<a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a>  --plan-max-iterations INTEGER   Max discuss iterations
-<a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a>  --help                          Show this message and exit.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>  -s, --schedule TEXT             New CRON expression
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>  -p, --prompt TEXT               New prompt
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>  -k, --skill TEXT                New skill
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>  -m, --model TEXT                New model (haiku, sonnet, opus)
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>  -t, --timeout INTEGER           New timeout in seconds
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>  --max-turns INTEGER             New max agentic turns
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>  --autonomous / --no-autonomous  Enable/disable autonomous mode
+<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a>  --plan-mode / --no-plan-mode    Enable/disable plan mode
+<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a>  --plan-timeout INTEGER          Plan approval timeout in seconds
+<a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a>  --plan-max-iterations INTEGER   Max discuss iterations
+<a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a>  --help                          Show this message and exit.
 </code></pre></div>
 <h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h2>
 <h3 id="create-a-task">Create a Task<a class="headerlink" href="#create-a-task" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># Basic task</span>
-<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>codegeass<span class="w"> </span>task<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">  </span>--name<span class="w"> </span>daily-review<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">  </span>--schedule<span class="w"> </span><span class="s2">&quot;0 9 * * *&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">  </span>--prompt<span class="w"> </span><span class="s2">&quot;Review recent changes&quot;</span>
-<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>
-<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="c1"># With all options</span>
-<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a>codegeass<span class="w"> </span>task<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="w">  </span>--name<span class="w"> </span>full-example<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="w">  </span>--schedule<span class="w"> </span><span class="s2">&quot;0 9 * * 1-5&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="w">  </span>--prompt<span class="w"> </span><span class="s2">&quot;Your prompt here&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a><span class="w">  </span>--working-dir<span class="w"> </span>/path/to/project<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a><span class="w">  </span>--mode<span class="w"> </span>autonomous<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-21-14" name="__codelineno-21-14" href="#__codelineno-21-14"></a><span class="w">  </span>--plan-mode
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="c1"># Basic task</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>codegeass<span class="w"> </span>task<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">  </span>--name<span class="w"> </span>daily-review<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">  </span>--schedule<span class="w"> </span><span class="s2">&quot;0 9 * * *&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="w">  </span>--prompt<span class="w"> </span><span class="s2">&quot;Review recent changes&quot;</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="c1"># With all options</span>
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>codegeass<span class="w"> </span>task<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="w">  </span>--name<span class="w"> </span>full-example<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a><span class="w">  </span>--schedule<span class="w"> </span><span class="s2">&quot;0 9 * * 1-5&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a><span class="w">  </span>--prompt<span class="w"> </span><span class="s2">&quot;Your prompt here&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a><span class="w">  </span>--working-dir<span class="w"> </span>/path/to/project<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a><span class="w">  </span>--mode<span class="w"> </span>autonomous<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-23-14" name="__codelineno-23-14" href="#__codelineno-23-14"></a><span class="w">  </span>--plan-mode
 </code></pre></div>
 <h3 id="list-tasks">List Tasks<a class="headerlink" href="#list-tasks" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># List all tasks</span>
-<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>codegeass<span class="w"> </span>task<span class="w"> </span>list
-<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>
-<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="c1"># Show detailed output</span>
-<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>codegeass<span class="w"> </span>task<span class="w"> </span>list<span class="w"> </span>--verbose
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># List all tasks</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>codegeass<span class="w"> </span>task<span class="w"> </span>list
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="c1"># Show detailed output</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>codegeass<span class="w"> </span>task<span class="w"> </span>list<span class="w"> </span>--verbose
 </code></pre></div>
 <h3 id="show-task-details">Show Task Details<a class="headerlink" href="#show-task-details" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>codegeass<span class="w"> </span>task<span class="w"> </span>show<span class="w"> </span>daily-review
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>codegeass<span class="w"> </span>task<span class="w"> </span>show<span class="w"> </span>daily-review
 </code></pre></div>
 <h3 id="run-a-task-manually">Run a Task Manually<a class="headerlink" href="#run-a-task-manually" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># Run immediately</span>
-<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>codegeass<span class="w"> </span>task<span class="w"> </span>run<span class="w"> </span>daily-review
-<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>
-<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="c1"># Run with custom arguments</span>
-<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>codegeass<span class="w"> </span>task<span class="w"> </span>run<span class="w"> </span>daily-review<span class="w"> </span>--args<span class="w"> </span><span class="s2">&quot;Focus on security&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># Run immediately</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>codegeass<span class="w"> </span>task<span class="w"> </span>run<span class="w"> </span>daily-review
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="c1"># Run with custom arguments</span>
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>codegeass<span class="w"> </span>task<span class="w"> </span>run<span class="w"> </span>daily-review<span class="w"> </span>--args<span class="w"> </span><span class="s2">&quot;Focus on security&quot;</span>
 </code></pre></div>
 <h3 id="enabledisable-tasks">Enable/Disable Tasks<a class="headerlink" href="#enabledisable-tasks" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1"># Disable a task</span>
-<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>codegeass<span class="w"> </span>task<span class="w"> </span>disable<span class="w"> </span>daily-review
-<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>
-<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="c1"># Enable a task</span>
-<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>codegeass<span class="w"> </span>task<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>daily-review
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># Disable a task</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>codegeass<span class="w"> </span>task<span class="w"> </span>disable<span class="w"> </span>daily-review
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="c1"># Enable a task</span>
+<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>codegeass<span class="w"> </span>task<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>daily-review
 </code></pre></div>
 <h3 id="delete-a-task">Delete a Task<a class="headerlink" href="#delete-a-task" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># Delete with confirmation</span>
-<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>codegeass<span class="w"> </span>task<span class="w"> </span>delete<span class="w"> </span>old-task
-<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>
-<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="c1"># Delete without confirmation</span>
-<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>codegeass<span class="w"> </span>task<span class="w"> </span>delete<span class="w"> </span>old-task<span class="w"> </span>--yes
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># Delete with confirmation</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>codegeass<span class="w"> </span>task<span class="w"> </span>delete<span class="w"> </span>old-task
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="c1"># Delete without confirmation</span>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>codegeass<span class="w"> </span>task<span class="w"> </span>delete<span class="w"> </span>old-task<span class="w"> </span>--yes
 </code></pre></div>
 <h2 id="task-modes">Task Modes<a class="headerlink" href="#task-modes" title="Permanent link">&para;</a></h2>
 <table>
@@ -2195,13 +2225,13 @@
 </table>
 <h2 id="schedule-format">Schedule Format<a class="headerlink" href="#schedule-format" title="Permanent link">&para;</a></h2>
 <p>Tasks use standard CRON expressions:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>┌───────────── minute (0-59)
-<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>│ ┌───────────── hour (0-23)
-<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>│ │ ┌───────────── day of month (1-31)
-<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>│ │ │ ┌───────────── month (1-12)
-<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>│ │ │ │ ┌───────────── day of week (0-6)
-<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>│ │ │ │ │
-<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>* * * * *
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>┌───────────── minute (0-59)
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>│ ┌───────────── hour (0-23)
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>│ │ ┌───────────── day of month (1-31)
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>│ │ │ ┌───────────── month (1-12)
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>│ │ │ │ ┌───────────── day of week (0-6)
+<a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>│ │ │ │ │
+<a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a>* * * * *
 </code></pre></div>
 <p>Common patterns:
 - <code>0 9 * * *</code> - Daily at 9 AM
