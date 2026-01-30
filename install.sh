@@ -185,9 +185,17 @@ install_codegeass() {
         if ! command -v pipx &> /dev/null; then
             log_info "Installing pipx..."
             brew install pipx
-            pipx ensurepath
+            pipx ensurepath 2>/dev/null || true
         fi
-        pipx install codegeass --force
+
+        # Check if already installed via pipx
+        if pipx list 2>/dev/null | grep -q "codegeass"; then
+            log_info "Upgrading CodeGeass..."
+            pipx upgrade codegeass
+        else
+            # Clean install
+            pipx install codegeass
+        fi
         return
     fi
 
