@@ -175,3 +175,13 @@
 .md-header__button.md-icon {
   color: white;
 }
+
+/* Logo styling - rounded corners */
+.md-content img[alt="CodeGeass Logo"] {
+  border-radius: 1rem;
+}
+
+/* Header logo rounded corners */
+.md-header__button.md-logo img {
+  border-radius: 0.375rem;
+}
