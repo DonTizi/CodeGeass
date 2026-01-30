@@ -3,7 +3,7 @@ name = "codegeass"
 version = "0.1.2"
 description = "Claude Code Scheduler Framework - Orchestrate automated Claude Code sessions"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
     {name = "DonTizi"}

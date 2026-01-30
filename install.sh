@@ -50,17 +50,47 @@ check_python() {
         PYTHON_VERSION=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
         MAJOR=$(echo $PYTHON_VERSION | cut -d. -f1)
         MINOR=$(echo $PYTHON_VERSION | cut -d. -f2)
-        if [ "$MAJOR" -ge 3 ] && [ "$MINOR" -ge 11 ]; then
+        if [ "$MAJOR" -ge 3 ] && [ "$MINOR" -ge 10 ]; then
             log_success "Python $PYTHON_VERSION found"
             return 0
         else
-            log_error "Python 3.11+ required, found $PYTHON_VERSION"
+            log_warn "Python 3.10+ required, found $PYTHON_VERSION"
             return 1
         fi
     else
         log_error "Python 3 not found"
         return 1
     fi
+}
+
+install_python() {
+    log_info "Installing Python 3.12..."
+    OS=$(detect_os)
+
+    if [ "$OS" = "macos" ]; then
+        if command -v brew &> /dev/null; then
+            brew install python@3.12
+            # Add to PATH
+            export PATH="/opt/homebrew/opt/python@3.12/bin:$PATH"
+            log_success "Python 3.12 installed via Homebrew"
+            return 0
+        else
+            log_error "Homebrew not found. Install it first: https://brew.sh"
+            return 1
+        fi
+    elif [ "$OS" = "linux" ]; then
+        if command -v apt &> /dev/null; then
+            sudo apt update && sudo apt install -y python3.12 python3.12-venv python3-pip
+        elif command -v dnf &> /dev/null; then
+            sudo dnf install -y python3.12
+        else
+            log_error "Please install Python 3.10+ manually"
+            return 1
+        fi
+        log_success "Python installed"
+        return 0
+    fi
+    return 1
 }
 
 check_claude() {
@@ -314,14 +344,22 @@ main() {
 
     # Check Python
     if ! check_python; then
-        log_error "Please install Python 3.11+ first"
-        if [ "$OS" = "macos" ]; then
-            echo "  brew install python@3.11"
+        read -p "Install Python 3.12? [Y/n] " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+            if ! install_python; then
+                log_error "Failed to install Python. Please install Python 3.10+ manually."
+                exit 1
+            fi
+            # Re-check after install
+            if ! check_python; then
+                log_error "Python still not found. Please restart your terminal and try again."
+                exit 1
+            fi
         else
-            echo "  sudo apt install python3.11  # Debian/Ubuntu"
-            echo "  sudo dnf install python3.11  # Fedora"
+            log_error "Python 3.10+ is required. Exiting."
+            exit 1
         fi
-        exit 1
     fi
 
     # Check/Install Claude CLI
