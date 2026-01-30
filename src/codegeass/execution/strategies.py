@@ -3,13 +3,16 @@
 import json
 import logging
 import os
-import select
+import shutil
 import subprocess
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
+from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Protocol
+
+import yaml
 
 from codegeass.core.entities import Skill, Task
 from codegeass.core.value_objects import ExecutionResult, ExecutionStatus
@@ -18,6 +21,63 @@ if TYPE_CHECKING:
     from codegeass.execution.tracker import ExecutionTracker
 
 logger = logging.getLogger(__name__)
+
+
+@lru_cache(maxsize=1)
+def get_claude_executable() -> str:
+    """Get the path to the claude executable.
+
+    Checks in order:
+    1. Settings file (config/settings.yaml -> claude.executable)
+    2. shutil.which('claude')
+    3. Common installation paths
+
+    Returns:
+        Path to the claude executable
+
+    Raises:
+        FileNotFoundError: If claude executable cannot be found
+    """
+    # Try to load from settings
+    settings_paths = [
+        Path.cwd() / "config" / "settings.yaml",
+        Path(__file__).parent.parent.parent.parent.parent / "config" / "settings.yaml",
+    ]
+
+    for settings_path in settings_paths:
+        if settings_path.exists():
+            try:
+                with open(settings_path) as f:
+                    settings = yaml.safe_load(f)
+                    executable = settings.get("claude", {}).get("executable")
+                    if executable and Path(executable).exists():
+                        logger.debug(f"Using claude from settings: {executable}")
+                        return executable
+            except Exception as e:
+                logger.warning(f"Failed to load settings from {settings_path}: {e}")
+
+    # Try shutil.which
+    which_claude = shutil.which("claude")
+    if which_claude:
+        logger.debug(f"Using claude from PATH: {which_claude}")
+        return which_claude
+
+    # Try common installation paths
+    common_paths = [
+        Path.home() / ".local" / "bin" / "claude",
+        Path("/usr/local/bin/claude"),
+        Path("/usr/bin/claude"),
+    ]
+
+    for path in common_paths:
+        if path.exists():
+            logger.debug(f"Using claude from common path: {path}")
+            return str(path)
+
+    raise FileNotFoundError(
+        "Claude executable not found. Please install Claude Code or set "
+        "claude.executable in config/settings.yaml"
+    )
 
 
 @dataclass
@@ -309,7 +369,7 @@ class HeadlessStrategy(BaseStrategy):
 
     def build_command(self, context: ExecutionContext) -> list[str]:
         """Build command for headless execution."""
-        cmd = ["claude", "-p", context.prompt]
+        cmd = [get_claude_executable(), "-p", context.prompt]
 
         # Add custom system prompt for flexibility
         cmd.extend(["--append-system-prompt", self.TASK_SYSTEM_PROMPT])
@@ -347,7 +407,7 @@ class AutonomousStrategy(BaseStrategy):
 
     def build_command(self, context: ExecutionContext) -> list[str]:
         """Build command for autonomous execution."""
-        cmd = ["claude", "-p", context.prompt]
+        cmd = [get_claude_executable(), "-p", context.prompt]
 
         # Add custom system prompt for flexibility
         cmd.extend(["--append-system-prompt", self.TASK_SYSTEM_PROMPT])
@@ -395,7 +455,7 @@ class SkillStrategy(BaseStrategy):
         if context.prompt:
             skill_prompt += f" {context.prompt}"
 
-        cmd = ["claude", "-p", skill_prompt]
+        cmd = [get_claude_executable(), "-p", skill_prompt]
 
         # Add custom system prompt for flexibility
         cmd.extend(["--append-system-prompt", self.TASK_SYSTEM_PROMPT])
@@ -429,7 +489,7 @@ class AppendSystemPromptStrategy(BaseStrategy):
 
     def build_command(self, context: ExecutionContext) -> list[str]:
         """Build command with appended system prompt."""
-        cmd = ["claude", "-p", context.prompt]
+        cmd = [get_claude_executable(), "-p", context.prompt]
 
         # Add skill file as system prompt if available
         if context.skill:
@@ -486,7 +546,7 @@ class PlanModeStrategy(BaseStrategy):
         else:
             prompt = context.prompt
 
-        cmd = ["claude", "-p", prompt]
+        cmd = [get_claude_executable(), "-p", prompt]
 
         # Add custom system prompt to make Claude more flexible
         cmd.extend(["--append-system-prompt", self.TASK_SYSTEM_PROMPT])
@@ -556,7 +616,7 @@ class ResumeWithApprovalStrategy(BaseStrategy):
         if not context.session_id:
             raise ValueError("ResumeWithApprovalStrategy requires session_id in context")
 
-        cmd = ["claude", "--resume", context.session_id]
+        cmd = [get_claude_executable(), "--resume", context.session_id]
 
         # Add custom system prompt to ensure Claude completes the task
         cmd.extend(["--append-system-prompt", self.APPROVAL_SYSTEM_PROMPT])
@@ -598,7 +658,7 @@ class ResumeWithFeedbackStrategy(BaseStrategy):
         if not context.session_id:
             raise ValueError("ResumeWithFeedbackStrategy requires session_id in context")
 
-        cmd = ["claude", "--resume", context.session_id]
+        cmd = [get_claude_executable(), "--resume", context.session_id]
 
         # Add custom system prompt for flexibility
         cmd.extend(["--append-system-prompt", self.TASK_SYSTEM_PROMPT])

@@ -39,6 +39,14 @@ from .approval import (
     ApprovalStats,
     ApprovalStatus as ApprovalStatusModel,
 )
+from .project import (
+    Project,
+    ProjectCreate,
+    ProjectUpdate,
+    ProjectSummary,
+    TaskWithProject,
+    SkillWithSource,
+)
 
 __all__ = [
     # Task
@@ -74,4 +82,11 @@ __all__ = [
     "ApprovalActionResult",
     "ApprovalStats",
     "ApprovalStatusModel",
+    # Project
+    "Project",
+    "ProjectCreate",
+    "ProjectUpdate",
+    "ProjectSummary",
+    "TaskWithProject",
+    "SkillWithSource",
 ]

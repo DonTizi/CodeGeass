@@ -7,6 +7,7 @@ from .scheduler import router as scheduler_router
 from .notifications import router as notifications_router
 from .approvals import router as approvals_router
 from .executions import router as executions_router
+from .projects import router as projects_router
 
 __all__ = [
     "tasks_router",
@@ -16,4 +17,5 @@ __all__ = [
     "notifications_router",
     "approvals_router",
     "executions_router",
+    "projects_router",
 ]

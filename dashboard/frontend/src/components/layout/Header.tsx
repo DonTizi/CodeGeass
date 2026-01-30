@@ -1,10 +1,12 @@
 import { useLocation } from 'react-router-dom';
+import { ProjectSelector } from './ProjectSelector';
 
 const pageTitles: Record<string, string> = {
   '/dashboard': 'Dashboard',
   '/tasks': 'Scheduled Tasks',
   '/skills': 'Skills',
   '/logs': 'Execution Logs',
+  '/projects': 'Projects',
 };
 
 export function Header() {
@@ -16,6 +18,9 @@ export function Header() {
     if (path.startsWith('/tasks/') && path !== '/tasks/') {
       return 'Task Details';
     }
+    if (path.startsWith('/projects/') && path !== '/projects/') {
+      return 'Project Details';
+    }
     return pageTitles[path] || 'CodeGeass';
   };
 
@@ -25,7 +30,7 @@ export function Header() {
         {getTitle()}
       </h1>
       <div className="flex items-center gap-4">
-        {/* Future: Add refresh button, notifications, etc. */}
+        <ProjectSelector />
       </div>
     </header>
   );

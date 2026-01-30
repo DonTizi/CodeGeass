@@ -4,3 +4,4 @@ export { useLogsStore } from './logs.store';
 export { useSchedulerStore } from './scheduler.store';
 export { useNotificationsStore } from './notifications.store';
 export { useExecutionsStore } from './executions.store';
+export { useProjectsStore } from './projects.store';

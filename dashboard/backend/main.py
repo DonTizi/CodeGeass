@@ -17,6 +17,7 @@ from routers import (
     notifications_router,
     approvals_router,
     executions_router,
+    projects_router,
 )
 
 # Global reference to callback server task
@@ -158,6 +159,7 @@ app.include_router(scheduler_router)
 app.include_router(notifications_router)
 app.include_router(approvals_router)
 app.include_router(executions_router)
+app.include_router(projects_router)
 
 
 # Health check

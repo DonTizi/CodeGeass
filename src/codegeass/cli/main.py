@@ -11,7 +11,7 @@ from codegeass import __version__
 # Global console for rich output
 console = Console()
 
-# Default paths - use current working directory
+
 def _detect_project_dir() -> Path:
     """Detect project directory from current working directory or package location."""
     cwd = Path.cwd()
@@ -47,6 +47,10 @@ class Context:
         self.skills_dir = DEFAULT_SKILLS_DIR
         self.verbose = False
 
+        # Current project (for multi-project support)
+        self._current_project = None
+        self._project_repo = None
+
         # Lazy-loaded components
         self._task_repo = None
         self._log_repo = None
@@ -56,6 +60,64 @@ class Context:
         self._channel_repo = None
         self._approval_repo = None
         self._notification_service = None
+
+    @property
+    def project_repo(self):
+        """Get or create ProjectRepository singleton."""
+        if self._project_repo is None:
+            from codegeass.storage.project_repository import ProjectRepository
+
+            self._project_repo = ProjectRepository()
+        return self._project_repo
+
+    @property
+    def current_project(self):
+        """Get the current project (if in multi-project mode)."""
+        return self._current_project
+
+    def set_project(self, project) -> None:
+        """Set the current project and update paths.
+
+        Args:
+            project: A Project entity or None for single-project mode
+        """
+        self._current_project = project
+        if project:
+            self.project_dir = project.path
+            self.config_dir = project.config_dir
+            self.data_dir = project.data_dir
+            self.skills_dir = project.skills_dir
+
+            # Reset lazy-loaded components so they use new paths
+            self._task_repo = None
+            self._log_repo = None
+            self._skill_registry = None
+            self._session_manager = None
+            self._scheduler = None
+
+    def detect_project_from_cwd(self) -> bool:
+        """Try to detect and set current project from cwd.
+
+        Returns True if a project was found and set.
+        """
+        cwd = Path.cwd()
+
+        # Check if cwd is within a registered project
+        project = self.project_repo.find_by_path(cwd)
+        if project:
+            self.set_project(project)
+            return True
+
+        # Check if cwd is a subdirectory of a registered project
+        for project in self.project_repo.find_all():
+            try:
+                cwd.relative_to(project.path)
+                self.set_project(project)
+                return True
+            except ValueError:
+                continue
+
+        return False
 
     @property
     def schedules_file(self) -> Path:
@@ -92,9 +154,21 @@ class Context:
     @property
     def skill_registry(self):
         if self._skill_registry is None:
-            from codegeass.factory.registry import SkillRegistry
+            # Use ChainedSkillRegistry if we have a project with shared skills
+            if self._current_project:
+                from codegeass.factory.skill_resolver import ChainedSkillRegistry
 
-            self._skill_registry = SkillRegistry(self.skills_dir)
+                shared_dir = self.project_repo.get_shared_skills_dir()
+                self._skill_registry = ChainedSkillRegistry(
+                    project_skills_dir=self.skills_dir,
+                    shared_skills_dir=shared_dir,
+                    use_shared=self._current_project.use_shared_skills,
+                )
+            else:
+                # Fall back to simple registry for single-project mode
+                from codegeass.factory.registry import SkillRegistry
+
+                self._skill_registry = SkillRegistry(self.skills_dir)
         return self._skill_registry
 
     @property
@@ -179,8 +253,13 @@ pass_context = click.make_pass_decorator(Context, ensure=True)
     type=click.Path(exists=True, file_okay=False, path_type=Path),
     help="Project directory (default: detected from CLI location)",
 )
+@click.option(
+    "--project", "-p",
+    "project_name",
+    help="Project name or ID (for multi-project mode)",
+)
 @click.pass_context
-def cli(ctx: click.Context, verbose: bool, project_dir: Path | None) -> None:
+def cli(ctx: click.Context, verbose: bool, project_dir: Path | None, project_name: str | None) -> None:
     """CodeGeass - Claude Code Scheduler Framework.
 
     Orchestrate automated Claude Code sessions with templates, prompts and skills.
@@ -188,11 +267,34 @@ def cli(ctx: click.Context, verbose: bool, project_dir: Path | None) -> None:
     context = Context()
     context.verbose = verbose
 
-    if project_dir:
+    # Handle project selection (multi-project mode)
+    if project_name:
+        # Explicit project selection via --project flag
+        project = context.project_repo.find_by_id_or_name(project_name)
+        if project:
+            context.set_project(project)
+            if verbose:
+                console.print(f"[cyan]Using project: {project.name}[/cyan]")
+        else:
+            console.print(f"[red]Project not found: {project_name}[/red]")
+            console.print("Use 'codegeass project list' to see registered projects")
+            raise SystemExit(1)
+    elif project_dir:
+        # Explicit project directory via --project-dir flag
         context.project_dir = project_dir
         context.config_dir = project_dir / "config"
         context.data_dir = project_dir / "data"
         context.skills_dir = project_dir / ".claude" / "skills"
+    else:
+        # Try to auto-detect project from cwd
+        if context.project_repo.exists() and not context.project_repo.is_empty():
+            if not context.detect_project_from_cwd():
+                # Fall back to default project if set
+                default = context.project_repo.get_default_project()
+                if default:
+                    context.set_project(default)
+                    if verbose:
+                        console.print(f"[cyan]Using default project: {default.name}[/cyan]")
 
     ctx.obj = context
 
@@ -204,6 +306,7 @@ from codegeass.cli.commands import (
     execution,
     logs,
     notification,
+    project,
     scheduler,
     skill,
     task,
@@ -217,6 +320,7 @@ cli.add_command(notification.notification)
 cli.add_command(approval.approval)
 cli.add_command(cron.cron)
 cli.add_command(execution.execution)
+cli.add_command(project.project)
 
 
 @cli.command()
