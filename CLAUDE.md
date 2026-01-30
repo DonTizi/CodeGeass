@@ -22,10 +22,14 @@ CodeGeass is a Claude Code Scheduler Framework - a system for orchestrating auto
 ### Core CLI
 
 ```bash
-# Setup
-cd /home/dontizi/Projects/codegeass
+# Setup (from source)
+git clone https://github.com/DonTizi/CodeGeass.git
+cd CodeGeass
 python -m venv .venv && source .venv/bin/activate
 pip install -e .
+
+# Or install from PyPI
+pip install codegeass
 
 # Verify
 codegeass --version
@@ -226,7 +230,7 @@ journalctl --user -u codegeass-scheduler -f
 
 1. **Create a test task**
    ```bash
-   codegeass task create --name test-<feature> --schedule "0 0 * * *" --prompt "<test prompt>" --working-dir /home/dontizi/Projects/codegeass
+   codegeass task create --name test-<feature> --schedule "0 0 * * *" --prompt "<test prompt>" --working-dir $(pwd)
    ```
 
 2. **Run the task and observe**

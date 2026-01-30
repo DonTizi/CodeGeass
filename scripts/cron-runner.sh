@@ -10,8 +10,9 @@ set -e
 # CRITICAL: Use subscription, not API
 unset ANTHROPIC_API_KEY
 
-# Project paths
-PROJECT_DIR="/home/dontizi/Projects/codegeass"
+# Project paths - auto-detect from script location
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 VENV_DIR="$PROJECT_DIR/.venv"
 LOG_DIR="$PROJECT_DIR/data/logs"
 
