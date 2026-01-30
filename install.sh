@@ -349,7 +349,5 @@ main() {
     print_success
 }
 
-# Run if executed directly
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    main "$@"
-fi
+# Run main (works both when executed directly and when piped)
+main "$@"
