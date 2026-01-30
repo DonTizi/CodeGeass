@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Terminal, Activity, Clock, X, CheckCircle, XCircle, Wrench, MessageSquare, PauseCircle } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Activity, Clock, X, CheckCircle, XCircle, PauseCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import type { ActiveExecution } from '@/types/execution';
 import { useExecutionsStore } from '@/stores';
+import { ClaudeTerminal } from './ClaudeTerminal';
+import type { ParsedLine } from './ClaudeTerminal';
 
 // Extended execution type with completion info
 interface ExtendedExecution extends ActiveExecution {
@@ -17,15 +19,15 @@ interface ExtendedExecution extends ActiveExecution {
   approval_id?: string | null;
 }
 
-// Parsed output line with type information
-interface ParsedLine {
+// Internal parsed line with type information
+interface InternalParsedLine {
   type: 'text' | 'tool_use' | 'tool_result' | 'thinking' | 'raw';
   content: string;
   toolName?: string;
 }
 
 // Parse a stream-json line into a readable format
-function parseStreamLine(line: string): ParsedLine | null {
+function parseStreamLine(line: string): InternalParsedLine | null {
   try {
     const data = JSON.parse(line);
 
@@ -141,7 +143,6 @@ export function ExecutionMonitor({
   className,
   compact = false,
 }: ExecutionMonitorProps) {
-  const outputRef = useRef<HTMLDivElement>(null);
   const [duration, setDuration] = useState(
     formatDuration(execution.started_at, execution.completedAt)
   );
@@ -150,10 +151,11 @@ export function ExecutionMonitor({
   const isCompleted = execution.completed;
   const isSuccess = execution.success;
   const isWaitingApproval = execution.status === 'waiting_approval';
+  const isLive = !isCompleted && !isWaitingApproval;
 
-  // Parse and format output lines for better readability
-  const formattedOutput = useMemo(() => {
-    const lines: { type: string; content: string; toolName?: string }[] = [];
+  // Parse and format output lines for ClaudeTerminal
+  const formattedOutput = useMemo((): ParsedLine[] => {
+    const lines: ParsedLine[] = [];
     let currentTextBuffer = '';
 
     for (const line of execution.output_lines) {
@@ -201,13 +203,6 @@ export function ExecutionMonitor({
     }, 1000);
     return () => clearInterval(interval);
   }, [execution.started_at, execution.completedAt, isCompleted]);
-
-  // Auto-scroll to bottom when new output arrives
-  useEffect(() => {
-    if (outputRef.current) {
-      outputRef.current.scrollTop = outputRef.current.scrollHeight;
-    }
-  }, [execution.output_lines]);
 
   const handleDismiss = () => {
     dismissExecution(execution.execution_id);
@@ -301,45 +296,13 @@ export function ExecutionMonitor({
           </p>
         )}
       </CardHeader>
-      <CardContent>
-        <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-          <div className="flex items-center gap-2">
-            <Terminal className="h-4 w-4" />
-            <span>{isCompleted ? 'Output' : 'Live Output'}</span>
-          </div>
-          <span className="text-xs">
-            {execution.output_lines.length} lines
-          </span>
-        </div>
-        <div
-          ref={outputRef}
-          className={cn(
-            'bg-muted/50 rounded-lg p-3 font-mono text-xs',
-            'overflow-y-auto overflow-x-auto',
-            'border border-border',
-            compact ? 'h-48' : 'h-96'
-          )}
-        >
-          {formattedOutput.length === 0 ? (
-            <p className="text-muted-foreground italic">
-              {isCompleted ? 'No output captured' : 'Waiting for output...'}
-            </p>
-          ) : (
-            formattedOutput.map((item, index) => (
-              <div key={index} className={cn(
-                'whitespace-pre-wrap break-words',
-                item.type === 'tool' && 'flex items-center gap-1 text-blue-500 bg-blue-500/10 px-2 py-1 rounded my-1',
-                item.type === 'thinking' && 'text-purple-500 bg-purple-500/10 px-2 py-1 rounded my-1 italic',
-                item.type === 'text' && 'text-foreground',
-                item.type === 'raw' && 'text-muted-foreground text-[10px]'
-              )}>
-                {item.type === 'tool' && <Wrench className="h-3 w-3 flex-shrink-0" />}
-                {item.type === 'thinking' && <MessageSquare className="h-3 w-3 flex-shrink-0" />}
-                {item.content}
-              </div>
-            ))
-          )}
-        </div>
+      <CardContent className="pt-2">
+        <ClaudeTerminal
+          lines={formattedOutput}
+          isLive={isLive}
+          title={execution.task_name}
+          maxHeight={compact ? 'h-48' : 'h-96'}
+        />
       </CardContent>
     </Card>
   );
