@@ -11,7 +11,13 @@ CodeGeass uses YAML files for configuration. This guide explains all configurati
 └── notifications.yaml        # Notification channels
 
 ~/.codegeass/                 # Global user configuration
-└── credentials.yaml          # Secrets (API keys, tokens)
+├── projects.yaml             # Project registry (multi-project mode)
+├── credentials.yaml          # Secrets (API keys, tokens)
+└── skills/                   # Shared skills (available to all projects)
+    ├── review/
+    │   └── SKILL.md
+    └── security-scan/
+        └── SKILL.md
 ```
 
 ## schedules.yaml
@@ -149,8 +155,34 @@ codegeass skill validate .claude/skills/my-skill/SKILL.md
 codegeass notification list
 ```
 
+## projects.yaml
+
+Global project registry for multi-project mode:
+
+```yaml
+version: 1
+default_project: abc12345
+shared_skills_dir: ~/.codegeass/skills
+projects:
+  - id: abc12345
+    name: my-project
+    path: /home/user/projects/my-project
+    description: "Main application"
+    default_model: sonnet
+    default_timeout: 300
+    default_autonomous: false
+    git_remote: https://github.com/user/repo
+    enabled: true
+    use_shared_skills: true
+    created_at: "2024-01-15T09:00:00Z"
+```
+
+!!! note "Automatic Registration"
+    This file is managed by `codegeass project add/remove` commands. You typically don't edit it directly.
+
 ## Next Steps
 
+- [Projects](../concepts/projects.md) - Multi-project support
 - [Tasks](../concepts/tasks.md) - Learn about task configuration
 - [Skills](../concepts/skills.md) - Create reusable skills
 - [Notifications](../concepts/notifications.md) - Set up notifications

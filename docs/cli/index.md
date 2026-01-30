@@ -21,6 +21,7 @@ codegeass [OPTIONS] COMMAND [ARGS]...
 |---------|-------------|
 | [`task`](task.md) | Manage scheduled tasks |
 | [`skill`](skill.md) | Manage skills |
+| [`project`](project.md) | Manage multiple projects |
 | [`scheduler`](scheduler.md) | Scheduler operations |
 | [`logs`](logs.md) | View execution logs |
 | [`notification`](notification.md) | Manage notifications |
@@ -71,6 +72,22 @@ codegeass logs show <execution-id>
 
 # Follow logs in real-time
 codegeass logs tail
+```
+
+### Projects
+
+```bash
+# Register a project
+codegeass project add /path/to/project --name my-project
+
+# List projects
+codegeass project list
+
+# Set default project
+codegeass project set-default my-project
+
+# Initialize new project
+codegeass project init /path/to/new-project
 ```
 
 ### Notifications

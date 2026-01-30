@@ -93,9 +93,33 @@ codegeass task create \
 | `--mode` | Execution mode: `headless`, `autonomous`, `skill` |
 | `--skill` | Skill to invoke (for skill mode) |
 
+## Working with Multiple Projects
+
+If you work on multiple codebases, you can register them with CodeGeass:
+
+```bash
+# Register your projects
+codegeass project add ~/projects/api-server --name api
+codegeass project add ~/projects/web-app --name web
+codegeass project add ~/projects/mobile-app --name mobile
+
+# Set a default
+codegeass project set-default api
+
+# List registered projects
+codegeass project list
+
+# Run tasks against specific projects
+codegeass --project web task run daily-review
+```
+
+!!! tip "Shared Skills"
+    Place commonly-used skills in `~/.codegeass/skills/` to make them available across all your projects.
+
 ## Next Steps
 
 - [Configuration](configuration.md) - Learn about config files
+- [Projects](../concepts/projects.md) - Multi-project support
 - [Tasks](../concepts/tasks.md) - Deep dive into tasks
 - [Scheduling](../concepts/scheduling.md) - CRON expression guide
 - [Notifications](../guides/setup-notifications.md) - Get notified when tasks complete

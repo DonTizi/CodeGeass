@@ -32,18 +32,41 @@ Focus on:
 
 ## Skill Location
 
-Skills live in `.claude/skills/` directories:
+Skills can be stored in two locations:
+
+### Project Skills
+
+Project-specific skills live in `.claude/skills/`:
 
 ```
-.claude/
+project/
+└── .claude/
+    └── skills/
+        ├── review/
+        │   └── SKILL.md
+        ├── test/
+        │   └── SKILL.md
+        └── deploy/
+            └── SKILL.md
+```
+
+### Shared Skills
+
+Global skills available to all projects live in `~/.codegeass/skills/`:
+
+```
+~/.codegeass/
 └── skills/
     ├── review/
     │   └── SKILL.md
-    ├── test/
+    ├── security-scan/
     │   └── SKILL.md
-    └── deploy/
+    └── dependency-check/
         └── SKILL.md
 ```
+
+!!! tip "Skill Priority"
+    Project skills take priority over shared skills with the same name. This allows you to override shared skills with project-specific versions.
 
 ## SKILL.md Format
 
@@ -200,6 +223,64 @@ Update documentation to:
 - Changes are applied directly
 - Use when you want immediate results
 
+## Included Skills
+
+CodeGeass ships with several powerful skills that you can use immediately.
+
+### review
+
+Comprehensive code review for PRs or recent changes.
+
+**What it checks:**
+
+- **Correctness**: Logic errors, edge cases, null handling
+- **Security**: Injection vulnerabilities, secrets exposure, auth issues
+- **Performance**: N+1 queries, unnecessary loops, memory leaks
+- **Maintainability**: Complexity, naming, documentation
+- **Tests**: Coverage, edge cases, meaningful assertions
+
+**Usage:**
+
+```bash
+codegeass task create \
+  --name daily-review \
+  --skill review \
+  --schedule "0 9 * * 1-5"
+```
+
+**Output format:** Returns a structured JSON report with issues categorized by severity (critical, important, suggestion) and type.
+
+### security-scan
+
+Deep security analysis of your codebase.
+
+**What it detects:**
+
+- **Secrets**: API keys, tokens, passwords, private keys in code
+- **Dependency vulnerabilities**: CVEs in packages (pip-audit, npm audit)
+- **Code vulnerabilities**: SQL injection, XSS, command injection, path traversal
+- **Configuration issues**: Debug mode, permissive CORS, missing security headers
+
+**Usage:**
+
+```bash
+codegeass task create \
+  --name weekly-security \
+  --skill security-scan \
+  --schedule "0 2 * * 0"
+```
+
+**Output format:** Returns a JSON security report with findings, severity levels, CWE references, and remediation suggestions.
+
+### Other Skills
+
+| Skill | Description |
+|-------|-------------|
+| `code-review` | Automated code review with security and performance focus |
+| `security-audit` | OWASP vulnerability analysis |
+| `test-runner` | Execute and analyze test suites |
+| `dependency-check` | Check dependencies for updates and vulnerabilities |
+
 ## Best Practices
 
 1. **Be specific** - Clear instructions get better results
@@ -207,9 +288,12 @@ Update documentation to:
 3. **Document well** - The description helps users understand the skill
 4. **Test first** - Validate skills before using in scheduled tasks
 5. **Version control** - Keep skills in your repo
+6. **Use shared skills** - Put commonly-used skills in `~/.codegeass/skills/`
+7. **Override when needed** - Project skills take priority over shared ones
 
 ## Related
 
 - [Tasks](tasks.md) - Use skills in scheduled tasks
+- [Projects](projects.md) - Multi-project support and shared skills
 - [Execution](execution.md) - How skills are executed
 - [CLI Reference](../cli/skill.md) - Skill commands

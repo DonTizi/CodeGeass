@@ -11,7 +11,9 @@ Complete reference for all CodeGeass configuration files.
 └── notifications.yaml        # Notification channels
 
 ~/.codegeass/                 # Global user configuration
-└── credentials.yaml          # Secrets (API keys, tokens)
+├── projects.yaml             # Project registry (multi-project)
+├── credentials.yaml          # Secrets (API keys, tokens)
+└── skills/                   # Shared skills (all projects)
 
 ./data/                       # Runtime data (gitignored)
 ├── logs/                     # Execution logs (JSONL)
@@ -302,6 +304,85 @@ Each line is a JSON object:
 }
 ```
 
+## projects.yaml
+
+Global project registry for multi-project mode.
+
+### Location
+
+```
+~/.codegeass/projects.yaml
+```
+
+### Schema
+
+```yaml
+version: int                  # Schema version (currently 1)
+default_project: string       # ID of default project
+shared_skills_dir: string     # Path to shared skills directory
+
+projects:
+  - id: string                # Required: Unique project ID (auto-generated)
+    name: string              # Required: Human-readable name
+    path: string              # Required: Absolute path to project
+    description: string       # Optional: Project description
+    default_model: string     # Optional: Default Claude model (haiku|sonnet|opus)
+    default_timeout: int      # Optional: Default timeout in seconds
+    default_autonomous: bool  # Optional: Enable autonomous mode by default
+    git_remote: string        # Optional: Git remote URL (auto-detected)
+    enabled: bool             # Optional: Whether project is active (default: true)
+    use_shared_skills: bool   # Optional: Include shared skills (default: true)
+    created_at: string        # Optional: ISO 8601 timestamp
+```
+
+### Example
+
+```yaml
+version: 1
+default_project: a1b2c3d4
+shared_skills_dir: ~/.codegeass/skills
+projects:
+  - id: a1b2c3d4
+    name: api-server
+    path: /home/user/projects/api-server
+    description: "REST API backend"
+    default_model: sonnet
+    default_timeout: 300
+    default_autonomous: false
+    git_remote: https://github.com/user/api-server
+    enabled: true
+    use_shared_skills: true
+    created_at: "2024-01-15T09:00:00Z"
+
+  - id: e5f6g7h8
+    name: web-frontend
+    path: /home/user/projects/web-frontend
+    description: "React web application"
+    default_model: haiku
+    default_timeout: 180
+    enabled: true
+    use_shared_skills: true
+    created_at: "2024-01-20T14:30:00Z"
+```
+
+### Management
+
+This file is managed by CLI commands:
+
+```bash
+# Add a project
+codegeass project add /path/to/project --name my-project
+
+# Remove a project
+codegeass project remove my-project
+
+# Update settings
+codegeass project update my-project --model opus --timeout 600
+
+# Set default
+codegeass project set-default my-project
+```
+
 ## Validation
 
 Validate configuration files:
@@ -312,6 +393,9 @@ codegeass task list
 
 # Validate skills
 codegeass skill validate --all
+
+# Validate projects
+codegeass project list
 
 # Test notifications
 codegeass notification test telegram
