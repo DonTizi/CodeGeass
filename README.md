@@ -5,6 +5,7 @@
 ## Features
 
 - **Scheduled Tasks**: Define tasks with CRON expressions for automated execution
+- **Multi-Project Support**: Manage multiple projects from a single installation with shared skills
 - **Skills Integration**: Use Claude Code skills (`.claude/skills/`) for consistent, reusable prompts
 - **Multiple Strategies**: Headless, autonomous, or skill-based execution
 - **Session Management**: Track execution history with detailed logs
@@ -112,6 +113,20 @@ codegeass logs tail <task>       # Tail recent logs
 codegeass logs stats             # Show statistics
 ```
 
+### Projects
+
+```bash
+codegeass project list           # List registered projects
+codegeass project add <path>     # Register a project
+codegeass project show <name>    # Show project details
+codegeass project set-default <name>  # Set default project
+codegeass project init [path]    # Initialize project structure
+codegeass project remove <name>  # Unregister a project
+codegeass project enable <name>  # Enable a project
+codegeass project disable <name> # Disable a project
+codegeass project update <name>  # Update project settings
+```
+
 ### Notifications
 
 ```bash
@@ -184,10 +199,16 @@ Skills are Claude Code prompt templates stored in `.claude/skills/`. They follow
 
 ### Included Skills
 
+- **review**: Comprehensive code review for PRs or recent changes (correctness, security, performance, maintainability, tests)
+- **security-scan**: Deep security analysis with secrets detection, dependency vulnerabilities, and CWE references
 - **code-review**: Automated code review with security, performance, and maintainability focus
 - **security-audit**: Deep security analysis for OWASP vulnerabilities and secrets
 - **test-runner**: Execute and analyze test suites
 - **dependency-check**: Analyze dependencies for updates and vulnerabilities
+
+### Shared Skills
+
+Place skills in `~/.codegeass/skills/` to make them available across all registered projects. Project-specific skills in `.claude/skills/` take priority over shared skills with the same name.
 
 ### Skill Format
 
@@ -252,7 +273,9 @@ codegeass/
 ├── src/codegeass/
 │   ├── core/           # Domain entities and value objects
 │   ├── storage/        # Persistence layer (YAML, JSON)
+│   │   └── project_repository.py  # Multi-project registry
 │   ├── factory/        # Task and skill registries
+│   │   └── skill_resolver.py  # Project + shared skills with priority
 │   ├── execution/      # Claude Code execution strategies
 │   ├── scheduling/     # CRON parsing and job scheduling
 │   ├── notifications/  # Chat notifications (Telegram, Discord)
@@ -262,6 +285,11 @@ codegeass/
 ├── data/               # Runtime data (logs, sessions)
 ├── scripts/            # CRON runner script
 └── .claude/skills/     # Claude Code skills
+
+~/.codegeass/           # Global user configuration
+├── projects.yaml       # Project registry
+├── credentials.yaml    # Secrets
+└── skills/             # Shared skills (all projects)
 ```
 
 ## Development

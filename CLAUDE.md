@@ -62,6 +62,9 @@ codegeass task list | show | create | run | enable | disable | delete
 # Skills
 codegeass skill list | show | validate | render
 
+# Projects (multi-project support)
+codegeass project list | add | show | remove | set-default | init | enable | disable | update
+
 # Scheduler
 codegeass scheduler status | run | run-due | upcoming | install-cron
 
@@ -76,19 +79,26 @@ codegeass notification list | add | show | test | remove | enable | disable | pr
 
 ```
 src/codegeass/
-├── core/           # Domain: Task, Skill, Template, Prompt entities + value objects
-├── storage/        # YAML backend, task/log repositories, channel/credential managers
-├── factory/        # SkillRegistry, TaskFactory, TaskBuilder
+├── core/           # Domain: Task, Skill, Template, Prompt, Project entities + value objects
+├── storage/        # YAML backend, task/log/project repositories, channel/credential managers
+│   └── project_repository.py  # Multi-project registry management
+├── factory/        # SkillRegistry, TaskFactory, TaskBuilder, SkillResolver
+│   └── skill_resolver.py  # Project + shared skills with priority
 ├── execution/      # HeadlessStrategy, AutonomousStrategy, SkillStrategy
 ├── scheduling/     # CronParser (croniter), Scheduler, Job wrappers
 ├── notifications/  # Chat notifications (Telegram, Discord) with provider pattern
-└── cli/            # Click commands: task, skill, scheduler, logs, notification
+└── cli/            # Click commands: task, skill, project, scheduler, logs, notification
 
 dashboard/
 ├── backend/        # FastAPI + Uvicorn (port 8001)
 │   ├── routers/    # tasks, skills, logs, scheduler, notifications endpoints
 │   └── services/   # Business logic layer
 └── frontend/       # React 18 + Vite + TypeScript + Tailwind v4 + shadcn/ui + Zustand
+
+~/.codegeass/       # Global user configuration
+├── projects.yaml   # Project registry (multi-project mode)
+├── credentials.yaml # Secrets (API keys, tokens)
+└── skills/         # Shared skills (available to all projects)
 ```
 
 ### Execution Strategies
@@ -102,7 +112,9 @@ dashboard/
 - **Tasks**: `config/schedules.yaml` (YAML list)
 - **Settings**: `config/settings.yaml`
 - **Notifications**: `config/notifications.yaml` (channels, non-secret)
+- **Projects**: `~/.codegeass/projects.yaml` (project registry, global)
 - **Credentials**: `~/.codegeass/credentials.yaml` (secrets, global)
+- **Shared Skills**: `~/.codegeass/skills/` (available to all projects)
 - **Logs**: `data/logs/*.jsonl` (one JSON per line)
 - **Sessions**: `data/sessions/`
 
@@ -112,6 +124,7 @@ dashboard/
 2. **File-Based Storage**: No database - YAML for config, JSONL for logs
 3. **Strategy Pattern**: Multiple execution modes via interchangeable strategies
 4. **Skill Standard**: Uses [Agent Skills](https://agentskills.io) open standard for reusable prompts
+5. **Multi-Project Support**: Global project registry with shared skills and per-project overrides
 
 ## Skills Format
 

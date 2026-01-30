@@ -23,6 +23,7 @@ codegeass task run daily-review
 
 - **Scheduled Automation** - Run Claude Code sessions on CRON schedules
 - **Subscription-First** - Uses your Claude Pro/Max subscription, not API credits
+- **Multi-Project Support** - Manage multiple projects from a single installation with shared skills
 - **Skills System** - Reusable, parameterized prompts following the [Agent Skills](https://agentskills.io) standard
 - **Plan Mode** - Interactive approval workflow for complex tasks
 - **Notifications** - Get notified via Telegram or Discord when tasks complete
@@ -62,6 +63,9 @@ codegeass scheduler upcoming
 │  ┌─────────┐ ┌─────────┐ ┌───────────┐ ┌─────────────┐  │
 │  │  Tasks  │ │ Skills  │ │ Scheduler │ │  Execution  │  │
 │  └─────────┘ └─────────┘ └───────────┘ └─────────────┘  │
+│  ┌─────────┐ ┌─────────────────────────────────────────┐│
+│  │Projects │ │ Notifications                           ││
+│  └─────────┘ └─────────────────────────────────────────┘│
 ├─────────────────────────────────────────────────────────┤
 │  Storage (YAML/JSONL)                                   │
 │  ┌─────────────────┐ ┌──────────────┐ ┌───────────────┐ │

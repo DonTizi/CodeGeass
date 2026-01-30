@@ -68,6 +68,7 @@ nav:
   - Concepts:
     - Tasks: concepts/tasks.md
     - Skills: concepts/skills.md
+    - Projects: concepts/projects.md
     - Scheduling: concepts/scheduling.md
     - Execution Modes: concepts/execution.md
     - Plan Mode: concepts/plan-mode.md
@@ -76,6 +77,7 @@ nav:
     - Overview: cli/index.md
     - task: cli/task.md
     - skill: cli/skill.md
+    - project: cli/project.md
     - scheduler: cli/scheduler.md
     - logs: cli/logs.md
     - notification: cli/notification.md
