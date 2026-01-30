@@ -170,9 +170,61 @@ Create a before/after comparison:
 
 ---
 
-## Phase 5: Pull Request
+## Phase 5: Functional Testing
 
-### 5.1 Commit and Push
+**CRITICAL**: Before creating a PR, you MUST verify the application still works.
+
+### 5.1 Test Core CLI Commands
+
+Run actual commands to verify nothing is broken:
+
+```bash
+# Test CLI is accessible
+codegeass --version
+
+# Test core commands work
+codegeass task list
+codegeass skill list
+codegeass project list
+codegeass scheduler status
+
+# Test a specific task show (pick any existing task)
+codegeass task show "$(codegeass task list --format json 2>/dev/null | python3 -c "import sys,json; tasks=json.load(sys.stdin); print(tasks[0]['name'] if tasks else '')" 2>/dev/null || echo "")"
+
+# Test help commands
+codegeass --help
+codegeass task --help
+```
+
+### 5.2 Verify No Import Errors
+
+```bash
+# Test all modules can be imported
+python3 -c "from codegeass.cli import cli; print('CLI imports OK')"
+python3 -c "from codegeass.core import entities; print('Core imports OK')"
+python3 -c "from codegeass.storage import task_repository; print('Storage imports OK')"
+python3 -c "from codegeass.factory import registry; print('Factory imports OK')"
+python3 -c "from codegeass.execution import session; print('Execution imports OK')"
+python3 -c "from codegeass.scheduling import scheduler; print('Scheduling imports OK')"
+```
+
+### 5.3 Decision Point
+
+**If ANY test fails:**
+1. STOP - Do not create PR
+2. Identify the breaking change
+3. Fix the issue
+4. Re-run all tests
+5. Only proceed when ALL tests pass
+
+**If ALL tests pass:**
+- Proceed to Phase 6 (Pull Request)
+
+---
+
+## Phase 6: Pull Request
+
+### 6.1 Commit and Push
 
 ```bash
 git add -A
@@ -195,7 +247,7 @@ Refs: SOLID principles, refactoring.guru patterns"
 git push -u origin refactor/cleanup-$(date +%Y-%m-%d)
 ```
 
-### 5.2 Create PR
+### 6.2 Create PR
 
 ```bash
 gh pr create --title "refactor: modularize codebase $(date +%Y-%m-%d)" --label "refactoring,automated" --body "$(cat <<'EOF'
