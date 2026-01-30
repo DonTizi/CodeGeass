@@ -154,12 +154,38 @@ Success: {{ successes }} | Failed: {{ failures }} | Rate: {{ success_rate }}%
         if provider == "discord":
             # Convert HTML to Discord Markdown
             message = self._html_to_discord_markdown(message)
+        elif provider == "teams":
+            # Convert HTML to Teams Markdown (same as Discord)
+            message = self._html_to_teams_markdown(message)
 
         return message
 
     def _html_to_discord_markdown(self, html: str) -> str:
         """Convert HTML-formatted message to Discord Markdown."""
         # Simple conversions
+        conversions = [
+            ("<b>", "**"),
+            ("</b>", "**"),
+            ("<i>", "_"),
+            ("</i>", "_"),
+            ("<code>", "`"),
+            ("</code>", "`"),
+            ("<pre>", "```\n"),
+            ("</pre>", "\n```"),
+        ]
+
+        result = html
+        for html_tag, md in conversions:
+            result = result.replace(html_tag, md)
+
+        return result
+
+    def _html_to_teams_markdown(self, html: str) -> str:
+        """Convert HTML-formatted message to Teams Markdown.
+
+        Teams supports similar Markdown formatting to Discord.
+        """
+        # Same conversions as Discord (Teams uses similar Markdown)
         conversions = [
             ("<b>", "**"),
             ("</b>", "**"),

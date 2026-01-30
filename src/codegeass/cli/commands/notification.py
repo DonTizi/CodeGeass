@@ -109,7 +109,7 @@ def show_channel(ctx: Context, channel_id: str) -> None:
     "--provider",
     "-p",
     required=True,
-    type=click.Choice(["telegram", "discord"]),
+    type=click.Choice(["telegram", "discord", "teams"]),
     help="Provider type",
 )
 @click.option("--name", "-n", required=True, help="Channel display name")
