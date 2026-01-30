@@ -11,11 +11,18 @@ authors = [
 keywords = ["claude", "scheduler", "automation", "cli"]
 classifiers = [
     "Development Status :: 3 - Alpha",
+    "Environment :: Console",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Scheduling",
+    "Typing :: Typed",
 ]
+
 dependencies = [
     "pydantic>=2.0",
     "click>=8.0",
@@ -24,6 +31,13 @@ dependencies = [
     "jinja2>=3.0",
     "croniter>=1.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/dontizi/codegeass"
+Documentation = "https://dontizi.github.io/codegeass/"
+Repository = "https://github.com/dontizi/codegeass.git"
+"Bug Tracker" = "https://github.com/dontizi/codegeass/issues"
+Changelog = "https://github.com/dontizi/codegeass/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
@@ -40,6 +54,7 @@ docs = [
     "mkdocs>=1.5",
     "mkdocs-material>=9.5",
     "mkdocs-click>=0.8",
+    "mike>=2.0",
 ]
 
 [project.scripts]

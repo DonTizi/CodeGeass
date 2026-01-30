@@ -84,13 +84,49 @@ Commands:
   task          Manage scheduled tasks
 ```
 
+## Updating CodeGeass
+
+To update to the latest version:
+
+```bash
+pip install --upgrade codegeass
+```
+
+To update to a specific version:
+
+```bash
+pip install codegeass==0.2.0
+```
+
+## Installing the Scheduler Service
+
+For production use, you can install CodeGeass as a systemd service that runs automatically:
+
+```bash
+# Navigate to your CodeGeass project
+cd /path/to/your/project
+
+# Run the installer
+./service/install.sh
+```
+
+This will:
+
+1. Install a systemd user service and timer
+2. Configure it to run every 5 minutes
+3. Enable it to start on boot
+
+See [Production Setup](../guides/production-setup.md) for detailed instructions.
+
 ## Directory Structure
 
 After installation, CodeGeass uses these directories:
 
 ```
 ~/.codegeass/              # Global user config
-└── credentials.yaml       # API keys, secrets (gitignored)
+├── projects.yaml          # Project registry
+├── credentials.yaml       # API keys, secrets (gitignored)
+└── skills/                # Shared skills (available to all projects)
 
 ./config/                  # Project config (in your repo)
 ├── schedules.yaml         # Task definitions
@@ -106,3 +142,4 @@ After installation, CodeGeass uses these directories:
 
 - [Quick Start](quickstart.md) - Create your first task
 - [Configuration](configuration.md) - Configure CodeGeass for your project
+- [Production Setup](../guides/production-setup.md) - Run CodeGeass 24/7
