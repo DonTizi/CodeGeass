@@ -1,7 +1,6 @@
 """Repository for notification channels."""
 
 from pathlib import Path
-from typing import Any
 
 from codegeass.notifications.exceptions import ChannelNotFoundError
 from codegeass.notifications.models import Channel, NotificationDefaults

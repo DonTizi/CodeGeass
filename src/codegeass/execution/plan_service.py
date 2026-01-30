@@ -233,7 +233,9 @@ class PlanApprovalService:
         from codegeass.core.entities import Task
 
         # Use worktree path if available, otherwise original working_dir
-        execution_dir = Path(approval.worktree_path) if approval.worktree_path else Path(approval.working_dir)
+        execution_dir = (
+            Path(approval.worktree_path) if approval.worktree_path else Path(approval.working_dir)
+        )
         logger.info(f"Executing approved plan in: {execution_dir}")
 
         # Get tracker and find the existing execution (waiting_approval)
@@ -243,7 +245,9 @@ class PlanApprovalService:
         if existing_execution:
             # Resume the existing execution
             execution_id = existing_execution.execution_id
-            tracker.update_execution(execution_id, status="running", phase="executing approved plan")
+            tracker.update_execution(
+                execution_id, status="running", phase="executing approved plan"
+            )
             logger.info(f"Resuming existing execution {execution_id} for approval")
         else:
             # Fallback: create new execution if not found
@@ -293,7 +297,8 @@ class PlanApprovalService:
                 parsed_result = parse_stream_json(result.output)
                 result_text = parsed_result.text
                 logger.info(f"[DEBUG] Parsed text length: {len(result_text)}")
-                logger.info(f"[DEBUG] Parsed text first 200 chars: {result_text[:200] if result_text else '(empty)'}")
+                preview = result_text[:200] if result_text else "(empty)"
+                logger.info(f"[DEBUG] Parsed text first 200 chars: {preview}")
 
                 # Fallback if parsing returned empty text
                 if not result_text and result.output:
@@ -397,7 +402,9 @@ class PlanApprovalService:
         )
 
         # Use worktree path if available, otherwise original working_dir
-        execution_dir = Path(approval.worktree_path) if approval.worktree_path else Path(approval.working_dir)
+        execution_dir = (
+            Path(approval.worktree_path) if approval.worktree_path else Path(approval.working_dir)
+        )
         logger.info(f"Processing feedback in: {execution_dir}")
 
         # Get tracker and find the existing execution (waiting_approval)
@@ -407,7 +414,11 @@ class PlanApprovalService:
         if existing_execution:
             # Resume the existing execution
             execution_id = existing_execution.execution_id
-            tracker.update_execution(execution_id, status="running", phase=f"discussing (iteration {approval.iteration + 1})")
+            tracker.update_execution(
+                execution_id,
+                status="running",
+                phase=f"discussing (iteration {approval.iteration + 1})",
+            )
             logger.info(f"Resuming existing execution {execution_id} for discuss")
         else:
             # Fallback: create new execution if not found
@@ -461,6 +472,7 @@ class PlanApprovalService:
 
                 # Create new message with updated plan
                 from codegeass.core.entities import Task as TaskEntity
+
                 task = TaskEntity(
                     id=approval.task_id,
                     name=approval.task_name,

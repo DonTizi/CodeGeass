@@ -65,10 +65,9 @@ def list_projects(ctx: Context, show_all: bool) -> None:
         # Count skills
         skill_count = 0
         if p.skills_dir.exists():
-            skill_count = len([
-                d for d in p.skills_dir.iterdir()
-                if d.is_dir() and (d / "SKILL.md").exists()
-            ])
+            skill_count = len(
+                [d for d in p.skills_dir.iterdir() if d.is_dir() and (d / "SKILL.md").exists()]
+            )
 
         # Show path status
         path_status = str(p.path)
@@ -140,6 +139,7 @@ def add_project(
     if git_config.exists():
         try:
             import configparser
+
             config = configparser.ConfigParser()
             config.read(git_config)
             if 'remote "origin"' in config:
@@ -164,7 +164,7 @@ def add_project(
     # Set as default if requested or if first project
     if set_default or repo.is_empty():
         repo.set_default_project(new_project.id)
-        console.print(f"[cyan]Set as default project[/cyan]")
+        console.print("[cyan]Set as default project[/cyan]")
 
     console.print(f"[green]Project registered: {project_name}[/green]")
     console.print(f"ID: {new_project.id}")
@@ -233,6 +233,7 @@ def show_project(ctx: Context, name: str) -> None:
     if p.schedules_file.exists():
         try:
             from codegeass.storage.task_repository import TaskRepository
+
             task_repo = TaskRepository(p.schedules_file)
             task_count = len(task_repo.find_all())
         except Exception:
@@ -242,11 +243,11 @@ def show_project(ctx: Context, name: str) -> None:
     details = f"""[bold]ID:[/bold] {p.id}
 [bold]Name:[/bold] {p.name}
 [bold]Path:[/bold] {p.path}
-[bold]Exists:[/bold] {'[green]yes[/green]' if p.exists() else '[red]no[/red]'}
-[bold]Initialized:[/bold] {'[green]yes[/green]' if p.is_initialized() else '[yellow]no[/yellow]'}
-[bold]Enabled:[/bold] {'[green]yes[/green]' if p.enabled else '[red]no[/red]'}
-[bold]Default:[/bold] {'[green]yes[/green]' if is_default else 'no'}
-[bold]Description:[/bold] {p.description or '-'}
+[bold]Exists:[/bold] {"[green]yes[/green]" if p.exists() else "[red]no[/red]"}
+[bold]Initialized:[/bold] {"[green]yes[/green]" if p.is_initialized() else "[yellow]no[/yellow]"}
+[bold]Enabled:[/bold] {"[green]yes[/green]" if p.enabled else "[red]no[/red]"}
+[bold]Default:[/bold] {"[green]yes[/green]" if is_default else "no"}
+[bold]Description:[/bold] {p.description or "-"}
 
 [bold]Defaults:[/bold]
   Model: {p.default_model}
@@ -263,7 +264,7 @@ def show_project(ctx: Context, name: str) -> None:
     details += f"""
 
 [bold]Tasks:[/bold] {task_count} task(s)
-[bold]Use Shared Skills:[/bold] {'yes' if p.use_shared_skills else 'no'}"""
+[bold]Use Shared Skills:[/bold] {"yes" if p.use_shared_skills else "no"}"""
 
     if p.git_remote:
         details += f"\n\n[bold]Git Remote:[/bold] {p.git_remote}"
@@ -357,14 +358,16 @@ tasks: []
         schedules_file.write_text(default_schedules)
         console.print(f"Created: {schedules_file}")
 
-    console.print(Panel.fit(
-        f"[green]Project initialized at: {path}[/green]\n\n"
-        "Next steps:\n"
-        f"1. Register: codegeass project add {path}\n"
-        "2. Create skills in .claude/skills/\n"
-        "3. Add tasks with: codegeass task create",
-        title="Initialized",
-    ))
+    console.print(
+        Panel.fit(
+            f"[green]Project initialized at: {path}[/green]\n\n"
+            "Next steps:\n"
+            f"1. Register: codegeass project add {path}\n"
+            "2. Create skills in .claude/skills/\n"
+            "3. Add tasks with: codegeass task create",
+            title="Initialized",
+        )
+    )
 
 
 @project.command("enable")
@@ -407,8 +410,12 @@ def disable_project(ctx: Context, name: str) -> None:
 @click.option("--description", "-d", help="New description")
 @click.option("--model", "-m", help="New default model")
 @click.option("--timeout", "-t", type=int, help="New default timeout")
-@click.option("--autonomous/--no-autonomous", default=None, help="Enable/disable autonomous by default")
-@click.option("--shared-skills/--no-shared-skills", default=None, help="Enable/disable shared skills")
+@click.option(
+    "--autonomous/--no-autonomous", default=None, help="Enable/disable autonomous by default"
+)
+@click.option(
+    "--shared-skills/--no-shared-skills", default=None, help="Enable/disable shared skills"
+)
 @pass_context
 def update_project(
     ctx: Context,

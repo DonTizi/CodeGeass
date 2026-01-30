@@ -82,11 +82,11 @@ def show_logs(ctx: Context, task_name: str, limit: int) -> None:
 
     # Show stats first
     stats = ctx.log_repo.get_task_stats(task.id)
-    stats_panel = f"""[bold]Total Runs:[/bold] {stats['total_runs']}
-[bold]Success Rate:[/bold] {stats['success_rate']:.1f}%
-[bold]Avg Duration:[/bold] {stats['avg_duration']:.1f}s
-[bold]Last Run:[/bold] {stats['last_run'][:19] if stats['last_run'] else 'never'}
-[bold]Last Status:[/bold] {stats['last_status'] or '-'}"""
+    stats_panel = f"""[bold]Total Runs:[/bold] {stats["total_runs"]}
+[bold]Success Rate:[/bold] {stats["success_rate"]:.1f}%
+[bold]Avg Duration:[/bold] {stats["avg_duration"]:.1f}s
+[bold]Last Run:[/bold] {stats["last_run"][:19] if stats["last_run"] else "never"}
+[bold]Last Status:[/bold] {stats["last_status"] or "-"}"""
 
     console.print(Panel(stats_panel, title=f"Stats: {task_name}"))
 
@@ -103,8 +103,7 @@ def show_logs(ctx: Context, task_name: str, limit: int) -> None:
             status_str = f"[yellow]{r.status.value}[/yellow]"
 
         console.print(
-            f"{status_str} {r.started_at.strftime('%Y-%m-%d %H:%M')} "
-            f"({r.duration_seconds:.1f}s)"
+            f"{status_str} {r.started_at.strftime('%Y-%m-%d %H:%M')} ({r.duration_seconds:.1f}s)"
         )
 
         if r.error:
@@ -207,7 +206,13 @@ def stats_logs(ctx: Context) -> None:
         total_success += stats["success_count"]
         total_failures += stats["failure_count"]
 
-        rate_color = "green" if stats["success_rate"] >= 90 else "yellow" if stats["success_rate"] >= 70 else "red"
+        rate_color = (
+            "green"
+            if stats["success_rate"] >= 90
+            else "yellow"
+            if stats["success_rate"] >= 70
+            else "red"
+        )
 
         table.add_row(
             task.name,
@@ -223,4 +228,6 @@ def stats_logs(ctx: Context) -> None:
     # Overall summary
     if total_runs > 0:
         overall_rate = total_success / total_runs * 100
-        console.print(f"\n[bold]Overall:[/bold] {total_runs} runs, {overall_rate:.0f}% success rate")
+        console.print(
+            f"\n[bold]Overall:[/bold] {total_runs} runs, {overall_rate:.0f}% success rate"
+        )

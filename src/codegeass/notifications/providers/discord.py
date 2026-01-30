@@ -90,8 +90,7 @@ class DiscordProvider(NotificationProvider):
         except ImportError as e:
             raise ProviderError(
                 self.name,
-                "discord-webhook package not installed. "
-                "Install with: pip install discord-webhook",
+                "discord-webhook package not installed. Install with: pip install discord-webhook",
                 cause=e,
             )
 

@@ -1,17 +1,16 @@
 """Notification handler for scheduler integration."""
 
 import logging
-from pathlib import Path
-from typing import TYPE_CHECKING, Coroutine, Any
+from typing import TYPE_CHECKING
 
 from codegeass.execution.output_parser import parse_stream_json
 from codegeass.execution.tracker import get_execution_tracker
+from codegeass.notifications.interactive import (
+    InteractiveMessage,
+    create_plan_approval_message,
+)
 from codegeass.notifications.models import NotificationConfig, NotificationEvent
 from codegeass.notifications.service import NotificationService
-from codegeass.notifications.interactive import (
-    create_plan_approval_message,
-    InteractiveMessage,
-)
 
 if TYPE_CHECKING:
     from codegeass.core.entities import Task
@@ -126,7 +125,7 @@ class NotificationHandler:
 
         # Check if we have the required repositories
         if not self._approval_repo or not self._channel_repo:
-            print(f"[Notifications] Approval/channel repos not configured")
+            print("[Notifications] Approval/channel repos not configured")
             logger.error("Approval or channel repository not configured for plan approval")
             return
 
@@ -137,14 +136,14 @@ class NotificationHandler:
             plan_text = parsed.text
 
             if not session_id:
-                print(f"[Notifications] Could not extract session_id from output")
+                print("[Notifications] Could not extract session_id from output")
                 logger.error("Could not extract session_id from plan mode output")
                 # Fall back to task completion notification
                 await self.on_task_complete(task, result)
                 return
 
             # Create pending approval
-            from codegeass.execution.plan_approval import PendingApproval, MessageRef
+            from codegeass.execution.plan_approval import MessageRef, PendingApproval
 
             # Get worktree_path from result metadata (for isolated execution)
             worktree_path = None
@@ -181,7 +180,7 @@ class NotificationHandler:
             # Send to all configured channels
             config = NotificationConfig.from_dict(task.notifications)
             if not config or not config.channels:
-                print(f"[Notifications] No channels in notification config")
+                print("[Notifications] No channels in notification config")
                 return
 
             for channel_id in config.channels:
@@ -199,7 +198,8 @@ class NotificationHandler:
                             provider=msg_result.get("provider", "telegram"),
                         )
                         approval.add_message_ref(msg_ref)
-                        print(f"[Notifications] Sent approval to {channel_id}: msg_id={msg_result['message_id']}")
+                        mid = msg_result["message_id"]
+                        print(f"[Notifications] Sent approval to {channel_id}: msg={mid}")
 
                 except Exception as e:
                     print(f"[Notifications] Failed to send to {channel_id}: {e}")
@@ -207,7 +207,8 @@ class NotificationHandler:
 
             # Update approval with message refs
             self._approval_repo.save(approval)
-            print(f"[Notifications] Approval {approval.id} saved with {len(approval.channel_messages)} message refs")
+            ref_count = len(approval.channel_messages)
+            print(f"[Notifications] Approval {approval.id} saved with {ref_count} refs")
 
             # Set execution to waiting_approval state
             # This keeps it visible in the dashboard with "Waiting for Approval" status
@@ -217,16 +218,17 @@ class NotificationHandler:
                 tracker.set_waiting_approval(
                     execution_id=execution_id,
                     approval_id=approval.id,
-                    plan_text=plan_text[:500] if plan_text else None,  # Truncate for display
+                    plan_text=plan_text[:500] if plan_text else None,
                 )
                 print(f"[Notifications] Execution {execution_id} set to waiting_approval")
             else:
-                print(f"[Notifications] No execution_id in result metadata - cannot set waiting_approval")
+                print("[Notifications] No execution_id - cannot set waiting_approval")
 
         except Exception as e:
             print(f"[Notifications] Failed to create plan approval: {e}")
             logger.error(f"Failed to create plan approval: {e}")
             import traceback
+
             traceback.print_exc()
 
     async def _send_interactive_to_channel(

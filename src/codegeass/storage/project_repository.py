@@ -38,12 +38,16 @@ class ProjectRepository:
 
         with open(self._file) as f:
             content = yaml.safe_load(f)
-            return content if content else {
-                "version": self.CURRENT_VERSION,
-                "default_project": None,
-                "shared_skills_dir": str(Path.home() / ".codegeass" / "skills"),
-                "projects": [],
-            }
+            return (
+                content
+                if content
+                else {
+                    "version": self.CURRENT_VERSION,
+                    "default_project": None,
+                    "shared_skills_dir": str(Path.home() / ".codegeass" / "skills"),
+                    "projects": [],
+                }
+            )
 
     def _write(self, data: dict[str, Any]) -> None:
         """Write the registry file."""

@@ -4,8 +4,9 @@ Implements the Chain of Responsibility pattern for skill resolution:
 Project skills are checked first, then shared skills as fallback.
 """
 
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator, Protocol
+from typing import Protocol
 
 from codegeass.core.entities import Skill
 from codegeass.core.exceptions import SkillNotFoundError

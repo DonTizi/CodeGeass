@@ -5,7 +5,6 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from codegeass.cli.main import pass_context
 from codegeass.scheduling.cron_parser import CronParser
 
 console = Console()
@@ -31,7 +30,7 @@ def validate_cron(expression: str) -> None:
     normalized = CronParser.normalize(expression)
 
     if CronParser.validate(expression):
-        console.print(f"[green]✓ Valid CRON expression[/green]")
+        console.print("[green]✓ Valid CRON expression[/green]")
         console.print(f"\n[bold]Expression:[/bold] {expression}")
         if normalized != expression:
             console.print(f"[bold]Normalized:[/bold] {normalized}")
@@ -131,20 +130,23 @@ def check_due(expression: str, window: int) -> None:
     next_run = CronParser.get_next(expression)
 
     from datetime import datetime
+
     now = datetime.now()
     seconds_since = (now - prev_run).total_seconds()
 
     console.print(f"[bold]Expression:[/bold] {expression}")
     console.print(f"[bold]Description:[/bold] {CronParser.describe(expression)}")
     console.print(f"\n[bold]Current time:[/bold] {now.strftime('%Y-%m-%d %H:%M:%S')}")
-    console.print(f"[bold]Last scheduled:[/bold] {prev_run.strftime('%Y-%m-%d %H:%M:%S')} ({seconds_since:.0f}s ago)")
-    console.print(f"[bold]Next scheduled:[/bold] {next_run.strftime('%Y-%m-%d %H:%M:%S')}")
+    prev_str = prev_run.strftime('%Y-%m-%d %H:%M:%S')
+    next_str = next_run.strftime('%Y-%m-%d %H:%M:%S')
+    console.print(f"[bold]Last scheduled:[/bold] {prev_str} ({seconds_since:.0f}s ago)")
+    console.print(f"[bold]Next scheduled:[/bold] {next_str}")
     console.print(f"\n[bold]Window:[/bold] {window} seconds")
 
     if is_due:
-        console.print(f"[green]✓ Due for execution[/green] (last run was within window)")
+        console.print("[green]✓ Due for execution[/green] (last run was within window)")
     else:
-        console.print(f"[yellow]○ Not due[/yellow] (last run was {seconds_since:.0f}s ago, window is {window}s)")
+        console.print(f"[yellow]○ Not due[/yellow] ({seconds_since:.0f}s ago, window={window}s)")
 
 
 @cron.command("aliases")

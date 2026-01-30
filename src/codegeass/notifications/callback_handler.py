@@ -9,13 +9,12 @@ import asyncio
 import logging
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Callable, Awaitable
+from typing import TYPE_CHECKING
 
 from codegeass.notifications.interactive import CallbackQuery
 
 if TYPE_CHECKING:
     from codegeass.execution.plan_service import PlanApprovalService
-    from codegeass.storage.approval_repository import PendingApprovalRepository
     from codegeass.storage.channel_repository import ChannelRepository
 
 logger = logging.getLogger(__name__)
@@ -123,6 +122,7 @@ class CallbackHandler:
                 return False, "Approval not found"
 
             from codegeass.execution.plan_approval import ApprovalStatus
+
             if approval.status != ApprovalStatus.PENDING:
                 return False, "Approval already processed"
 
@@ -139,6 +139,7 @@ class CallbackHandler:
 
             # Track pending feedback
             from datetime import timedelta
+
             feedback_key = f"{callback.chat_id}:{callback.from_user_id}"
             self._pending_feedback[feedback_key] = PendingFeedback(
                 approval_id=approval_id,
@@ -233,8 +234,7 @@ class CallbackHandler:
         """Remove expired feedback requests."""
         now = datetime.now()
         expired = [
-            key for key, pending in self._pending_feedback.items()
-            if pending.expires_at < now
+            key for key, pending in self._pending_feedback.items() if pending.expires_at < now
         ]
         for key in expired:
             del self._pending_feedback[key]
@@ -340,13 +340,17 @@ class TelegramCallbackServer:
     async def _poll_bot(self, bot_token: str, credentials: dict[str, str]) -> None:
         """Poll a specific bot for updates."""
         try:
-            from telegram import Bot, Update
+            from telegram import Bot
         except ImportError:
             print("[Callback Server] telegram package not installed")
             return
 
         bot = Bot(token=bot_token)
-        offset = self._last_update_id.get(bot_token, 0) + 1 if bot_token in self._last_update_id else None
+        offset = (
+            self._last_update_id.get(bot_token, 0) + 1
+            if bot_token in self._last_update_id
+            else None
+        )
 
         try:
             updates = await bot.get_updates(
@@ -368,15 +372,15 @@ class TelegramCallbackServer:
                 logger.error(f"Error polling bot: {e}")
                 print(f"[Callback Server] Error polling: {e}", flush=True)
 
-    async def _process_update(self, update: "Update", credentials: dict[str, str]) -> None:
+    async def _process_update(self, update: object, credentials: dict[str, str]) -> None:
         """Process a single update from Telegram."""
-        from codegeass.notifications.interactive import CallbackQuery as CQ
+        from codegeass.notifications.interactive import CallbackQuery as CallbackQueryModel
 
         # Handle callback queries (button clicks)
-        if update.callback_query:
-            cq = update.callback_query
+        if update.callback_query:  # type: ignore[attr-defined]
+            cq = update.callback_query  # type: ignore[attr-defined]
             print(f"[Callback Server] Button clicked: {cq.data}")
-            callback = CQ(
+            callback = CallbackQueryModel(
                 query_id=str(cq.id),
                 from_user_id=str(cq.from_user.id),
                 from_username=cq.from_user.username,
@@ -390,18 +394,22 @@ class TelegramCallbackServer:
             print(f"[Callback Server] Callback result: success={success}, message={message}")
 
         # Handle reply messages (for feedback)
-        elif update.message and update.message.reply_to_message:
-            msg = update.message
-            print(f"[Callback Server] Reply received: '{msg.text[:50] if msg.text else '(no text)'}' replying to msg_id={msg.reply_to_message.message_id}", flush=True)
+        elif update.message and update.message.reply_to_message:  # type: ignore[attr-defined]
+            msg = update.message  # type: ignore[attr-defined]
+            text_preview = msg.text[:50] if msg.text else "(no text)"
+            reply_id = msg.reply_to_message.message_id
+            print(f"[Callback Server] Reply: '{text_preview}' to msg {reply_id}", flush=True)
             handled, result = await self._handler.handle_reply_message(
                 chat_id=str(msg.chat.id),
                 user_id=str(msg.from_user.id) if msg.from_user else "",
                 reply_to_message_id=msg.reply_to_message.message_id,
                 text=msg.text or "",
             )
-            print(f"[Callback Server] Reply result: handled={handled}, message={result}", flush=True)
-        elif update.message:
-            print(f"[Callback Server] Message received (not a reply): '{update.message.text[:50] if update.message.text else '(no text)'}'", flush=True)
+            print(f"[Callback Server] Reply result: {handled}, {result}", flush=True)
+        elif update.message:  # type: ignore[attr-defined]
+            umsg = update.message  # type: ignore[attr-defined]
+            text_preview = umsg.text[:50] if umsg.text else "(no text)"
+            print(f"[Callback Server] Message (not reply): '{text_preview}'", flush=True)
 
 
 # Global callback server instance

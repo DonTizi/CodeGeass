@@ -55,11 +55,13 @@ class TestExecutionStrategies:
         strategy = HeadlessStrategy()
         command = strategy.build_command(context)
 
-        assert "claude" in command
+        # command is a list, check for expected elements
+        cmd_str = " ".join(str(c) for c in command)
+        assert "claude" in cmd_str
         assert "-p" in command
         assert "Run tests" in command
         assert "--output-format" in command
-        assert "json" in command
+        assert any("json" in str(c) for c in command)
         assert "--model" in command
         assert "sonnet" in command
 

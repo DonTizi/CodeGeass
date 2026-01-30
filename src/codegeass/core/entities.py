@@ -1,10 +1,10 @@
 """Domain entities for CodeGeass."""
 
+import re
+import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Self
-import re
-import uuid
 
 import yaml
 from jinja2 import Template as Jinja2Template

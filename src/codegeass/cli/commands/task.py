@@ -48,7 +48,9 @@ def list_tasks(ctx: Context, show_all: bool) -> None:
         last_run = t.last_run[:16] if t.last_run else "-"
         last_status = t.last_status or "-"
 
-        skill_or_prompt = t.skill or (t.prompt[:30] + "..." if t.prompt and len(t.prompt) > 30 else t.prompt or "-")
+        skill_or_prompt = t.skill or (
+            t.prompt[:30] + "..." if t.prompt and len(t.prompt) > 30 else t.prompt or "-"
+        )
 
         table.add_row(
             t.name,
@@ -77,8 +79,8 @@ def show_task(ctx: Context, name: str) -> None:
 [bold]Name:[/bold] {t.name}
 [bold]Schedule:[/bold] {t.schedule} ({CronParser.describe(t.schedule)})
 [bold]Working Dir:[/bold] {t.working_dir}
-[bold]Skill:[/bold] {t.skill or '-'}
-[bold]Prompt:[/bold] {t.prompt or '-'}
+[bold]Skill:[/bold] {t.skill or "-"}
+[bold]Prompt:[/bold] {t.prompt or "-"}
 [bold]Model:[/bold] {t.model}
 [bold]Autonomous:[/bold] {t.autonomous}
 [bold]Plan Mode:[/bold] {t.plan_mode}"""
@@ -86,10 +88,10 @@ def show_task(ctx: Context, name: str) -> None:
         details += f" (timeout: {t.plan_timeout}s, max iterations: {t.plan_max_iterations})"
     details += f"""
 [bold]Timeout:[/bold] {t.timeout}s
-[bold]Max Turns:[/bold] {t.max_turns or 'unlimited'}
+[bold]Max Turns:[/bold] {t.max_turns or "unlimited"}
 [bold]Enabled:[/bold] {t.enabled}
-[bold]Last Run:[/bold] {t.last_run or 'never'}
-[bold]Last Status:[/bold] {t.last_status or '-'}"""
+[bold]Last Run:[/bold] {t.last_run or "never"}
+[bold]Last Status:[/bold] {t.last_status or "-"}"""
 
     if t.allowed_tools:
         details += f"\n[bold]Allowed Tools:[/bold] {', '.join(t.allowed_tools)}"
@@ -118,7 +120,9 @@ def show_task(ctx: Context, name: str) -> None:
 @task.command("create")
 @click.option("--name", "-n", required=True, help="Task name")
 @click.option("--schedule", "-s", required=True, help="CRON expression (e.g., '0 9 * * 1-5')")
-@click.option("--working-dir", "-w", required=True, type=click.Path(path_type=Path), help="Working directory")
+@click.option(
+    "--working-dir", "-w", required=True, type=click.Path(path_type=Path), help="Working directory"
+)
 @click.option("--skill", "-k", help="Skill to invoke")
 @click.option("--prompt", "-p", help="Direct prompt (if no skill)")
 @click.option("--model", "-m", default="sonnet", help="Model (haiku, sonnet, opus)")
@@ -135,9 +139,18 @@ def show_task(ctx: Context, name: str) -> None:
     help="Events to notify on (can specify multiple)",
 )
 @click.option("--notify-include-output", is_flag=True, help="Include task output in notifications")
-@click.option("--plan-mode", is_flag=True, help="Enable plan mode (requires approval before execution)")
-@click.option("--plan-timeout", type=int, default=3600, help="Plan approval timeout in seconds (default: 3600)")
-@click.option("--plan-max-iterations", type=int, default=5, help="Max discuss iterations (default: 5)")
+@click.option(
+    "--plan-mode", is_flag=True, help="Enable plan mode (requires approval before execution)"
+)
+@click.option(
+    "--plan-timeout",
+    type=int,
+    default=3600,
+    help="Plan approval timeout in seconds (default: 3600)",
+)
+@click.option(
+    "--plan-max-iterations", type=int, default=5, help="Max discuss iterations (default: 5)"
+)
 @pass_context
 def create_task(
     ctx: Context,
@@ -184,7 +197,10 @@ def create_task(
     if skill:
         if not ctx.skill_registry.exists(skill):
             console.print(f"[yellow]Warning: Skill '{skill}' not found in registry[/yellow]")
-            console.print("Available skills:", ", ".join(s.name for s in ctx.skill_registry.get_all()) or "none")
+            console.print(
+                "Available skills:",
+                ", ".join(s.name for s in ctx.skill_registry.get_all()) or "none",
+            )
 
     # Parse tools
     allowed_tools = [t.strip() for t in tools.split(",")] if tools else []
@@ -225,7 +241,7 @@ def create_task(
     console.print(f"Schedule: {schedule} ({CronParser.describe(schedule)})")
     console.print(f"Next run: {CronParser.get_next(schedule).strftime('%Y-%m-%d %H:%M')}")
     if plan_mode:
-        console.print(f"[cyan]Plan Mode: enabled (timeout: {plan_timeout}s, max iterations: {plan_max_iterations})[/cyan]")
+        console.print(f"[cyan]Plan Mode: timeout={plan_timeout}s, iter={plan_max_iterations}[/]")
 
 
 @task.command("run")
@@ -406,16 +422,22 @@ def stats_task(ctx: Context, name: str) -> None:
         return
 
     # Build stats panel
-    rate_color = "green" if stats["success_rate"] >= 90 else "yellow" if stats["success_rate"] >= 70 else "red"
+    rate_color = (
+        "green"
+        if stats["success_rate"] >= 90
+        else "yellow"
+        if stats["success_rate"] >= 70
+        else "red"
+    )
 
     details = f"""[bold]Task:[/bold] {name}
-[bold]Total Runs:[/bold] {stats['total_runs']}
-[bold]Successful:[/bold] {stats['success_count']}
-[bold]Failed:[/bold] {stats['failure_count']}
-[bold]Timeouts:[/bold] {stats.get('timeout_count', 0)}
-[bold]Success Rate:[/bold] [{rate_color}]{stats['success_rate']:.1f}%[/{rate_color}]
-[bold]Avg Duration:[/bold] {stats['avg_duration']:.1f}s
-[bold]Last Run:[/bold] {stats['last_run'][:19] if stats['last_run'] else 'never'}
-[bold]Last Status:[/bold] {stats['last_status'] or '-'}"""
+[bold]Total Runs:[/bold] {stats["total_runs"]}
+[bold]Successful:[/bold] {stats["success_count"]}
+[bold]Failed:[/bold] {stats["failure_count"]}
+[bold]Timeouts:[/bold] {stats.get("timeout_count", 0)}
+[bold]Success Rate:[/bold] [{rate_color}]{stats["success_rate"]:.1f}%[/{rate_color}]
+[bold]Avg Duration:[/bold] {stats["avg_duration"]:.1f}s
+[bold]Last Run:[/bold] {stats["last_run"][:19] if stats["last_run"] else "never"}
+[bold]Last Status:[/bold] {stats["last_status"] or "-"}"""
 
     console.print(Panel(details, title=f"Statistics: {name}"))

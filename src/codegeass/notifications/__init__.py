@@ -10,12 +10,6 @@ circular imports with storage modules. Import them directly:
     from codegeass.notifications.handler import NotificationHandler
 """
 
-from codegeass.notifications.models import (
-    Channel,
-    NotificationConfig,
-    NotificationDefaults,
-    NotificationEvent,
-)
 from codegeass.notifications.exceptions import (
     ChannelConfigError,
     ChannelNotFoundError,
@@ -24,8 +18,14 @@ from codegeass.notifications.exceptions import (
     ProviderError,
     ProviderNotFoundError,
 )
-from codegeass.notifications.registry import ProviderRegistry, get_provider_registry
 from codegeass.notifications.formatter import MessageFormatter, get_message_formatter
+from codegeass.notifications.models import (
+    Channel,
+    NotificationConfig,
+    NotificationDefaults,
+    NotificationEvent,
+)
+from codegeass.notifications.registry import ProviderRegistry, get_provider_registry
 
 __all__ = [
     # Models

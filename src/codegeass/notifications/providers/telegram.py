@@ -189,9 +189,11 @@ class TelegramProvider(NotificationProvider, InteractiveProvider):
             chat_id = channel.config["chat_id"]
             try:
                 chat = await bot.get_chat(chat_id=chat_id)
-                chat_title = getattr(chat, "title", None) or getattr(
-                    chat, "username", None
-                ) or "Private Chat"
+                chat_title = (
+                    getattr(chat, "title", None)
+                    or getattr(chat, "username", None)
+                    or "Private Chat"
+                )
                 return True, f"Connected! Bot: @{bot_info.username}, Chat: {chat_title}"
             except Exception as e:
                 return False, f"Bot token valid (@{bot_info.username}), but cannot access chat: {e}"
@@ -210,9 +212,7 @@ class TelegramProvider(NotificationProvider, InteractiveProvider):
 
     # InteractiveProvider implementation
 
-    def _build_inline_keyboard(
-        self, message: InteractiveMessage
-    ) -> "InlineKeyboardMarkup":
+    def _build_inline_keyboard(self, message: InteractiveMessage) -> object:
         """Build Telegram InlineKeyboardMarkup from InteractiveMessage."""
         from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -260,9 +260,7 @@ class TelegramProvider(NotificationProvider, InteractiveProvider):
 
         bot_token = credentials["bot_token"]
         chat_id = channel.config["chat_id"]
-        parse_mode = (
-            ParseMode.HTML if message.parse_mode == "HTML" else ParseMode.MARKDOWN_V2
-        )
+        parse_mode = ParseMode.HTML if message.parse_mode == "HTML" else ParseMode.MARKDOWN_V2
 
         try:
             bot = Bot(token=bot_token)
@@ -314,9 +312,7 @@ class TelegramProvider(NotificationProvider, InteractiveProvider):
 
         bot_token = credentials["bot_token"]
         chat_id = channel.config["chat_id"]
-        parse_mode = (
-            ParseMode.HTML if message.parse_mode == "HTML" else ParseMode.MARKDOWN_V2
-        )
+        parse_mode = ParseMode.HTML if message.parse_mode == "HTML" else ParseMode.MARKDOWN_V2
 
         try:
             bot = Bot(token=bot_token)

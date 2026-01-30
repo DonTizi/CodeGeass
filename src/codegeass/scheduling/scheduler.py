@@ -1,12 +1,13 @@
 """Main scheduler for managing and executing due tasks."""
 
 import asyncio
+from collections.abc import Awaitable, Callable
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Awaitable, Callable, Union
+from typing import TYPE_CHECKING
 
 from codegeass.core.entities import Task
-from codegeass.core.value_objects import ExecutionResult, ExecutionStatus
+from codegeass.core.value_objects import ExecutionResult
 from codegeass.execution.executor import ClaudeExecutor
 from codegeass.execution.session import SessionManager
 from codegeass.factory.registry import SkillRegistry
@@ -19,9 +20,9 @@ if TYPE_CHECKING:
     from codegeass.execution.tracker import ExecutionTracker
 
 # Type for callbacks that can be sync or async
-StartCallback = Callable[[Task], Union[None, Awaitable[None]]]
-CompleteCallback = Callable[[Task, ExecutionResult], Union[None, Awaitable[None]]]
-PlanApprovalCallback = Callable[[Task, ExecutionResult], Union[None, Awaitable[None]]]
+StartCallback = Callable[[Task], None | Awaitable[None]]
+CompleteCallback = Callable[[Task, ExecutionResult], None | Awaitable[None]]
+PlanApprovalCallback = Callable[[Task, ExecutionResult], None | Awaitable[None]]
 
 
 class Scheduler:
@@ -102,6 +103,7 @@ class Scheduler:
                 asyncio.get_running_loop()
                 # Already in async context, run in a new thread with its own loop
                 import concurrent.futures
+
                 with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
                     future = executor.submit(asyncio.run, callback_result)
                     future.result(timeout=30)  # Wait for completion
@@ -342,9 +344,7 @@ class Scheduler:
         new_crontab = current.rstrip() + "\n" + entry + "\n"
 
         # Install
-        process = subprocess.Popen(
-            ["crontab", "-"], stdin=subprocess.PIPE, text=True
-        )
+        process = subprocess.Popen(["crontab", "-"], stdin=subprocess.PIPE, text=True)
         process.communicate(input=new_crontab)
 
         return process.returncode == 0

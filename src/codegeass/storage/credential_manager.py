@@ -1,10 +1,8 @@
 """Credential manager for storing secrets in ~/.codegeass/."""
 
 from pathlib import Path
-from typing import Any
 
 import yaml
-
 
 # Default location for CodeGeass home directory
 CODEGEASS_HOME = Path.home() / ".codegeass"

@@ -27,13 +27,13 @@ def scheduler_status(ctx: Context) -> None:
     """Show scheduler status."""
     status = ctx.scheduler.status()
 
-    details = f"""[bold]Current Time:[/bold] {status['current_time'][:19]}
+    details = f"""[bold]Current Time:[/bold] {status["current_time"][:19]}
 
 [bold]Tasks:[/bold]
-  Enabled: {status['enabled_tasks']}
-  Disabled: {status['disabled_tasks']}
+  Enabled: {status["enabled_tasks"]}
+  Disabled: {status["disabled_tasks"]}
 
-[bold]Due Now:[/bold] {', '.join(status['due_tasks']) or 'none'}"""
+[bold]Due Now:[/bold] {", ".join(status["due_tasks"]) or "none"}"""
 
     console.print(Panel(details, title="Scheduler Status"))
 
@@ -53,7 +53,9 @@ def scheduler_status(ctx: Context) -> None:
 @scheduler.command("run")
 @click.option("--force", "-f", is_flag=True, help="Run all enabled tasks regardless of schedule")
 @click.option("--dry-run", is_flag=True, help="Show what would run without executing")
-@click.option("--window", "-w", default=60, help="Time window in seconds for due tasks (default: 60)")
+@click.option(
+    "--window", "-w", default=60, help="Time window in seconds for due tasks (default: 60)"
+)
 @pass_context
 def run_scheduler(ctx: Context, force: bool, dry_run: bool, window: int) -> None:
     """Run due tasks (or all tasks with --force)."""
@@ -156,10 +158,11 @@ def install_cron(ctx: Context, script: Path | None) -> None:
 
     # Make executable
     import os
+
     os.chmod(runner_script, 0o755)
 
     entry = ctx.scheduler.generate_crontab_entry(runner_script)
-    console.print(f"[bold]Crontab entry:[/bold]")
+    console.print("[bold]Crontab entry:[/bold]")
     console.print(f"  {entry}")
 
     if click.confirm("\nInstall this entry to crontab?"):
@@ -212,6 +215,7 @@ def test_cron(ctx: Context, verbose: bool) -> None:
 
     # Check claude command
     import shutil
+
     if shutil.which("claude"):
         console.print("[green]✓ claude command found[/green]")
     else:
@@ -235,7 +239,9 @@ def test_cron(ctx: Context, verbose: bool) -> None:
 
 
 @scheduler.command("daemon")
-@click.option("--poll-interval", "-p", default=1.0, help="Polling interval in seconds (default: 1.0)")
+@click.option(
+    "--poll-interval", "-p", default=1.0, help="Polling interval in seconds (default: 1.0)"
+)
 @pass_context
 def daemon_mode(ctx: Context, poll_interval: float) -> None:
     """Run daemon that handles Telegram callbacks for plan approvals.

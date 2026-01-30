@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Any
 from codegeass.notifications.exceptions import (
     ChannelNotFoundError,
     CredentialError,
-    NotificationError,
     ProviderError,
 )
 from codegeass.notifications.formatter import MessageFormatter, get_message_formatter
@@ -64,9 +63,7 @@ class NotificationService:
         """
         # Get notification config from task if not provided
         if notification_config is None:
-            notification_config = NotificationConfig.from_dict(
-                getattr(task, "notifications", None)
-            )
+            notification_config = NotificationConfig.from_dict(getattr(task, "notifications", None))
 
         # If no config or no channels, nothing to do
         if not notification_config or not notification_config.channels:
@@ -137,9 +134,7 @@ class NotificationService:
                 message_id = self._message_ids[task.id][channel_id]
 
             # Send or edit
-            send_result = await provider.send(
-                channel, credentials, message, message_id=message_id
-            )
+            send_result = await provider.send(channel, credentials, message, message_id=message_id)
 
             # Store message ID for future edits
             if send_result.get("message_id"):
@@ -148,8 +143,11 @@ class NotificationService:
                 self._message_ids[task.id][channel_id] = send_result["message_id"]
 
             # Clean up message IDs on completion events
-            if event in (NotificationEvent.TASK_SUCCESS, NotificationEvent.TASK_FAILURE,
-                         NotificationEvent.TASK_COMPLETE):
+            if event in (
+                NotificationEvent.TASK_SUCCESS,
+                NotificationEvent.TASK_FAILURE,
+                NotificationEvent.TASK_COMPLETE,
+            ):
                 if task.id in self._message_ids:
                     self._message_ids.pop(task.id, None)
 

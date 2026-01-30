@@ -264,9 +264,7 @@ def create_plan_approval_message(
     if iteration == 0:
         header = f"<b>Plan Approval Required: {task_name}</b>\n\n"
     else:
-        header = (
-            f"<b>Updated Plan (iteration {iteration}/{max_iterations}): {task_name}</b>\n\n"
-        )
+        header = f"<b>Updated Plan (iteration {iteration}/{max_iterations}): {task_name}</b>\n\n"
 
     text = f"{header}<code>{plan_text}</code>"
 

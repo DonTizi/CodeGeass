@@ -299,9 +299,7 @@ class BaseStrategy(ABC):
                 error=str(e),
             )
 
-    def _detect_phase(
-        self, tracker: "ExecutionTracker", execution_id: str, line: str
-    ) -> None:
+    def _detect_phase(self, tracker: "ExecutionTracker", execution_id: str, line: str) -> None:
         """Try to detect execution phase from stream-json output line."""
         try:
             # Claude stream-json format outputs structured events
@@ -319,9 +317,7 @@ class BaseStrategy(ABC):
                         block_type = block.get("type", "")
                         if block_type == "tool_use":
                             tool_name = block.get("name", "unknown")
-                            tracker.update_execution(
-                                execution_id, phase=f"tool: {tool_name}"
-                            )
+                            tracker.update_execution(execution_id, phase=f"tool: {tool_name}")
                         elif block_type == "text":
                             tracker.update_execution(execution_id, phase="thinking")
 
@@ -331,18 +327,14 @@ class BaseStrategy(ABC):
                     block_type = content_block.get("type", "")
                     if block_type == "tool_use":
                         tool_name = content_block.get("name", "unknown")
-                        tracker.update_execution(
-                            execution_id, phase=f"tool: {tool_name}"
-                        )
+                        tracker.update_execution(execution_id, phase=f"tool: {tool_name}")
                     elif block_type == "text":
                         tracker.update_execution(execution_id, phase="generating")
 
                 elif event_type == "tool_use":
                     # Direct tool use event
                     tool_name = data.get("name", "unknown")
-                    tracker.update_execution(
-                        execution_id, phase=f"tool: {tool_name}"
-                    )
+                    tracker.update_execution(execution_id, phase=f"tool: {tool_name}")
 
                 elif event_type == "result":
                     # Final result

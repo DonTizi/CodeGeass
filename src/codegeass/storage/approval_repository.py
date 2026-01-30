@@ -2,7 +2,6 @@
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 from codegeass.execution.plan_approval import ApprovalStatus, PendingApproval
 from codegeass.storage.yaml_backend import YAMLListBackend
@@ -114,6 +113,7 @@ class PendingApprovalRepository:
         """
         cutoff = datetime.now()
         from datetime import timedelta
+
         cutoff = cutoff - timedelta(days=days)
 
         items = self._backend.read_all()

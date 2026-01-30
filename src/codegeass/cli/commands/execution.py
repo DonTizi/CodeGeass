@@ -108,10 +108,10 @@ def show_execution(ctx: Context, execution_id: str | None, task: str | None) -> 
 
     info = f"""[bold]Execution ID:[/bold] {execution.execution_id}
 [bold]Task:[/bold] {execution.task_name} ({execution.task_id})
-[bold]Session ID:[/bold] {execution.session_id or '-'}
+[bold]Session ID:[/bold] {execution.session_id or "-"}
 [bold]Status:[/bold] [{status_color}]{execution.status}[/{status_color}]
 [bold]Phase:[/bold] {execution.current_phase}
-[bold]Started:[/bold] {execution.started_at.strftime('%Y-%m-%d %H:%M:%S')}
+[bold]Started:[/bold] {execution.started_at.strftime("%Y-%m-%d %H:%M:%S")}
 [bold]Duration:[/bold] {duration:.0f}s"""
 
     console.print(Panel(info, title=f"Execution: {execution.execution_id}"))
@@ -139,6 +139,7 @@ def watch_execution(ctx: Context, execution_id: str | None, task: str | None) ->
     Press Ctrl+C to stop watching.
     """
     import time
+
     from codegeass.execution.tracker import get_execution_tracker
 
     tracker = get_execution_tracker(ctx.data_dir)
@@ -165,7 +166,9 @@ def watch_execution(ctx: Context, execution_id: str | None, task: str | None) ->
             return
         execution = active[0]
         if len(active) > 1:
-            console.print(f"[yellow]Multiple executions active. Watching: {execution.task_name}[/yellow]")
+            console.print(
+                f"[yellow]Multiple executions active. Watching: {execution.task_name}[/yellow]"
+            )
 
     console.print(f"[bold]Watching:[/bold] {execution.task_name} ({execution.execution_id})")
     console.print("[dim]Press Ctrl+C to stop[/dim]\n")

@@ -5,15 +5,14 @@ sessions from interfering with each other.
 """
 
 import logging
-import os
 import shutil
 import subprocess
 import uuid
+from collections.abc import Generator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Generator
-from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +67,7 @@ class WorktreeManager:
 
         # Fall back to temp directory
         import tempfile
+
         temp_base = Path(tempfile.gettempdir()) / "codegeass-worktrees"
         temp_base.mkdir(parents=True, exist_ok=True)
         return temp_base
@@ -234,6 +234,7 @@ class WorktreeManager:
             return 0
 
         from datetime import timedelta
+
         cutoff = datetime.now() - timedelta(hours=max_age_hours)
         cleaned = 0
 

@@ -113,7 +113,9 @@ Success: {{ successes }} | Failed: {{ failures }} | Rate: {{ success_rate }}%
         if result:
             context["status"] = result.status.value
             # Extract human-readable output from Claude CLI JSON
-            context["output"] = extract_clean_text(result.output, max_length=1000) if include_output else None
+            context["output"] = (
+                extract_clean_text(result.output, max_length=1000) if include_output else None
+            )
             context["error"] = result.error
             context["duration"] = f"{result.duration_seconds:.1f}"
             context["started_at"] = result.started_at.strftime("%Y-%m-%d %H:%M:%S")

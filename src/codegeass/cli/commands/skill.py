@@ -3,8 +3,8 @@
 import click
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
 from rich.syntax import Syntax
+from rich.table import Table
 
 from codegeass.cli.main import Context, pass_context
 
@@ -60,7 +60,9 @@ def show_skill(ctx: Context, name: str) -> None:
         s = ctx.skill_registry.get(name)
     except Exception:
         console.print(f"[red]Skill not found: {name}[/red]")
-        console.print("Available skills:", ", ".join(sk.name for sk in ctx.skill_registry.get_all()) or "none")
+        console.print(
+            "Available skills:", ", ".join(sk.name for sk in ctx.skill_registry.get_all()) or "none"
+        )
         raise SystemExit(1)
 
     # Build details
@@ -68,9 +70,9 @@ def show_skill(ctx: Context, name: str) -> None:
 [bold]Path:[/bold] {s.path}
 [bold]Description:[/bold] {s.description}
 [bold]Context:[/bold] {s.context}
-[bold]Agent:[/bold] {s.agent or '-'}
+[bold]Agent:[/bold] {s.agent or "-"}
 [bold]Disable Model Invocation:[/bold] {s.disable_model_invocation}
-[bold]Allowed Tools:[/bold] {', '.join(s.allowed_tools) or '-'}"""
+[bold]Allowed Tools:[/bold] {", ".join(s.allowed_tools) or "-"}"""
 
     console.print(Panel(details, title=f"Skill: {s.name}"))
 
@@ -114,6 +116,7 @@ def validate_skill(ctx: Context, name: str) -> None:
 
     # Check dynamic commands syntax
     import re
+
     dynamic_pattern = r"!\`[^`]+\`"
     dynamic_matches = re.findall(dynamic_pattern, s.content)
     for match in dynamic_matches:

@@ -1,7 +1,7 @@
 """Registries for skills and templates."""
 
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
 
 from codegeass.core.entities import Skill, Template
 from codegeass.core.exceptions import SkillNotFoundError, TemplateNotFoundError

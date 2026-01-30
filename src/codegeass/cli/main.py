@@ -1,7 +1,6 @@
 """Main CLI entry point for CodeGeass."""
 
 from pathlib import Path
-from typing import Any
 
 import click
 from rich.console import Console
@@ -254,12 +253,15 @@ pass_context = click.make_pass_decorator(Context, ensure=True)
     help="Project directory (default: detected from CLI location)",
 )
 @click.option(
-    "--project", "-p",
+    "--project",
+    "-p",
     "project_name",
     help="Project name or ID (for multi-project mode)",
 )
 @click.pass_context
-def cli(ctx: click.Context, verbose: bool, project_dir: Path | None, project_name: str | None) -> None:
+def cli(
+    ctx: click.Context, verbose: bool, project_dir: Path | None, project_name: str | None
+) -> None:
     """CodeGeass - Claude Code Scheduler Framework.
 
     Orchestrate automated Claude Code sessions with templates, prompts and skills.
@@ -300,7 +302,7 @@ def cli(ctx: click.Context, verbose: bool, project_dir: Path | None, project_nam
 
 
 # Import and register command groups
-from codegeass.cli.commands import (
+from codegeass.cli.commands import (  # noqa: E402
     approval,
     cron,
     execution,

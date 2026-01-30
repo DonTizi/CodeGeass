@@ -1,10 +1,10 @@
 """Plan mode approval entities for interactive task approval."""
 
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import Any, Self
-import uuid
 
 
 class ApprovalStatus(str, Enum):
@@ -111,6 +111,7 @@ class PendingApproval:
             self.created_at = datetime.now().isoformat()
         if not self.expires_at:
             from datetime import timedelta
+
             expires = datetime.now() + timedelta(seconds=self.timeout_seconds)
             self.expires_at = expires.isoformat()
 
@@ -233,12 +234,8 @@ class PendingApproval:
             timeout_seconds=data.get("timeout_seconds", 3600),
             created_at=data["created_at"],
             expires_at=data["expires_at"],
-            channel_messages=[
-                MessageRef.from_dict(m) for m in data.get("channel_messages", [])
-            ],
-            feedback_history=[
-                FeedbackEntry.from_dict(f) for f in data.get("feedback_history", [])
-            ],
+            channel_messages=[MessageRef.from_dict(m) for m in data.get("channel_messages", [])],
+            feedback_history=[FeedbackEntry.from_dict(f) for f in data.get("feedback_history", [])],
             final_output=data.get("final_output", ""),
             error=data.get("error"),
             worktree_path=data.get("worktree_path"),

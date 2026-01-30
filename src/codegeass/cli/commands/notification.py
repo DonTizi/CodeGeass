@@ -8,7 +8,6 @@ from rich.panel import Panel
 from rich.table import Table
 
 from codegeass.cli.main import Context, pass_context
-from codegeass.notifications.models import Channel, NotificationEvent
 from codegeass.notifications.registry import get_provider_registry
 
 console = Console()
@@ -46,14 +45,18 @@ def list_channels(ctx: Context, show_all: bool) -> None:
 
     if not channels:
         console.print("[yellow]No notification channels configured.[/yellow]")
-        console.print("Add a channel with: codegeass notification add --provider telegram --name 'My Channel'")
+        console.print(
+            "Add a channel with: codegeass notification add --provider telegram --name 'My Channel'"
+        )
         return
 
     if not show_all:
         channels = [ch for ch in channels if ch.enabled]
 
     if not channels:
-        console.print("[yellow]No enabled channels found. Use --all to see disabled channels.[/yellow]")
+        console.print(
+            "[yellow]No enabled channels found. Use --all to see disabled channels.[/yellow]"
+        )
         return
 
     table = Table(title="Notification Channels")
@@ -92,7 +95,7 @@ def show_channel(ctx: Context, channel_id: str) -> None:
 [bold]Provider:[/bold] {channel.provider}
 [bold]Enabled:[/bold] {channel.enabled}
 [bold]Credential Key:[/bold] {channel.credential_key}
-[bold]Created:[/bold] {channel.created_at or 'unknown'}"""
+[bold]Created:[/bold] {channel.created_at or "unknown"}"""
 
     if channel.config:
         config_str = "\n".join(f"  {k}: {v}" for k, v in channel.config.items())
@@ -102,7 +105,13 @@ def show_channel(ctx: Context, channel_id: str) -> None:
 
 
 @notification.command("add")
-@click.option("--provider", "-p", required=True, type=click.Choice(["telegram", "discord"]), help="Provider type")
+@click.option(
+    "--provider",
+    "-p",
+    required=True,
+    type=click.Choice(["telegram", "discord"]),
+    help="Provider type",
+)
 @click.option("--name", "-n", required=True, help="Channel display name")
 @pass_context
 def add_channel(ctx: Context, provider: str, name: str) -> None:
@@ -161,11 +170,11 @@ def add_channel(ctx: Context, provider: str, name: str) -> None:
             config=config,
         )
 
-        console.print(f"\n[green]Channel created successfully![/green]")
+        console.print("\n[green]Channel created successfully![/green]")
         console.print(f"ID: {channel.id}")
         console.print(f"Name: {channel.name}")
         console.print(f"Provider: {channel.provider}")
-        console.print(f"\nCredentials stored in: ~/.codegeass/credentials.yaml")
+        console.print("\nCredentials stored in: ~/.codegeass/credentials.yaml")
         console.print(f"\nTest it with: codegeass notification test {channel.id}")
 
     except Exception as e:
@@ -197,7 +206,7 @@ def remove_channel(ctx: Context, channel_id: str, yes: bool, keep_credentials: b
         if not keep_credentials:
             console.print("Credentials also removed from ~/.codegeass/credentials.yaml")
     else:
-        console.print(f"[red]Failed to delete channel[/red]")
+        console.print("[red]Failed to delete channel[/red]")
         raise SystemExit(1)
 
 
@@ -207,7 +216,9 @@ def remove_channel(ctx: Context, channel_id: str, yes: bool, keep_credentials: b
 @click.option("--enabled/--disabled", default=None, help="Enable or disable channel")
 @click.option("--config", "-c", multiple=True, help="Update config values (format: key=value)")
 @pass_context
-def update_channel(ctx: Context, channel_id: str, name: str | None, enabled: bool | None, config: tuple[str, ...]) -> None:
+def update_channel(
+    ctx: Context, channel_id: str, name: str | None, enabled: bool | None, config: tuple[str, ...]
+) -> None:
     """Update a notification channel."""
     channel_repo = _get_channel_repo(ctx)
     channel = channel_repo.find_by_id(channel_id)
@@ -271,10 +282,10 @@ def test_channel(ctx: Context, channel_id: str, message: str | None) -> None:
             test_msg = "Test notification from CodeGeass!"
 
         if await service.send_test_message(channel_id, test_msg):
-            console.print(f"[green]Test message sent successfully![/green]")
+            console.print("[green]Test message sent successfully![/green]")
             return True
         else:
-            console.print(f"[red]Failed to send test message[/red]")
+            console.print("[red]Failed to send test message[/red]")
             return False
 
     success = asyncio.run(_test())

@@ -21,7 +21,11 @@ def approval() -> None:
 
 @approval.command("list")
 @click.option("--pending", "-p", is_flag=True, help="Show only pending approvals")
-@click.option("--status", "-s", help="Filter by status (pending, approved, completed, cancelled, expired, failed)")
+@click.option(
+    "--status",
+    "-s",
+    help="Filter by status (pending, approved, completed, cancelled, expired, failed)",
+)
 @pass_context
 def list_approvals(ctx: Context, pending: bool, status: str | None) -> None:
     """List plan approvals."""
@@ -82,8 +86,12 @@ def list_approvals(ctx: Context, pending: bool, status: str | None) -> None:
     console.print(table)
 
     # Show summary
-    pending_count = len([a for a in all_approvals if a.status == ApprovalStatus.PENDING and not a.is_expired])
-    console.print(f"\n[bold]Total:[/bold] {len(all_approvals)} | [bold]Pending:[/bold] {pending_count}")
+    pending_count = len(
+        [a for a in all_approvals if a.status == ApprovalStatus.PENDING and not a.is_expired]
+    )
+    console.print(
+        f"\n[bold]Total:[/bold] {len(all_approvals)} | [bold]Pending:[/bold] {pending_count}"
+    )
 
 
 @approval.command("show")
@@ -142,7 +150,12 @@ def show_approval(ctx: Context, approval_id: str | None, task: str | None) -> No
 
     # Show plan
     console.print("\n[bold]Plan:[/bold]")
-    console.print(Panel(approval.plan_text[:2000] + ("..." if len(approval.plan_text) > 2000 else ""), border_style="dim"))
+    console.print(
+        Panel(
+            approval.plan_text[:2000] + ("..." if len(approval.plan_text) > 2000 else ""),
+            border_style="dim",
+        )
+    )
 
     # Show feedback history
     if approval.feedback_history:
@@ -237,7 +250,8 @@ def discuss_plan(ctx: Context, approval_id: str, feedback: str) -> None:
         console.print(f"[red]Max iterations reached ({approval.max_iterations})[/red]")
         raise SystemExit(1)
 
-    console.print(f"[yellow]Sending feedback (iteration {approval.iteration + 1}/{approval.max_iterations})...[/yellow]")
+    iter_info = f"{approval.iteration + 1}/{approval.max_iterations}"
+    console.print(f"[yellow]Sending feedback (iteration {iter_info})...[/yellow]")
 
     # Create service and send feedback
     plan_service = PlanApprovalService(ctx.approval_repo, ctx.channel_repo)
@@ -247,7 +261,7 @@ def discuss_plan(ctx: Context, approval_id: str, feedback: str) -> None:
 
         if updated:
             console.print("[green]New plan generated![/green]")
-            console.print(f"\n[bold]Updated Plan:[/bold]")
+            console.print("\n[bold]Updated Plan:[/bold]")
             console.print(Panel(updated.plan_text[:2000], border_style="dim"))
         else:
             console.print("[red]Failed to process feedback.[/red]")
@@ -352,10 +366,9 @@ def stats_approvals(ctx: Context) -> None:
         stats[approval.status] += 1
 
     # Check for expired pending
-    expired_pending = len([
-        a for a in all_approvals
-        if a.status == ApprovalStatus.PENDING and a.is_expired
-    ])
+    expired_pending = len(
+        [a for a in all_approvals if a.status == ApprovalStatus.PENDING and a.is_expired]
+    )
 
     table = Table(title="Approval Statistics")
     table.add_column("Status")
@@ -404,7 +417,9 @@ def delete_approval(ctx: Context, approval_id: str, yes: bool) -> None:
         raise SystemExit(1)
 
     if approval.status == ApprovalStatus.PENDING:
-        console.print("[yellow]Warning: This approval is still pending. Use 'cancel' first.[/yellow]")
+        console.print(
+            "[yellow]Warning: This approval is still pending. Use 'cancel' first.[/yellow]"
+        )
 
     if not yes:
         if not click.confirm(f"Delete approval '{approval_id}' for task '{approval.task_name}'?"):

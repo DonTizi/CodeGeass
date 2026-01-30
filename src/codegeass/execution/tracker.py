@@ -4,13 +4,13 @@ import json
 import logging
 import threading
 import uuid
-from collections import deque
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Literal
+from typing import Any, Literal
 
-from codegeass.execution.events import ExecutionEvent, ExecutionEventType
+from codegeass.execution.events import ExecutionEvent
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class ActiveExecution:
         """Append output line to buffer, keeping only the last N lines."""
         self.output_lines.append(line)
         if len(self.output_lines) > self._max_output_lines:
-            self.output_lines = self.output_lines[-self._max_output_lines:]
+            self.output_lines = self.output_lines[-self._max_output_lines :]
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for serialization."""
@@ -449,7 +449,8 @@ class ExecutionTracker:
                         to_remove.append(exec_id)
                     elif execution.approval_id and execution.approval_id not in valid_approval_ids:
                         to_remove.append(exec_id)
-                        logger.info(f"Removing stale execution {exec_id} (approval {execution.approval_id} no longer pending)")
+                        aid = execution.approval_id
+                        logger.info(f"Removing stale execution {exec_id} (approval {aid} stale)")
 
             for exec_id in to_remove:
                 del self._active[exec_id]
