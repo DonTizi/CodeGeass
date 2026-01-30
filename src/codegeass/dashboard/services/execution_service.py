@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from typing import Any
+from typing import Any, Callable
 
 from codegeass.execution.events import ExecutionEvent
 from codegeass.execution.tracker import ExecutionTracker, get_execution_tracker
@@ -35,7 +35,7 @@ class ExecutionManager:
         self._connection_manager = connection_manager
         self._event_queue: asyncio.Queue[ExecutionEvent] = asyncio.Queue()
         self._running = False
-        self._unregister_callback: callable | None = None
+        self._unregister_callback: Callable[[], None] | None = None
 
     def start(self) -> None:
         """Start listening to execution events."""
@@ -145,7 +145,7 @@ def get_execution_manager() -> ExecutionManager:
     """Get or create the global ExecutionManager instance."""
     global _execution_manager
     if _execution_manager is None:
-        tracker = get_execution_tracker(settings.DATA_DIR)
+        tracker = get_execution_tracker(settings.data_dir)
         connection_manager = get_connection_manager()
         _execution_manager = ExecutionManager(tracker, connection_manager)
     return _execution_manager
