@@ -2,6 +2,9 @@
 # Global configuration for the scheduler framework
 
 claude:
+  # Path to the claude executable (required for cron/scheduled execution)
+  executable: /home/dontizi/.local/bin/claude
+
   # Default model for tasks (haiku, sonnet, opus)
   default_model: sonnet
 

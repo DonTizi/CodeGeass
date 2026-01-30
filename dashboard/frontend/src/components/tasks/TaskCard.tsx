@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Play, MoreVertical, Power, PowerOff, Trash2, Clock, Wand2 } from 'lucide-react';
-import type { Task } from '@/types';
+import { Play, MoreVertical, Power, PowerOff, Trash2, Clock, Wand2, FolderGit2 } from 'lucide-react';
+import type { TaskBase } from '@/types';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -18,11 +18,12 @@ import {
 import { ActiveExecutionBadge } from '@/components/executions';
 
 interface TaskCardProps {
-  task: Task;
+  task: TaskBase;
   onDelete?: () => void;
+  projectName?: string | null; // For multi-project view
 }
 
-export function TaskCard({ task, onDelete }: TaskCardProps) {
+export function TaskCard({ task, onDelete, projectName }: TaskCardProps) {
   const { enableTask, disableTask, runTask } = useTasksStore();
   const activeExecution = useExecutionsStore((state) => state.getByTaskId(task.id));
   const isRunning = !!activeExecution;
@@ -130,6 +131,14 @@ export function TaskCard({ task, onDelete }: TaskCardProps) {
             <div className="flex items-center gap-2 text-muted-foreground">
               <Wand2 className="h-4 w-4" />
               <span>{task.skill}</span>
+            </div>
+          )}
+
+          {/* Project (for multi-project view) */}
+          {projectName && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <FolderGit2 className="h-4 w-4" />
+              <span>{projectName}</span>
             </div>
           )}
 

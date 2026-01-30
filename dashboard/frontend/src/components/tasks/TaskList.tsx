@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Plus, RefreshCw } from 'lucide-react';
-import { useTasksStore } from '@/stores';
+import { useTasksStore, useProjectsStore } from '@/stores';
 import { TaskCard } from './TaskCard';
 import { TaskForm } from './TaskForm';
 import { Button } from '@/components/ui/Button';
 import { toast } from '@/components/ui/Toaster';
-import type { TaskCreate } from '@/types';
+import type { TaskCreate, TaskWithProject } from '@/types';
+import { api } from '@/lib/api';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,12 +20,45 @@ import {
 
 export function TaskList() {
   const { tasks, loading, error, fetchTasks, createTask, deleteTask } = useTasksStore();
+  const { projects, selectedProjectId, fetchProjects } = useProjectsStore();
   const [formOpen, setFormOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [multiProjectTasks, setMultiProjectTasks] = useState<TaskWithProject[]>([]);
+  const [loadingMultiProject, setLoadingMultiProject] = useState(false);
 
+  // Fetch projects on mount
   useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+    fetchProjects();
+  }, [fetchProjects]);
+
+  // Determine if we're in multi-project mode
+  const hasMultipleProjects = projects.length > 1;
+  const showAllProjects = selectedProjectId === null && hasMultipleProjects;
+
+  // Fetch tasks based on mode
+  useEffect(() => {
+    if (showAllProjects) {
+      // Multi-project mode: fetch aggregated tasks
+      setLoadingMultiProject(true);
+      api.projects.getAllTasks(false, false)
+        .then(setMultiProjectTasks)
+        .catch(console.error)
+        .finally(() => setLoadingMultiProject(false));
+    } else {
+      // Single project mode: use regular task fetch
+      fetchTasks();
+    }
+  }, [fetchTasks, showAllProjects, selectedProjectId]);
+
+  // Get the display tasks
+  const displayTasks = useMemo(() => {
+    if (showAllProjects) {
+      return multiProjectTasks;
+    }
+    return tasks;
+  }, [showAllProjects, multiProjectTasks, tasks]);
+
+  const isLoading = showAllProjects ? loadingMultiProject : loading;
 
   const handleCreate = async (data: TaskCreate) => {
     try {
@@ -73,33 +107,53 @@ export function TaskList() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground">
-          {tasks.length} task{tasks.length !== 1 ? 's' : ''} configured
+          {displayTasks.length} task{displayTasks.length !== 1 ? 's' : ''} configured
+          {showAllProjects && ' across all projects'}
         </p>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => fetchTasks()} disabled={loading}>
-            <RefreshCw className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => showAllProjects
+              ? api.projects.getAllTasks(false, false).then(setMultiProjectTasks)
+              : fetchTasks()
+            }
+            disabled={isLoading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button size="sm" onClick={() => setFormOpen(true)}>
-            <Plus className="h-4 w-4 mr-1" />
-            New Task
-          </Button>
+          {!showAllProjects && (
+            <Button size="sm" onClick={() => setFormOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              New Task
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Task Grid */}
-      {tasks.length === 0 ? (
+      {displayTasks.length === 0 ? (
         <div className="text-center py-12 bg-muted/50 rounded-lg">
-          <p className="text-muted-foreground mb-4">No tasks configured yet</p>
-          <Button onClick={() => setFormOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Create your first task
-          </Button>
+          <p className="text-muted-foreground mb-4">
+            {showAllProjects ? 'No tasks found across projects' : 'No tasks configured yet'}
+          </p>
+          {!showAllProjects && (
+            <Button onClick={() => setFormOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create your first task
+            </Button>
+          )}
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} onDelete={() => setDeleteId(task.id)} />
+          {displayTasks.map((task) => (
+            <TaskCard
+              key={`${(task as TaskWithProject).project_id || 'local'}-${task.id}`}
+              task={task}
+              onDelete={() => setDeleteId(task.id)}
+              projectName={showAllProjects ? (task as TaskWithProject).project_name : undefined}
+            />
           ))}
         </div>
       )}
