@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2025-01-29
+
+### Added
+
+- **Integrated Dashboard**: `codegeass dashboard` command now starts the web dashboard
+- Dashboard included in the pip package (no separate installation needed)
+- FastAPI, uvicorn, and websockets added as default dependencies
+
+### Changed
+
+- Dashboard is now part of the core package, not a separate install
+
 ## [0.1.2] - 2025-01-29
 
 ### Fixed
@@ -103,7 +115,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANTHROPIC_API_KEY deliberately unset in CRON to use Pro/Max subscription
 - No API tokens in configuration files
 
-[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/DonTizi/CodeGeass/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/DonTizi/CodeGeass/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/DonTizi/CodeGeass/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/DonTizi/CodeGeass/releases/tag/v0.1.0
