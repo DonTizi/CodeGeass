@@ -159,7 +159,7 @@ import { LucideIcon } from 'lucide-react';
 
 ## Configuration
 
-Python 3.11+ required. Key dependencies: pydantic, click, rich, pyyaml, jinja2, croniter.
+Python 3.10+ required. Key dependencies: pydantic, click, rich, pyyaml, jinja2, croniter.
 
 ruff line-length: 100, mypy strict mode enabled.
 
