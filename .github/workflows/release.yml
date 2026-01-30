@@ -59,31 +59,9 @@ jobs:
           codegeass --version
           codegeass --help
 
-  publish-testpypi:
-    name: Publish to TestPyPI
-    needs: test-install
-    runs-on: ubuntu-latest
-    environment: testpypi
-    permissions:
-      id-token: write
-      contents: read
-
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist/
-
-      - name: Publish to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
-          skip-existing: true
-
   publish-pypi:
     name: Publish to PyPI
-    needs: publish-testpypi
+    needs: test-install
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
