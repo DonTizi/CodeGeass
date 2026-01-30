@@ -20,9 +20,24 @@
 
 ## Installation
 
-### From PyPI (Recommended)
+### One-Line Install (Recommended)
+
+Installs CodeGeass + 24/7 scheduler service (works on macOS and Linux):
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/DonTizi/CodeGeass/main/install.sh | bash
+```
+
+This will:
+- Install CodeGeass from PyPI
+- Check/install Claude CLI
+- Set up automatic scheduler (launchd on macOS, systemd on Linux)
+- Configure directories
+
+### Manual Install
+
+```bash
+# From PyPI
 pip install codegeass
 
 # With notification support
@@ -40,17 +55,10 @@ cd CodeGeass
 pip install -e .
 ```
 
-### Install as 24/7 Service
+### Uninstall
 
 ```bash
-# Install systemd service (runs scheduler every 5 minutes)
-./service/install.sh
-
-# Check status
-systemctl --user status codegeass-scheduler.timer
-
-# View logs
-journalctl --user -u codegeass-scheduler -f
+curl -fsSL https://raw.githubusercontent.com/DonTizi/CodeGeass/main/uninstall.sh | bash
 ```
 
 ## Quick Start
