@@ -178,58 +178,77 @@ install_claude_cli() {
 install_codegeass() {
     log_info "Installing CodeGeass..."
 
-    OS=$(detect_os)
+    VENV_DIR="$CODEGEASS_DIR/venv"
+    BIN_DIR="$CODEGEASS_DIR/bin"
 
-    # On macOS with Homebrew, use pipx (recommended for CLI apps)
-    if [ "$OS" = "macos" ] && command -v brew &> /dev/null; then
-        if ! command -v pipx &> /dev/null; then
-            log_info "Installing pipx..."
-            brew install pipx
-            pipx ensurepath 2>/dev/null || true
-        fi
-
-        # Check if already installed via pipx
-        if pipx list 2>/dev/null | grep -q "codegeass"; then
-            log_info "Upgrading CodeGeass..."
-            pipx upgrade codegeass
-        else
-            # Clean install
-            pipx install codegeass
-        fi
-        return
-    fi
-
-    # On Linux or without Homebrew, use pip with --user
-    if [ -n "$PIP_BIN" ]; then
-        $PIP_BIN install --user --upgrade codegeass
+    # Create dedicated venv in ~/.codegeass/venv
+    if [ -d "$VENV_DIR" ]; then
+        log_info "Upgrading existing installation..."
+        "$VENV_DIR/bin/pip" install --upgrade codegeass
     else
-        pip3 install --user --upgrade codegeass
-    fi
+        log_info "Creating virtual environment..."
 
-    # Ensure ~/.local/bin is in PATH
-    if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
-        export PATH="$HOME/.local/bin:$PATH"
-
-        # Add to shell profile
-        SHELL_PROFILE=""
-        if [ -f "$HOME/.zshrc" ]; then
-            SHELL_PROFILE="$HOME/.zshrc"
-        elif [ -f "$HOME/.bashrc" ]; then
-            SHELL_PROFILE="$HOME/.bashrc"
-        elif [ -f "$HOME/.bash_profile" ]; then
-            SHELL_PROFILE="$HOME/.bash_profile"
-        fi
-
-        if [ -n "$SHELL_PROFILE" ]; then
-            if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$SHELL_PROFILE" 2>/dev/null; then
-                echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$SHELL_PROFILE"
-                log_info "Added ~/.local/bin to PATH in $SHELL_PROFILE"
+        # Find Python 3.10+
+        PYTHON_CMD=""
+        for py in python3.12 python3.11 python3.10; do
+            if command -v $py &> /dev/null; then
+                PYTHON_CMD=$py
+                break
             fi
+        done
+
+        # Check Homebrew paths
+        if [ -z "$PYTHON_CMD" ]; then
+            for path in /opt/homebrew/opt/python@3.12/bin/python3.12 /usr/local/opt/python@3.12/bin/python3.12; do
+                if [ -f "$path" ]; then
+                    PYTHON_CMD=$path
+                    break
+                fi
+            done
+        fi
+
+        if [ -z "$PYTHON_CMD" ]; then
+            log_error "Python 3.10+ not found"
+            return 1
+        fi
+
+        $PYTHON_CMD -m venv "$VENV_DIR"
+        "$VENV_DIR/bin/pip" install --upgrade pip
+        "$VENV_DIR/bin/pip" install codegeass
+    fi
+
+    # Create wrapper script
+    mkdir -p "$BIN_DIR"
+    cat > "$BIN_DIR/codegeass" << 'WRAPPER'
+#!/bin/bash
+exec "$HOME/.codegeass/venv/bin/codegeass" "$@"
+WRAPPER
+    chmod +x "$BIN_DIR/codegeass"
+
+    # Add to PATH in shell profile
+    SHELL_PROFILE=""
+    if [ -f "$HOME/.zshrc" ]; then
+        SHELL_PROFILE="$HOME/.zshrc"
+    elif [ -f "$HOME/.bashrc" ]; then
+        SHELL_PROFILE="$HOME/.bashrc"
+    elif [ -f "$HOME/.bash_profile" ]; then
+        SHELL_PROFILE="$HOME/.bash_profile"
+    fi
+
+    PATH_LINE='export PATH="$HOME/.codegeass/bin:$PATH"'
+    if [ -n "$SHELL_PROFILE" ]; then
+        if ! grep -q '.codegeass/bin' "$SHELL_PROFILE" 2>/dev/null; then
+            echo "$PATH_LINE" >> "$SHELL_PROFILE"
+            log_info "Added ~/.codegeass/bin to PATH in $SHELL_PROFILE"
         fi
     fi
 
-    if command -v codegeass &> /dev/null || [ -f "$HOME/.local/bin/codegeass" ]; then
-        log_success "CodeGeass installed: $($HOME/.local/bin/codegeass --version 2>/dev/null || echo 'installed')"
+    export PATH="$BIN_DIR:$PATH"
+
+    # Verify installation
+    if [ -f "$BIN_DIR/codegeass" ]; then
+        VERSION=$("$VENV_DIR/bin/codegeass" --version 2>/dev/null || echo "installed")
+        log_success "CodeGeass $VERSION"
         return 0
     else
         log_error "CodeGeass installation failed"
