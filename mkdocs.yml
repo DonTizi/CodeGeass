@@ -37,6 +37,7 @@ extra_css:
 
 plugins:
   - search
+  - mike
 
 markdown_extensions:
   - admonition
@@ -55,6 +56,9 @@ markdown_extensions:
   - mkdocs-click
 
 extra:
+  version:
+    provider: mike
+    default: latest
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/dontizi/codegeass
@@ -86,6 +90,7 @@ nav:
     - execution: cli/execution.md
   - Guides:
     - Creating Tasks: guides/create-task.md
+    - Production Setup: guides/production-setup.md
     - Notifications Setup: guides/setup-notifications.md
     - Plan Mode Workflow: guides/plan-mode-workflow.md
     - CRON Automation: guides/cron-setup.md

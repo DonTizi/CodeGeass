@@ -1,0 +1,23 @@
+[Unit]
+Description=CodeGeass Scheduler - Run due tasks
+Documentation=https://dontizi.github.io/codegeass/
+
+[Service]
+Type=oneshot
+ExecStart=CODEGEASS_BIN_PLACEHOLDER scheduler run
+WorkingDirectory=WORKING_DIR_PLACEHOLDER
+
+# Environment
+Environment="PATH=CODEGEASS_PATH_PLACEHOLDER:/usr/local/bin:/usr/bin:/bin"
+Environment="HOME=%h"
+
+# Ensure Claude uses subscription, not API credits
+Environment="ANTHROPIC_API_KEY="
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=codegeass
+
+[Install]
+WantedBy=default.target

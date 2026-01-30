@@ -1,0 +1,48 @@
+name: Documentation
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    name: Deploy Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[docs]"
+
+      - name: Configure git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy dev docs (main branch)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          mike deploy --push dev
+
+      - name: Deploy versioned docs (tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          # Extract major.minor version (e.g., 0.1 from 0.1.0)
+          MAJOR_MINOR=$(echo $VERSION | cut -d. -f1,2)
+          mike deploy --push --update-aliases $MAJOR_MINOR latest
+          mike set-default --push latest

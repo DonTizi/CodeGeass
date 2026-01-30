@@ -1,0 +1,5 @@
+include README.md
+include LICENSE
+include CHANGELOG.md
+include src/codegeass/py.typed
+recursive-include src/codegeass *.py

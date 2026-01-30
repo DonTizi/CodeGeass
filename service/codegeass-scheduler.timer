@@ -1,0 +1,16 @@
+[Unit]
+Description=CodeGeass Scheduler Timer - Run due tasks every 5 minutes
+Documentation=https://dontizi.github.io/codegeass/
+
+[Timer]
+# Run every 5 minutes
+OnCalendar=*:0/5
+# Randomize start time within 30 seconds to avoid thundering herd
+RandomizedDelaySec=30
+# Run immediately on boot if a run was missed
+Persistent=true
+# Start service immediately after timer activates
+Unit=codegeass-scheduler.service
+
+[Install]
+WantedBy=timers.target
