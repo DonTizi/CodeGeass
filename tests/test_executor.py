@@ -167,7 +167,7 @@ class TestStrategyExecution:
     @pytest.fixture
     def mock_subprocess(self):
         """Mock subprocess.run."""
-        with patch("codegeass.execution.strategies.subprocess.run") as mock:
+        with patch("codegeass.execution.strategies.base.subprocess.run") as mock:
             mock.return_value = MagicMock(
                 returncode=0,
                 stdout='{"result": "success"}',
@@ -225,7 +225,7 @@ class TestStrategyExecution:
     def test_execute_timeout(self, tmp_path):
         import subprocess
 
-        with patch("codegeass.execution.strategies.subprocess.run") as mock:
+        with patch("codegeass.execution.strategies.base.subprocess.run") as mock:
             mock.side_effect = subprocess.TimeoutExpired(cmd="claude", timeout=300)
 
             task = Task.create(

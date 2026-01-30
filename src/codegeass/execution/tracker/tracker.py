@@ -1,81 +1,21 @@
-"""Execution tracker for real-time monitoring of active executions."""
+"""Core execution tracker singleton."""
 
-import json
 import logging
+import os
+import signal
 import threading
+import time
 import uuid
-from collections.abc import Callable
-from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal
 
 from codegeass.execution.events import ExecutionEvent
+from codegeass.execution.tracker.event_emitter import EventCallback, EventEmitter
+from codegeass.execution.tracker.execution import ActiveExecution
+from codegeass.execution.tracker.persistence import ExecutionPersistence
 
 logger = logging.getLogger(__name__)
-
-
-@dataclass
-class ActiveExecution:
-    """Represents an active execution being tracked.
-
-    Contains state and metadata for a running task execution.
-    """
-
-    execution_id: str
-    task_id: str
-    task_name: str
-    session_id: str | None
-    started_at: datetime
-    status: Literal["starting", "running", "finishing", "waiting_approval", "stopped"] = "starting"
-    output_lines: list[str] = field(default_factory=list)
-    current_phase: str = "initializing"
-    approval_id: str | None = None  # For plan mode tasks waiting for approval
-    pid: int | None = None  # Process ID for the running Claude process
-
-    # Buffer for output lines (keep last 1000)
-    _max_output_lines: int = 1000
-
-    def append_output(self, line: str) -> None:
-        """Append output line to buffer, keeping only the last N lines."""
-        self.output_lines.append(line)
-        if len(self.output_lines) > self._max_output_lines:
-            self.output_lines = self.output_lines[-self._max_output_lines :]
-
-    def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary for serialization."""
-        return {
-            "execution_id": self.execution_id,
-            "task_id": self.task_id,
-            "task_name": self.task_name,
-            "session_id": self.session_id,
-            "started_at": self.started_at.isoformat(),
-            "status": self.status,
-            "output_lines": self.output_lines[-20:],  # Only serialize last 20 lines
-            "current_phase": self.current_phase,
-            "approval_id": self.approval_id,
-            "pid": self.pid,
-        }
-
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "ActiveExecution":
-        """Create from dictionary."""
-        return cls(
-            execution_id=data["execution_id"],
-            task_id=data["task_id"],
-            task_name=data["task_name"],
-            session_id=data.get("session_id"),
-            started_at=datetime.fromisoformat(data["started_at"]),
-            status=data.get("status", "running"),
-            output_lines=data.get("output_lines", []),
-            current_phase=data.get("current_phase", "unknown"),
-            approval_id=data.get("approval_id"),
-            pid=data.get("pid"),
-        )
-
-
-# Type for event callbacks
-EventCallback = Callable[[ExecutionEvent], None]
 
 
 class ExecutionTracker:
@@ -83,8 +23,6 @@ class ExecutionTracker:
 
     Thread-safe tracking of all active Claude Code executions.
     Emits events for real-time monitoring via WebSocket.
-
-    Persists active executions to a file for crash recovery.
     """
 
     _instance: "ExecutionTracker | None" = None
@@ -101,89 +39,20 @@ class ExecutionTracker:
         return cls._instance
 
     def __init__(self, data_dir: Path | None = None) -> None:
-        """Initialize the tracker.
-
-        Args:
-            data_dir: Directory for persistence file
-        """
-        # Only initialize once
+        """Initialize the tracker."""
         if getattr(self, "_initialized", False):
             return
 
         self._active: dict[str, ActiveExecution] = {}
-        self._callbacks: list[EventCallback] = []
+        self._emitter = EventEmitter()
         self._data_lock = threading.RLock()
-
-        # Persistence file for crash recovery
-        self._data_dir = data_dir or Path.cwd() / "data"
-        self._persistence_file = self._data_dir / "active_executions.json"
-
-        # Load any previously active executions (for crash recovery)
-        self._load_active()
-
+        self._persistence = ExecutionPersistence(data_dir or Path.cwd() / "data")
+        self._active = self._persistence.load()
         self._initialized = True
 
-    def _load_active(self) -> None:
-        """Load active executions from persistence file."""
-        if not self._persistence_file.exists():
-            return
-
-        try:
-            with open(self._persistence_file) as f:
-                data = json.load(f)
-
-            for exec_data in data.get("executions", []):
-                execution = ActiveExecution.from_dict(exec_data)
-                self._active[execution.execution_id] = execution
-                logger.info(f"Recovered active execution: {execution.execution_id}")
-
-        except Exception as e:
-            logger.warning(f"Failed to load active executions: {e}")
-
-    def _save_active(self) -> None:
-        """Persist active executions to file."""
-        try:
-            self._data_dir.mkdir(parents=True, exist_ok=True)
-            data = {
-                "executions": [ex.to_dict() for ex in self._active.values()],
-                "updated_at": datetime.now().isoformat(),
-            }
-            with open(self._persistence_file, "w") as f:
-                json.dump(data, f, indent=2)
-        except Exception as e:
-            logger.warning(f"Failed to save active executions: {e}")
-
-    def on_event(self, callback: EventCallback) -> Callable[[], None]:
-        """Register an event callback.
-
-        Args:
-            callback: Function to call with each event
-
-        Returns:
-            Function to unregister the callback
-        """
-        with self._data_lock:
-            self._callbacks.append(callback)
-
-        def unregister() -> None:
-            with self._data_lock:
-                if callback in self._callbacks:
-                    self._callbacks.remove(callback)
-
-        return unregister
-
-    def _emit(self, event: ExecutionEvent) -> None:
-        """Emit an event to all registered callbacks."""
-        with self._data_lock:
-            callbacks = list(self._callbacks)
-
-        logger.info(f"Emitting event {event.type.value} to {len(callbacks)} callbacks")
-
-        for callback in callbacks:
-            try:
-                callback(event)
-            except Exception as e:
-                logger.error(f"Error in event callback: {e}")
+    def on_event(self, callback: EventCallback) -> callable:
+        """Register an event callback."""
+        return self._emitter.register(callback)
 
     def start_execution(
         self,
@@ -191,16 +60,7 @@ class ExecutionTracker:
         task_name: str,
         session_id: str | None = None,
     ) -> str:
-        """Start tracking a new execution.
-
-        Args:
-            task_id: The task being executed
-            task_name: Human-readable task name
-            session_id: Optional session ID
-
-        Returns:
-            The generated execution_id
-        """
+        """Start tracking a new execution. Returns execution_id."""
         execution_id = str(uuid.uuid4())[:12]
 
         execution = ActiveExecution(
@@ -214,16 +74,15 @@ class ExecutionTracker:
 
         with self._data_lock:
             self._active[execution_id] = execution
-            self._save_active()
+            self._persistence.save(self._active)
 
-        # Emit STARTED event
         event = ExecutionEvent.started(
             execution_id=execution_id,
             task_id=task_id,
             task_name=task_name,
             session_id=session_id,
         )
-        self._emit(event)
+        self._emitter.emit(event)
 
         logger.info(f"Started tracking execution {execution_id} for task {task_name}")
         print(f"[Tracker] Started execution {execution_id} for {task_name}")
@@ -235,13 +94,7 @@ class ExecutionTracker:
         status: Literal["starting", "running", "finishing"] | None = None,
         phase: str | None = None,
     ) -> None:
-        """Update execution status or phase.
-
-        Args:
-            execution_id: The execution to update
-            status: New status
-            phase: New phase description
-        """
+        """Update execution status or phase."""
         with self._data_lock:
             execution = self._active.get(execution_id)
             if not execution:
@@ -253,9 +106,8 @@ class ExecutionTracker:
             if phase:
                 execution.current_phase = phase
 
-            self._save_active()
+            self._persistence.save(self._active)
 
-        # Emit PROGRESS event
         if phase:
             event = ExecutionEvent.progress(
                 execution_id=execution_id,
@@ -263,61 +115,37 @@ class ExecutionTracker:
                 task_name=execution.task_name,
                 phase=phase,
             )
-            self._emit(event)
+            self._emitter.emit(event)
 
     def append_output(self, execution_id: str, line: str) -> None:
-        """Append output line to an execution.
-
-        Args:
-            execution_id: The execution to update
-            line: Output line to append
-        """
+        """Append output line to an execution."""
         with self._data_lock:
             execution = self._active.get(execution_id)
             if not execution:
                 return
-
             execution.append_output(line)
 
-        # Emit OUTPUT event
         event = ExecutionEvent.output(
             execution_id=execution_id,
             task_id=execution.task_id,
             task_name=execution.task_name,
             line=line,
         )
-        self._emit(event)
+        self._emitter.emit(event)
 
     def set_pid(self, execution_id: str, pid: int) -> None:
-        """Set the process ID for an execution.
-
-        Args:
-            execution_id: The execution to update
-            pid: The process ID of the running Claude process
-        """
+        """Set the process ID for an execution."""
         with self._data_lock:
             execution = self._active.get(execution_id)
             if not execution:
                 logger.warning(f"Execution {execution_id} not found when setting PID")
                 return
-
             execution.pid = pid
-            self._save_active()
-
+            self._persistence.save(self._active)
         logger.info(f"Set PID {pid} for execution {execution_id}")
 
     def stop_execution(self, execution_id: str) -> bool:
-        """Stop a running execution by killing its process.
-
-        Args:
-            execution_id: The execution to stop
-
-        Returns:
-            True if the execution was stopped, False otherwise
-        """
-        import os
-        import signal
-
+        """Stop a running execution by killing its process."""
         with self._data_lock:
             execution = self._active.get(execution_id)
             if not execution:
@@ -334,30 +162,24 @@ class ExecutionTracker:
 
         if not pid:
             logger.warning(f"No PID found for execution {execution_id}")
-            # Still mark as stopped and remove
             self._mark_stopped(execution_id, task_id, task_name, "No process to stop")
             return True
 
-        # Try to kill the process
         try:
             os.kill(pid, signal.SIGTERM)
             logger.info(f"Sent SIGTERM to PID {pid} for execution {execution_id}")
-
-            # Give it a moment, then force kill if needed
-            import time
             time.sleep(0.5)
 
             try:
-                os.kill(pid, 0)  # Check if still running
+                os.kill(pid, 0)
                 os.kill(pid, signal.SIGKILL)
                 logger.info(f"Sent SIGKILL to PID {pid}")
             except OSError:
-                pass  # Process already terminated
+                pass
 
         except OSError as e:
             logger.warning(f"Failed to kill PID {pid}: {e}")
 
-        # Mark as stopped
         self._mark_stopped(execution_id, task_id, task_name, "Stopped by user")
         return True
 
@@ -370,11 +192,10 @@ class ExecutionTracker:
             if execution:
                 duration = (datetime.now() - execution.started_at).total_seconds()
                 del self._active[execution_id]
-                self._save_active()
+                self._persistence.save(self._active)
             else:
                 duration = 0.0
 
-        # Emit STOPPED event
         event = ExecutionEvent.stopped(
             execution_id=execution_id,
             task_id=task_id,
@@ -382,23 +203,15 @@ class ExecutionTracker:
             reason=reason,
             duration_seconds=duration,
         )
-        self._emit(event)
+        self._emitter.emit(event)
         logger.info(f"Execution {execution_id} marked as stopped: {reason}")
 
     def stop_by_task(self, task_id: str) -> bool:
-        """Stop any active execution for a task.
-
-        Args:
-            task_id: The task ID to stop execution for
-
-        Returns:
-            True if an execution was stopped, False otherwise
-        """
+        """Stop any active execution for a task."""
         execution = self.get_by_task(task_id)
         if not execution:
             logger.info(f"No active execution found for task {task_id}")
             return False
-
         return self.stop_execution(execution.execution_id)
 
     def finish_execution(
@@ -408,28 +221,17 @@ class ExecutionTracker:
         exit_code: int | None = None,
         error: str | None = None,
     ) -> None:
-        """Mark an execution as finished.
-
-        Args:
-            execution_id: The execution to finish
-            success: Whether execution succeeded
-            exit_code: Process exit code
-            error: Error message if failed
-        """
+        """Mark an execution as finished."""
         with self._data_lock:
             execution = self._active.get(execution_id)
             if not execution:
                 logger.warning(f"Execution {execution_id} not found")
                 return
 
-            # Calculate duration
             duration = (datetime.now() - execution.started_at).total_seconds()
-
-            # Remove from active
             del self._active[execution_id]
-            self._save_active()
+            self._persistence.save(self._active)
 
-        # Emit completion event
         if success:
             event = ExecutionEvent.completed(
                 execution_id=execution_id,
@@ -447,7 +249,7 @@ class ExecutionTracker:
                 exit_code=exit_code,
             )
 
-        self._emit(event)
+        self._emitter.emit(event)
         logger.info(f"Finished execution {execution_id} (success={success})")
 
     def set_waiting_approval(
@@ -456,16 +258,7 @@ class ExecutionTracker:
         approval_id: str,
         plan_text: str | None = None,
     ) -> None:
-        """Set execution to waiting_approval state for plan mode tasks.
-
-        Unlike finish_execution, this keeps the execution active and visible
-        until the approval is handled (approved, cancelled, or expired).
-
-        Args:
-            execution_id: The execution to update
-            approval_id: The approval ID for this plan
-            plan_text: Optional plan text summary
-        """
+        """Set execution to waiting_approval state for plan mode tasks."""
         with self._data_lock:
             execution = self._active.get(execution_id)
             if not execution:
@@ -475,9 +268,8 @@ class ExecutionTracker:
             execution.status = "waiting_approval"
             execution.approval_id = approval_id
             execution.current_phase = "waiting for approval"
-            self._save_active()
+            self._persistence.save(self._active)
 
-        # Emit waiting_approval event
         event = ExecutionEvent.waiting_approval(
             execution_id=execution_id,
             task_id=execution.task_id,
@@ -485,18 +277,11 @@ class ExecutionTracker:
             approval_id=approval_id,
             plan_text=plan_text,
         )
-        self._emit(event)
+        self._emitter.emit(event)
         logger.info(f"Execution {execution_id} waiting for approval: {approval_id}")
 
     def get_by_approval(self, approval_id: str) -> ActiveExecution | None:
-        """Get execution by approval ID.
-
-        Args:
-            approval_id: The approval ID
-
-        Returns:
-            The execution waiting for this approval, or None
-        """
+        """Get execution by approval ID."""
         with self._data_lock:
             for execution in self._active.values():
                 if execution.approval_id == approval_id:
@@ -504,35 +289,17 @@ class ExecutionTracker:
         return None
 
     def get_active(self) -> list[ActiveExecution]:
-        """Get all active executions.
-
-        Returns:
-            List of active executions
-        """
+        """Get all active executions."""
         with self._data_lock:
             return list(self._active.values())
 
     def get_execution(self, execution_id: str) -> ActiveExecution | None:
-        """Get a specific execution by ID.
-
-        Args:
-            execution_id: The execution ID
-
-        Returns:
-            The execution or None if not found
-        """
+        """Get a specific execution by ID."""
         with self._data_lock:
             return self._active.get(execution_id)
 
     def get_by_task(self, task_id: str) -> ActiveExecution | None:
-        """Get active execution for a task.
-
-        Args:
-            task_id: The task ID
-
-        Returns:
-            The active execution for this task, or None
-        """
+        """Get active execution for a task."""
         with self._data_lock:
             for execution in self._active.values():
                 if execution.task_id == task_id:
@@ -543,19 +310,10 @@ class ExecutionTracker:
         """Clear all active executions (for testing)."""
         with self._data_lock:
             self._active.clear()
-            if self._persistence_file.exists():
-                self._persistence_file.unlink()
+            self._persistence.clear()
 
     def cleanup_stale_executions(self, valid_approval_ids: set[str] | None = None) -> int:
-        """Clean up stale executions that are waiting for approvals that no longer exist.
-
-        Args:
-            valid_approval_ids: Set of approval IDs that are still pending.
-                               If None, removes all waiting_approval executions.
-
-        Returns:
-            Number of executions removed
-        """
+        """Clean up stale executions waiting for expired approvals."""
         removed = 0
         with self._data_lock:
             to_remove = []
@@ -565,27 +323,21 @@ class ExecutionTracker:
                         to_remove.append(exec_id)
                     elif execution.approval_id and execution.approval_id not in valid_approval_ids:
                         to_remove.append(exec_id)
-                        aid = execution.approval_id
-                        logger.info(f"Removing stale execution {exec_id} (approval {aid} stale)")
+                        logger.info(
+                            f"Removing stale execution {exec_id} "
+                            f"(approval {execution.approval_id} stale)"
+                        )
 
             for exec_id in to_remove:
                 del self._active[exec_id]
                 removed += 1
 
             if removed > 0:
-                self._save_active()
+                self._persistence.save(self._active)
 
         return removed
 
 
-# Global accessor function
 def get_execution_tracker(data_dir: Path | None = None) -> ExecutionTracker:
-    """Get the global ExecutionTracker instance.
-
-    Args:
-        data_dir: Data directory for persistence
-
-    Returns:
-        The singleton ExecutionTracker instance
-    """
+    """Get the global ExecutionTracker instance."""
     return ExecutionTracker(data_dir)
