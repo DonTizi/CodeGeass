@@ -20,7 +20,17 @@ class MessageFormatter:
     customized per provider or channel.
     """
 
+    # Output truncation limits per provider (in characters)
+    # Teams has 28KB limit for Adaptive Cards, so we can use a much higher limit
+    PROVIDER_OUTPUT_LIMITS: dict[str, int] = {
+        "telegram": 4000,  # Telegram message limit is 4096
+        "discord": 2000,   # Discord embed limit
+        "teams": 20000,    # Teams Adaptive Card can handle up to 28KB
+    }
+    DEFAULT_OUTPUT_LIMIT = 2000
+
     # Default templates for each event type (compact format, no emojis)
+    # Uses {{ max_output_length }} variable set per provider
     TEMPLATES: dict[NotificationEvent, str] = {
         NotificationEvent.TASK_START: """
 <b>{{ task.name }}</b> - Running...
@@ -31,14 +41,14 @@ class MessageFormatter:
 <b>{{ task.name }}</b> - {{ status | upper }}
 Duration: {{ duration }}s
 {% if include_output and output %}
-<pre>{{ output | truncate(300) }}</pre>
+<pre>{{ output | truncate(max_output_length) }}</pre>
 {% endif %}
         """.strip(),
         NotificationEvent.TASK_SUCCESS: """
 <b>{{ task.name }}</b> - SUCCESS
 Duration: {{ duration }}s
 {% if include_output and output %}
-<pre>{{ output | truncate(300) }}</pre>
+<pre>{{ output | truncate(max_output_length) }}</pre>
 {% endif %}
         """.strip(),
         NotificationEvent.TASK_FAILURE: """
@@ -46,7 +56,7 @@ Duration: {{ duration }}s
 Duration: {{ duration }}s
 Error: {{ error or "Unknown error" }}
 {% if include_output and output %}
-<pre>{{ output | truncate(300) }}</pre>
+<pre>{{ output | truncate(max_output_length) }}</pre>
 {% endif %}
         """.strip(),
         NotificationEvent.DAILY_SUMMARY: """
@@ -71,6 +81,7 @@ Success: {{ successes }} | Failed: {{ failures }} | Rate: {{ success_rate }}%
         task: "Task | None" = None,
         result: "ExecutionResult | None" = None,
         include_output: bool = False,
+        max_output_length: int | None = None,
         **extra_context: Any,
     ) -> str:
         """Format a notification message.
@@ -80,12 +91,16 @@ Success: {{ successes }} | Failed: {{ failures }} | Rate: {{ success_rate }}%
             task: Task that triggered the event
             result: Execution result (for completion events)
             include_output: Whether to include task output
+            max_output_length: Max chars for output (default: DEFAULT_OUTPUT_LIMIT)
             **extra_context: Additional template context
 
         Returns:
             Formatted message string
         """
-        context = self._build_context(event, task, result, include_output, **extra_context)
+        limit = max_output_length or self.DEFAULT_OUTPUT_LIMIT
+        context = self._build_context(
+            event, task, result, include_output, max_output_length=limit, **extra_context
+        )
         template = Template(self._templates[event])
         return template.render(**context).strip()
 
@@ -95,12 +110,14 @@ Success: {{ successes }} | Failed: {{ failures }} | Rate: {{ success_rate }}%
         task: "Task | None",
         result: "ExecutionResult | None",
         include_output: bool,
+        max_output_length: int = 2000,
         **extra: Any,
     ) -> dict[str, Any]:
         """Build template context from task and result."""
         context: dict[str, Any] = {
             "event": event.value,
             "include_output": include_output,
+            "max_output_length": max_output_length,
             "now": datetime.now().isoformat(),
             **extra,
         }
@@ -113,8 +130,11 @@ Success: {{ successes }} | Failed: {{ failures }} | Rate: {{ success_rate }}%
         if result:
             context["status"] = result.status.value
             # Extract human-readable output from Claude CLI JSON
+            # Use provider-specific limit for extraction
             context["output"] = (
-                extract_clean_text(result.output, max_length=1000) if include_output else None
+                extract_clean_text(result.output, max_length=max_output_length)
+                if include_output
+                else None
             )
             context["error"] = result.error
             context["duration"] = f"{result.duration_seconds:.1f}"
@@ -138,7 +158,7 @@ Success: {{ successes }} | Failed: {{ failures }} | Rate: {{ success_rate }}%
         """Format a message with provider-specific adjustments.
 
         Args:
-            provider: Provider name (e.g., 'telegram', 'discord')
+            provider: Provider name (e.g., 'telegram', 'discord', 'teams')
             event: Notification event type
             task: Task that triggered the event
             result: Execution result
@@ -148,14 +168,20 @@ Success: {{ successes }} | Failed: {{ failures }} | Rate: {{ success_rate }}%
         Returns:
             Formatted message
         """
-        message = self.format(event, task, result, include_output, **extra_context)
+        # Get provider-specific output limit
+        max_output_length = self.PROVIDER_OUTPUT_LIMITS.get(provider, self.DEFAULT_OUTPUT_LIMIT)
+
+        message = self.format(
+            event, task, result, include_output,
+            max_output_length=max_output_length, **extra_context
+        )
 
         # Apply provider-specific formatting
         if provider == "discord":
             # Convert HTML to Discord Markdown
             message = self._html_to_discord_markdown(message)
         elif provider == "teams":
-            # Convert HTML to Teams Markdown (same as Discord)
+            # Convert HTML to Teams Markdown
             message = self._html_to_teams_markdown(message)
 
         return message
