@@ -21,13 +21,13 @@ def dashboard(port: int, host: str) -> None:
     try:
         from codegeass.dashboard.main import run_server
 
-        console.print(f"[bold green]Starting CodeGeass Dashboard...[/bold green]")
+        console.print("[bold green]Starting CodeGeass Dashboard...[/bold green]")
         console.print(f"[dim]Open http://{host}:{port} in your browser[/dim]\n")
         run_server(host=host, port=port)
 
     except ImportError as e:
-        console.print(f"[red]Dashboard dependencies not installed.[/red]")
-        console.print(f"[dim]Install with: pip install 'codegeass[dashboard]'[/dim]")
+        console.print("[red]Dashboard dependencies not installed.[/red]")
+        console.print("[dim]Install with: pip install 'codegeass[dashboard]'[/dim]")
         console.print(f"[dim]Error: {e}[/dim]")
         raise SystemExit(1)
     except Exception as e:

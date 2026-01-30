@@ -174,7 +174,7 @@ async def health_check() -> dict:
 async def validate_cron(body: dict) -> dict:
     """Validate a CRON expression."""
     import sys
-    sys.path.insert(0, str(settings.PROJECT_DIR / "src"))
+    sys.path.insert(0, str(settings.project_dir / "src"))
     from codegeass.scheduling.cron_parser import CronParser
 
     expression = body.get("expression", "")

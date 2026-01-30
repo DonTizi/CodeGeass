@@ -7,7 +7,7 @@ from config import settings
 
 # Import from codegeass package
 import sys
-sys.path.insert(0, str(settings.PROJECT_DIR / "src"))
+sys.path.insert(0, str(settings.project_dir / "src"))
 
 from codegeass.storage.task_repository import TaskRepository
 from codegeass.storage.log_repository import LogRepository
@@ -61,7 +61,7 @@ def get_skill_registry() -> SkillRegistry:
     """Get or create SkillRegistry singleton."""
     global _skill_registry
     if _skill_registry is None:
-        _skill_registry = SkillRegistry.get_instance(settings.SKILLS_DIR)
+        _skill_registry = SkillRegistry.get_instance(settings.skills_dir)
     return _skill_registry
 
 
@@ -78,7 +78,7 @@ def get_execution_tracker():
     global _execution_tracker
     if _execution_tracker is None:
         from codegeass.execution.tracker import get_execution_tracker as core_get_tracker
-        _execution_tracker = core_get_tracker(settings.DATA_DIR)
+        _execution_tracker = core_get_tracker(settings.data_dir)
     return _execution_tracker
 
 
@@ -146,7 +146,7 @@ def get_channel_repo() -> ChannelRepository:
     """Get or create ChannelRepository singleton."""
     global _channel_repo
     if _channel_repo is None:
-        notifications_path = settings.CONFIG_DIR / "notifications.yaml"
+        notifications_path = settings.config_dir / "notifications.yaml"
         _channel_repo = ChannelRepository(notifications_path)
     return _channel_repo
 
@@ -183,7 +183,7 @@ def get_approval_repo() -> PendingApprovalRepository:
     """Get or create PendingApprovalRepository singleton."""
     global _approval_repo
     if _approval_repo is None:
-        approvals_path = settings.DATA_DIR / "approvals.yaml"
+        approvals_path = settings.data_dir / "approvals.yaml"
         _approval_repo = PendingApprovalRepository(approvals_path)
     return _approval_repo
 

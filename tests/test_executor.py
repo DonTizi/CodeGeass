@@ -18,6 +18,14 @@ from codegeass.execution.strategies import (
 class TestExecutionStrategies:
     """Tests for execution strategies."""
 
+    @pytest.fixture(autouse=True)
+    def mock_claude_executable(self):
+        """Mock get_claude_executable to return 'claude'."""
+        with patch(
+            "codegeass.execution.strategies.get_claude_executable", return_value="claude"
+        ):
+            yield
+
     @pytest.fixture
     def task(self, tmp_path):
         """Create a test task."""
@@ -147,6 +155,14 @@ class TestExecutionContext:
 
 class TestStrategyExecution:
     """Tests for actual strategy execution (mocked)."""
+
+    @pytest.fixture(autouse=True)
+    def mock_claude_executable(self):
+        """Mock get_claude_executable to return 'claude'."""
+        with patch(
+            "codegeass.execution.strategies.get_claude_executable", return_value="claude"
+        ):
+            yield
 
     @pytest.fixture
     def mock_subprocess(self):

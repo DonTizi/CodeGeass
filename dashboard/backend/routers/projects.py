@@ -20,7 +20,7 @@ from models.project import (
 
 # Import directly from CLI library - NO separate service layer
 import sys
-sys.path.insert(0, str(settings.PROJECT_DIR / "src"))
+sys.path.insert(0, str(settings.project_dir / "src"))
 
 from codegeass.storage.project_repository import ProjectRepository
 from codegeass.storage.task_repository import TaskRepository

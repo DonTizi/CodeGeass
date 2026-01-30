@@ -4,7 +4,7 @@ from pathlib import Path
 
 from config import settings
 import sys
-sys.path.insert(0, str(settings.PROJECT_DIR / "src"))
+sys.path.insert(0, str(settings.project_dir / "src"))
 
 from codegeass.storage.approval_repository import PendingApprovalRepository
 from codegeass.storage.channel_repository import ChannelRepository

@@ -8,7 +8,7 @@ from models import ExecutionResult, ExecutionStatus, LogStats, LogFilter
 
 # Import from codegeass package
 import sys
-sys.path.insert(0, str(settings.PROJECT_DIR / "src"))
+sys.path.insert(0, str(settings.project_dir / "src"))
 
 from codegeass.storage.log_repository import LogRepository
 from codegeass.storage.task_repository import TaskRepository

@@ -7,7 +7,7 @@ from config import settings
 
 # Import from codegeass package
 import sys
-sys.path.insert(0, str(settings.PROJECT_DIR / "src"))
+sys.path.insert(0, str(settings.project_dir / "src"))
 
 from codegeass.storage.channel_repository import ChannelRepository
 from codegeass.storage.credential_manager import get_credential_manager

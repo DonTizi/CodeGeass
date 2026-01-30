@@ -8,7 +8,7 @@ from models import SchedulerStatus, UpcomingRun, ExecutionResult, ExecutionStatu
 
 # Import from codegeass package
 import sys
-sys.path.insert(0, str(settings.PROJECT_DIR / "src"))
+sys.path.insert(0, str(settings.project_dir / "src"))
 
 from codegeass.scheduling.scheduler import Scheduler
 from codegeass.scheduling.cron_parser import CronParser

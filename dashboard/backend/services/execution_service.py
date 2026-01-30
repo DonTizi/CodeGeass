@@ -8,7 +8,7 @@ from config import settings
 
 # Import from codegeass package
 import sys
-sys.path.insert(0, str(settings.PROJECT_DIR / "src"))
+sys.path.insert(0, str(settings.project_dir / "src"))
 
 from codegeass.execution.events import ExecutionEvent
 from codegeass.execution.tracker import ActiveExecution, ExecutionTracker, get_execution_tracker
@@ -149,7 +149,7 @@ def get_execution_manager() -> ExecutionManager:
     """Get or create the global ExecutionManager instance."""
     global _execution_manager
     if _execution_manager is None:
-        tracker = get_execution_tracker(settings.DATA_DIR)
+        tracker = get_execution_tracker(settings.data_dir)
         connection_manager = get_connection_manager()
         _execution_manager = ExecutionManager(tracker, connection_manager)
     return _execution_manager

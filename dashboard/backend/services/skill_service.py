@@ -7,7 +7,7 @@ from models import Skill, SkillSummary
 
 # Import from codegeass package
 import sys
-sys.path.insert(0, str(settings.PROJECT_DIR / "src"))
+sys.path.insert(0, str(settings.project_dir / "src"))
 
 from codegeass.factory.registry import SkillRegistry
 from codegeass.core.entities import Skill as CoreSkill

@@ -9,23 +9,23 @@ class Settings:
 
     # Base paths - use current working directory or env var
     @property
-    def PROJECT_DIR(self) -> Path:
+    def project_dir(self) -> Path:
         env_dir = os.getenv("CODEGEASS_PROJECT_DIR")
         if env_dir:
             return Path(env_dir)
         return Path.cwd()
 
     @property
-    def CONFIG_DIR(self) -> Path:
-        return self.PROJECT_DIR / "config"
+    def config_dir(self) -> Path:
+        return self.project_dir / "config"
 
     @property
-    def DATA_DIR(self) -> Path:
-        return self.PROJECT_DIR / "data"
+    def data_dir(self) -> Path:
+        return self.project_dir / "data"
 
     @property
-    def SKILLS_DIR(self) -> Path:
-        return self.PROJECT_DIR / ".claude" / "skills"
+    def skills_dir(self) -> Path:
+        return self.project_dir / ".claude" / "skills"
 
     # API settings
     CORS_ORIGINS: list[str] = [
@@ -42,13 +42,13 @@ class Settings:
     DEBUG: bool = os.getenv("DEBUG", "false").lower() == "true"
 
     def get_schedules_path(self) -> Path:
-        return self.CONFIG_DIR / "schedules.yaml"
+        return self.config_dir / "schedules.yaml"
 
     def get_logs_dir(self) -> Path:
-        return self.DATA_DIR / "logs"
+        return self.data_dir / "logs"
 
     def get_sessions_dir(self) -> Path:
-        return self.DATA_DIR / "sessions"
+        return self.data_dir / "sessions"
 
 
 settings = Settings()
