@@ -128,13 +128,13 @@ class TelegramCallbackServer:
             self._log_non_reply_message(update)
 
     async def _process_callback_query(
-        self, update: object, credentials: dict[str, str], CallbackQueryModel: type
+        self, update: object, credentials: dict[str, str], callback_query_model: type
     ) -> None:
         """Process a callback query (button click)."""
         cq = update.callback_query  # type: ignore[attr-defined]
         print(f"[Callback Server] Button clicked: {cq.data}")
 
-        callback = CallbackQueryModel(
+        callback = callback_query_model(
             query_id=str(cq.id),
             from_user_id=str(cq.from_user.id),
             from_username=cq.from_user.username,
