@@ -13,13 +13,14 @@
 ## Features
 
 - **Scheduled Tasks**: Define tasks with CRON expressions for automated execution
+- **Multi-Provider Support**: Use Claude Code, OpenAI Codex, or other AI coding assistants
 - **Multi-Project Support**: Manage multiple projects from a single installation with shared skills
 - **Skills Integration**: Use Claude Code skills (`.claude/skills/`) for consistent, reusable prompts
 - **Multiple Strategies**: Headless, autonomous, or skill-based execution
 - **Session Management**: Track execution history with detailed logs
 - **CLI Interface**: Full-featured command line tool for task management
 - **Web Dashboard**: React + FastAPI dashboard for monitoring and management
-- **Notifications**: Telegram and Discord notifications with plan approval support
+- **Notifications**: Telegram, Discord, and Microsoft Teams notifications with plan approval support
 - **24/7 Service**: Systemd service for automatic scheduling
 
 ## Installation
@@ -118,6 +119,7 @@ codegeass task list              # List all tasks
 codegeass task show <name>       # Show task details
 codegeass task create [opts]     # Create new task
 codegeass task run <name>        # Run task manually
+codegeass task stop <name>       # Stop running task
 codegeass task enable <name>     # Enable task
 codegeass task disable <name>    # Disable task
 codegeass task delete <name>     # Delete task
@@ -178,6 +180,13 @@ codegeass notification disable <id>      # Disable a channel
 codegeass notification providers         # List available providers
 ```
 
+### Providers
+
+```bash
+codegeass provider list           # List available code execution providers
+codegeass provider info <name>    # Show provider details
+```
+
 ## Notifications
 
 Send notifications to chat platforms (Telegram, Discord) when tasks start, complete, or fail.
@@ -217,8 +226,9 @@ codegeass task create \
 
 | Provider | Requirements | Features |
 |----------|--------------|----------|
-| **Telegram** | Bot token from @BotFather, Chat ID | Message editing, HTML formatting |
+| **Telegram** | Bot token from @BotFather, Chat ID | Message editing, inline buttons, HTML formatting |
 | **Discord** | Webhook URL | Markdown formatting |
+| **Microsoft Teams** | Power Automate Workflows webhook URL | Adaptive Cards, Dashboard-based approvals |
 
 ### Configuration
 
@@ -243,6 +253,7 @@ Skills are Claude Code prompt templates stored in `.claude/skills/`. They follow
 - **security-audit**: Deep security analysis for OWASP vulnerabilities and secrets
 - **test-runner**: Execute and analyze test suites
 - **dependency-check**: Analyze dependencies for updates and vulnerabilities
+- **refactor**: Automated code refactoring into clean, single-responsibility modules following SOLID principles
 
 ### Shared Skills
 
@@ -310,14 +321,23 @@ The CRON runner script (`scripts/cron-runner.sh`) automatically unsets `ANTHROPI
 codegeass/
 ├── src/codegeass/
 │   ├── core/           # Domain entities and value objects
+│   │   └── entities/   # Modular entity classes (Task, Skill, Project, etc.)
 │   ├── storage/        # Persistence layer (YAML, JSON)
 │   │   └── project_repository.py  # Multi-project registry
 │   ├── factory/        # Task and skill registries
 │   │   └── skill_resolver.py  # Project + shared skills with priority
-│   ├── execution/      # Claude Code execution strategies
+│   ├── providers/      # Universal code execution providers
+│   │   ├── claude/     # Claude Code adapter
+│   │   └── codex/      # OpenAI Codex adapter
+│   ├── execution/      # Execution layer
+│   │   ├── strategies/ # Execution strategies (headless, autonomous, skill, plan)
+│   │   ├── tracker/    # Execution tracking and crash recovery
+│   │   └── plan_service/  # Plan mode approval workflow
 │   ├── scheduling/     # CRON parsing and job scheduling
-│   ├── notifications/  # Chat notifications (Telegram, Discord)
+│   ├── notifications/  # Chat notifications (Telegram, Discord, Teams)
+│   │   └── callbacks/  # Interactive callback handling
 │   └── cli/            # Click CLI commands
+│       └── commands/   # Modular command groups (task/, project/, etc.)
 ├── dashboard/          # Web dashboard (React + FastAPI)
 ├── config/             # Configuration files
 ├── data/               # Runtime data (logs, sessions)
