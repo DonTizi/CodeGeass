@@ -60,7 +60,7 @@ export interface TaskBase {
   working_dir: string;
   skill: string | null;
   prompt: string | null;
-  model: 'haiku' | 'sonnet' | 'opus';
+  model: string;
   autonomous: boolean;
   timeout: number;
   enabled: boolean;

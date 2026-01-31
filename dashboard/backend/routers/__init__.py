@@ -8,6 +8,7 @@ from .notifications import router as notifications_router
 from .approvals import router as approvals_router
 from .executions import router as executions_router
 from .projects import router as projects_router
+from .providers import router as providers_router
 from .filesystem import router as filesystem_router
 
 __all__ = [
@@ -19,5 +20,6 @@ __all__ = [
     "approvals_router",
     "executions_router",
     "projects_router",
+    "providers_router",
     "filesystem_router",
 ]

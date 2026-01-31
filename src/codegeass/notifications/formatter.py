@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Any
 
 from jinja2 import Template
 
-from codegeass.execution.output_parser import extract_clean_text
 from codegeass.notifications.models import NotificationEvent
 
 if TYPE_CHECKING:
@@ -129,13 +128,15 @@ Success: {{ successes }} | Failed: {{ failures }} | Rate: {{ success_rate }}%
 
         if result:
             context["status"] = result.status.value
-            # Extract human-readable output from Claude CLI JSON
-            # Use provider-specific limit for extraction
-            context["output"] = (
-                extract_clean_text(result.output, max_length=max_output_length)
-                if include_output
-                else None
-            )
+            # Use provider-aware clean_output (handles both Claude and Codex formats)
+            if include_output:
+                clean = result.clean_output
+                # Truncate if needed
+                if clean and len(clean) > max_output_length:
+                    clean = clean[:max_output_length] + "..."
+                context["output"] = clean
+            else:
+                context["output"] = None
             context["error"] = result.error
             context["duration"] = f"{result.duration_seconds:.1f}"
             context["started_at"] = result.started_at.strftime("%Y-%m-%d %H:%M:%S")

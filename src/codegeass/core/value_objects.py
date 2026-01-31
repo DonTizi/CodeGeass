@@ -46,10 +46,20 @@ class ExecutionResult:
 
     @property
     def clean_output(self) -> str:
-        """Get human-readable output (parsed from stream-json)."""
-        from codegeass.execution.output_parser import extract_clean_text
+        """Get human-readable output (parsed based on provider format)."""
+        # Check provider from metadata to use correct parser
+        provider = self.metadata.get("provider") if self.metadata else None
 
-        return extract_clean_text(self.output)
+        if provider == "codex":
+            # Use Codex JSONL parser
+            from codegeass.providers.codex.output_parser import extract_clean_text
+
+            return extract_clean_text(self.output)
+        else:
+            # Default to Claude stream-json parser
+            from codegeass.execution.output_parser import extract_clean_text
+
+            return extract_clean_text(self.output)
 
     def to_dict(self) -> dict:
         """Convert to dictionary for serialization."""

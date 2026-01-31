@@ -82,6 +82,7 @@ def show_task(ctx: Context, name: str) -> None:
 [bold]Skill:[/bold] {t.skill or "-"}
 [bold]Prompt:[/bold] {t.prompt or "-"}
 [bold]Model:[/bold] {t.model}
+[bold]Code Source:[/bold] {t.code_source}
 [bold]Autonomous:[/bold] {t.autonomous}
 [bold]Plan Mode:[/bold] {t.plan_mode}"""
     if t.plan_mode:
@@ -151,6 +152,12 @@ def show_task(ctx: Context, name: str) -> None:
 @click.option(
     "--plan-max-iterations", type=int, default=5, help="Max discuss iterations (default: 5)"
 )
+@click.option(
+    "--code-source",
+    "-cs",
+    default="claude",
+    help="Code execution provider (claude, codex)",
+)
 @pass_context
 def create_task(
     ctx: Context,
@@ -171,8 +178,11 @@ def create_task(
     plan_mode: bool,
     plan_timeout: int,
     plan_max_iterations: int,
+    code_source: str,
 ) -> None:
     """Create a new scheduled task."""
+    from codegeass.providers import ProviderNotFoundError, get_provider_registry
+
     # Validate inputs
     if not skill and not prompt:
         console.print("[red]Error: Either --skill or --prompt is required[/red]")
@@ -180,6 +190,25 @@ def create_task(
 
     if not CronParser.validate(schedule):
         console.print(f"[red]Error: Invalid CRON expression: {schedule}[/red]")
+        raise SystemExit(1)
+
+    # Validate code_source provider
+    registry = get_provider_registry()
+    try:
+        provider = registry.get(code_source)
+        capabilities = provider.get_capabilities()
+
+        # Validate plan mode with provider capability
+        if plan_mode and not capabilities.plan_mode:
+            console.print(
+                f"[red]Error: Provider '{code_source}' does not support plan mode[/red]"
+            )
+            console.print("Plan mode is only available with: claude")
+            raise SystemExit(1)
+
+    except ProviderNotFoundError:
+        console.print(f"[red]Error: Unknown provider: {code_source}[/red]")
+        console.print(f"Available providers: {', '.join(registry.list_providers())}")
         raise SystemExit(1)
 
     working_dir = working_dir.resolve()
@@ -227,6 +256,7 @@ def create_task(
         timeout=timeout,
         max_turns=max_turns,
         allowed_tools=allowed_tools,
+        code_source=code_source,
         enabled=not disabled,
         notifications=notifications,
         plan_mode=plan_mode,
@@ -240,6 +270,7 @@ def create_task(
     console.print(f"ID: {new_task.id}")
     console.print(f"Schedule: {schedule} ({CronParser.describe(schedule)})")
     console.print(f"Next run: {CronParser.get_next(schedule).strftime('%Y-%m-%d %H:%M')}")
+    console.print(f"Code Source: {code_source}")
     if plan_mode:
         console.print(f"[cyan]Plan Mode: timeout={plan_timeout}s, iter={plan_max_iterations}[/]")
 
@@ -351,6 +382,7 @@ def delete_task(ctx: Context, name: str, yes: bool) -> None:
 @click.option("--plan-mode/--no-plan-mode", default=None, help="Enable/disable plan mode")
 @click.option("--plan-timeout", type=int, help="Plan approval timeout in seconds")
 @click.option("--plan-max-iterations", type=int, help="Max discuss iterations")
+@click.option("--code-source", "-cs", help="Code execution provider (claude, codex)")
 @pass_context
 def update_task(
     ctx: Context,
@@ -365,6 +397,7 @@ def update_task(
     plan_mode: bool | None,
     plan_timeout: int | None,
     plan_max_iterations: int | None,
+    code_source: str | None,
 ) -> None:
     """Update an existing task."""
     t = ctx.task_repo.find_by_name(name)
@@ -399,6 +432,40 @@ def update_task(
         t.plan_timeout = plan_timeout
     if plan_max_iterations is not None:
         t.plan_max_iterations = plan_max_iterations
+    if code_source is not None:
+        # Validate the provider
+        from codegeass.providers import ProviderNotFoundError, get_provider_registry
+
+        registry = get_provider_registry()
+        try:
+            provider = registry.get(code_source)
+            capabilities = provider.get_capabilities()
+
+            # If changing to a provider that doesn't support plan mode, warn if plan_mode is on
+            if t.plan_mode and not capabilities.plan_mode:
+                console.print(
+                    f"[yellow]Warning: Provider '{code_source}' doesn't support plan mode. "
+                    f"Disabling plan mode.[/yellow]"
+                )
+                t.plan_mode = False
+
+            t.code_source = code_source
+        except ProviderNotFoundError:
+            console.print(f"[red]Error: Unknown provider: {code_source}[/red]")
+            console.print(f"Available providers: {', '.join(registry.list_providers())}")
+            raise SystemExit(1)
+
+    # Final validation: ensure plan_mode is compatible with code_source
+    if t.plan_mode:
+        from codegeass.providers import get_provider_registry
+
+        registry = get_provider_registry()
+        provider = registry.get(t.code_source)
+        if not provider.get_capabilities().plan_mode:
+            console.print(
+                f"[red]Error: Provider '{t.code_source}' does not support plan mode[/red]"
+            )
+            raise SystemExit(1)
 
     ctx.task_repo.update(t)
     console.print(f"[green]Task updated: {name}[/green]")

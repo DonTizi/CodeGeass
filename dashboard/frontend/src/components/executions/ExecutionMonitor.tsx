@@ -28,6 +28,7 @@ interface InternalParsedLine {
 }
 
 // Parse a stream-json line into a readable format
+// Supports both Claude Code (stream-json) and Codex (JSONL) formats
 function parseStreamLine(line: string): InternalParsedLine | null {
   try {
     const data = JSON.parse(line);
@@ -37,6 +38,24 @@ function parseStreamLine(line: string): InternalParsedLine | null {
       return null;
     }
 
+    // ===== Codex JSONL Format =====
+    // Skip thread/turn metadata
+    if (data.type === 'thread.started' || data.type === 'turn.started' || data.type === 'turn.completed') {
+      return null;
+    }
+
+    // Codex item.completed - main response format
+    if (data.type === 'item.completed' && data.item) {
+      const item = data.item;
+      // Extract text from agent_message (skip reasoning/thinking)
+      if (item.type === 'agent_message' && item.text) {
+        return { type: 'text', content: item.text };
+      }
+      // Skip reasoning items
+      return null;
+    }
+
+    // ===== Claude Code stream-json Format =====
     // Skip message_start, message_stop, message_delta, content_block_start/stop metadata
     if (data.type === 'stream_event') {
       const event = data.event;

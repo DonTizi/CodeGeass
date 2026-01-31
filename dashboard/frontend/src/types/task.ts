@@ -14,7 +14,7 @@ export interface Task {
   skill: string | null;
   prompt: string | null;
   allowed_tools: string[];
-  model: 'haiku' | 'sonnet' | 'opus';
+  model: string;
   autonomous: boolean;
   max_turns: number | null;
   timeout: number;
@@ -25,6 +25,8 @@ export interface Task {
   last_status: TaskStatus | null;
   next_run: string | null;
   schedule_description: string | null;
+  // Code execution provider
+  code_source: string;
   // Plan mode configuration
   plan_mode: boolean;
   plan_timeout: number;
@@ -49,13 +51,15 @@ export interface TaskCreate {
   skill?: string | null;
   prompt?: string | null;
   allowed_tools?: string[];
-  model?: 'haiku' | 'sonnet' | 'opus';
+  model?: string;
   autonomous?: boolean;
   max_turns?: number | null;
   timeout?: number;
   enabled?: boolean;
   variables?: Record<string, unknown>;
   notifications?: TaskNotificationConfig | null;
+  // Code execution provider
+  code_source?: string;
   // Plan mode configuration
   plan_mode?: boolean;
   plan_timeout?: number;
@@ -69,13 +73,15 @@ export interface TaskUpdate {
   skill?: string | null;
   prompt?: string | null;
   allowed_tools?: string[];
-  model?: 'haiku' | 'sonnet' | 'opus';
+  model?: string;
   autonomous?: boolean;
   max_turns?: number | null;
   timeout?: number;
   enabled?: boolean;
   variables?: Record<string, unknown>;
   notifications?: TaskNotificationConfig | null;
+  // Code execution provider
+  code_source?: string;
   // Plan mode configuration
   plan_mode?: boolean;
   plan_timeout?: number;

@@ -18,6 +18,7 @@ from routers import (
     approvals_router,
     executions_router,
     projects_router,
+    providers_router,
     filesystem_router,
 )
 
@@ -161,6 +162,7 @@ app.include_router(notifications_router)
 app.include_router(approvals_router)
 app.include_router(executions_router)
 app.include_router(projects_router)
+app.include_router(providers_router)
 app.include_router(filesystem_router)
 
 

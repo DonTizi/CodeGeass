@@ -54,6 +54,9 @@ class Task(BaseModel):
     last_run: str | None = None
     last_status: str | None = None
 
+    # Code execution provider
+    code_source: str = Field("claude", description="Code execution provider (claude, codex)")
+
     # Plan mode configuration
     plan_mode: bool = False
     plan_timeout: int = 3600
@@ -72,13 +75,14 @@ class TaskCreate(BaseModel):
     skill: str | None = Field(None, description="Skill name to execute")
     prompt: str | None = Field(None, description="Direct prompt (if no skill)")
     allowed_tools: list[str] = Field(default_factory=list)
-    model: str = Field("sonnet", pattern="^(haiku|sonnet|opus)$")
+    model: str = Field("sonnet", description="Model to use (provider-specific)")
     autonomous: bool = False
     max_turns: int | None = Field(None, ge=1, le=100)
     timeout: int = Field(300, ge=30, le=3600)
     enabled: bool = True
     variables: dict[str, Any] = Field(default_factory=dict)
     notifications: TaskNotificationConfig | None = None
+    code_source: str = Field("claude", description="Code execution provider (claude, codex)")
     plan_mode: bool = Field(False, description="Enable interactive plan approval")
     plan_timeout: int = Field(3600, ge=300, le=86400, description="Approval timeout in seconds")
     plan_max_iterations: int = Field(5, ge=1, le=20, description="Max discuss rounds")
@@ -92,13 +96,14 @@ class TaskUpdate(BaseModel):
     skill: str | None = None
     prompt: str | None = None
     allowed_tools: list[str] | None = None
-    model: str | None = Field(None, pattern="^(haiku|sonnet|opus)$")
+    model: str | None = Field(None, description="Model to use (provider-specific)")
     autonomous: bool | None = None
     max_turns: int | None = Field(None, ge=1, le=100)
     timeout: int | None = Field(None, ge=30, le=3600)
     enabled: bool | None = None
     variables: dict[str, Any] | None = None
     notifications: TaskNotificationConfig | None = None
+    code_source: str | None = Field(None, description="Code execution provider (claude, codex)")
     plan_mode: bool | None = None
     plan_timeout: int | None = Field(None, ge=300, le=86400)
     plan_max_iterations: int | None = Field(None, ge=1, le=20)
