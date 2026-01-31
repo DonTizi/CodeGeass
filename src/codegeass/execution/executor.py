@@ -2,6 +2,9 @@
 
 All tasks are executed in isolated git worktrees to ensure fresh Claude Code
 sessions without context pollution from other conversations.
+
+Supports multiple code execution providers (Claude Code, OpenAI Codex, etc.)
+through the universal provider architecture.
 """
 
 import logging
@@ -19,12 +22,15 @@ from codegeass.execution.strategies import (
     ExecutionStrategy,
     HeadlessStrategy,
     PlanModeStrategy,
+    ProviderStrategy,
     ResumeWithApprovalStrategy,
     ResumeWithFeedbackStrategy,
     SkillStrategy,
 )
 from codegeass.execution.worktree import WorktreeInfo, WorktreeManager
 from codegeass.factory.registry import SkillRegistry
+from codegeass.providers import ProviderCapabilityError, get_provider_registry
+from codegeass.providers.base import ExecutionRequest
 from codegeass.storage.log_repository import LogRepository
 
 if TYPE_CHECKING:
@@ -70,6 +76,10 @@ class ClaudeExecutor:
 
     For plan mode tasks, the worktree is preserved until approval/cancel.
     For other tasks, the worktree is cleaned up after execution.
+
+    Supports multiple code execution providers through the universal provider
+    architecture. Claude uses the battle-tested strategy pattern, while other
+    providers use the ProviderStrategy wrapper.
     """
 
     def __init__(
@@ -91,13 +101,17 @@ class ClaudeExecutor:
         self._session_manager = session_manager
         self._log_repository = log_repository
         self._tracker = tracker
+        self._provider_registry = get_provider_registry()
 
-        # Strategy instances
+        # Strategy instances (used for Claude provider)
         self._headless = HeadlessStrategy()
         self._autonomous = AutonomousStrategy()
         self._skill_strategy = SkillStrategy()
         self._plan_mode = PlanModeStrategy()
         self._resume_approval = ResumeWithApprovalStrategy()
+
+        # Cache for provider strategies
+        self._provider_strategies: dict[str, ProviderStrategy] = {}
 
     def _create_execution_environment(self, task: Task) -> ExecutionEnvironment:
         """Create an isolated execution environment for a task.
@@ -131,8 +145,50 @@ class ClaudeExecutor:
                 worktree_info=None,
             )
 
+    def _validate_provider_capabilities(self, task: Task) -> None:
+        """Validate that the task's provider supports the requested capabilities.
+
+        Args:
+            task: The task to validate
+
+        Raises:
+            ProviderCapabilityError: If the provider doesn't support a requested capability
+        """
+        provider_name = task.code_source or "claude"
+        provider = self._provider_registry.get(provider_name)
+
+        # Build a request to validate
+        request = ExecutionRequest(
+            prompt=task.prompt or "",
+            working_dir=task.working_dir,
+            plan_mode=task.plan_mode,
+            autonomous=task.autonomous,
+            session_id=None,  # Resume validation happens separately
+        )
+
+        is_valid, error = provider.validate_request(request)
+        if not is_valid:
+            raise ProviderCapabilityError(provider_name, "capability", error)
+
+    def _get_provider_strategy(self, provider_name: str) -> ProviderStrategy:
+        """Get or create a ProviderStrategy for the given provider.
+
+        Args:
+            provider_name: Name of the provider
+
+        Returns:
+            ProviderStrategy wrapping the provider
+        """
+        if provider_name not in self._provider_strategies:
+            provider = self._provider_registry.get(provider_name)
+            self._provider_strategies[provider_name] = ProviderStrategy(provider)
+        return self._provider_strategies[provider_name]
+
     def _select_strategy(self, task: Task, force_plan_mode: bool = False) -> ExecutionStrategy:
         """Select appropriate execution strategy based on task configuration.
+
+        For Claude provider, uses the battle-tested strategy pattern.
+        For other providers, uses the generic ProviderStrategy wrapper.
 
         Args:
             task: The task to select strategy for
@@ -141,6 +197,14 @@ class ClaudeExecutor:
         Returns:
             The appropriate execution strategy
         """
+        provider_name = task.code_source or "claude"
+
+        # For non-Claude providers, use the ProviderStrategy
+        if provider_name != "claude":
+            logger.info(f"Using provider strategy for: {provider_name}")
+            return self._get_provider_strategy(provider_name)
+
+        # Claude provider uses existing strategy pattern (battle-tested)
         # Plan mode takes precedence when enabled
         if force_plan_mode or task.plan_mode:
             return self._plan_mode
@@ -209,6 +273,9 @@ class ClaudeExecutor:
 
         If a tracker is configured, emits real-time execution events.
 
+        Validates provider capabilities before execution to fail fast on
+        unsupported configurations (e.g., Codex with plan_mode).
+
         Args:
             task: The task to execute
             dry_run: If True, only build command without executing
@@ -216,6 +283,10 @@ class ClaudeExecutor:
 
         Returns:
             ExecutionResult with execution details
+
+        Raises:
+            ExecutionError: If working directory doesn't exist
+            ProviderCapabilityError: If provider doesn't support requested capabilities
         """
         # Validate working directory
         if not task.working_dir.exists():
@@ -223,6 +294,16 @@ class ClaudeExecutor:
                 f"Working directory does not exist: {task.working_dir}",
                 task_id=task.id,
             )
+
+        # Validate provider capabilities (fail fast)
+        # Create a temporary task with force_plan_mode applied for validation
+        if force_plan_mode and not task.plan_mode:
+            # Temporarily check with plan_mode enabled
+            from dataclasses import replace
+            temp_task = replace(task, plan_mode=True)
+            self._validate_provider_capabilities(temp_task)
+        else:
+            self._validate_provider_capabilities(task)
 
         # Determine if this is a plan mode execution
         is_plan_mode = force_plan_mode or task.plan_mode

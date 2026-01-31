@@ -1,6 +1,6 @@
 # Implementation Plan: Issue #6 - Universal Code Execution Provider Architecture
 
-> **Status:** 🟡 Mostly Complete (Executor Integration Remaining)
+> **Status:** 🟢 COMPLETE
 > **Branch:** `feat/issue-6-universal-providers`
 > **Issue:** [#6](https://github.com/DonTizi/CodeGeass/issues/6)
 > **Last Updated:** 2026-01-30
@@ -88,12 +88,13 @@ Implement a Universal Provider Architecture enabling CodeGeass to support multip
 | 3.2 | Create Codex output parser | ✅ Done | `src/codegeass/providers/codex/output_parser.py` |
 | 3.3 | Create CodexAdapter | ✅ Done | `src/codegeass/providers/codex/adapter.py` |
 
-### Phase 4: Task Entity & Executor Integration ⚠️ PARTIAL
+### Phase 4: Task Entity & Executor Integration ✅ COMPLETE
 
-| Step | Description | Status | Notes |
+| Step | Description | Status | Files |
 |------|-------------|--------|-------|
-| 4.1 | Add code_source to Task entity | ✅ Done | Default "claude" for backward compat |
-| 4.2 | Update executor to use providers | ❌ Not Done | See "Remaining Work" section |
+| 4.1 | Add code_source to Task entity | ✅ Done | `src/codegeass/core/entities.py` |
+| 4.2 | Create ProviderStrategy | ✅ Done | `src/codegeass/execution/strategies/provider.py` |
+| 4.3 | Update executor to use providers | ✅ Done | `src/codegeass/execution/executor.py` |
 
 ### Phase 5: CLI Updates ✅ COMPLETE
 
@@ -138,11 +139,11 @@ Implement a Universal Provider Architecture enabling CodeGeass to support multip
 - Plan Mode automatically disabled when provider doesn't support it
 - Warning message when non-Claude provider selected
 
-### Phase 8: Testing & Documentation ⚠️ PARTIAL
+### Phase 8: Testing & Documentation ✅ COMPLETE
 
-| Step | Description | Status | Notes |
+| Step | Description | Status | Files |
 |------|-------------|--------|-------|
-| 8.1 | Add unit tests for providers | ❌ Not Done | `tests/providers/` needed |
+| 8.1 | Add unit tests for providers | ✅ Done | `tests/providers/` (72 tests) |
 | 8.2 | Integration testing | ✅ Done | Manual verification complete |
 | 8.3 | Update documentation | ✅ Done | This file |
 
@@ -167,10 +168,18 @@ src/codegeass/providers/
     ├── cli.py               ✅ get_codex_executable()
     └── output_parser.py     ✅ JSONL parser
 
-src/codegeass/cli/commands/provider.py   ✅ CLI commands
-dashboard/backend/models/provider.py     ✅ Pydantic models
-dashboard/backend/routers/providers.py   ✅ API endpoints
-dashboard/frontend/src/types/provider.ts ✅ TypeScript types
+src/codegeass/execution/strategies/provider.py  ✅ ProviderStrategy wrapper
+src/codegeass/cli/commands/provider.py          ✅ CLI commands
+dashboard/backend/models/provider.py            ✅ Pydantic models
+dashboard/backend/routers/providers.py          ✅ API endpoints
+dashboard/frontend/src/types/provider.ts        ✅ TypeScript types
+
+tests/providers/
+├── __init__.py              ✅
+├── test_base.py             ✅ Dataclasses, capability validation
+├── test_registry.py         ✅ Lazy loading, registration
+├── test_claude_adapter.py   ✅ Command building, output parsing
+└── test_codex_adapter.py    ✅ Command building, capability rejection
 ```
 
 ---
@@ -180,7 +189,10 @@ dashboard/frontend/src/types/provider.ts ✅ TypeScript types
 | File | Change | Status |
 |------|--------|--------|
 | `src/codegeass/core/entities.py` | Add `code_source` field to Task | ✅ Done |
+| `src/codegeass/execution/executor.py` | Add provider validation & ProviderStrategy support | ✅ Done |
+| `src/codegeass/execution/strategies/__init__.py` | Export ProviderStrategy | ✅ Done |
 | `src/codegeass/execution/strategies/claude_cli.py` | Add deprecation wrapper | ✅ Done |
+| `src/codegeass/execution/output_parser.py` | Add deprecation wrapper | ✅ Done |
 | `src/codegeass/cli/commands/task.py` | Add `--code-source` flag | ✅ Done |
 | `src/codegeass/cli/main.py` | Register provider commands | ✅ Done |
 | `dashboard/backend/main.py` | Register providers router | ✅ Done |
@@ -194,45 +206,10 @@ dashboard/frontend/src/types/provider.ts ✅ TypeScript types
 
 ---
 
-## Remaining Work
-
-### 1. Executor Integration (Step 4.2)
-
-The `ClaudeExecutor` in `src/codegeass/execution/executor.py` still uses the old strategy pattern. To fully complete the provider architecture:
-
-**Option A: Refactor Executor (Recommended)**
-- Modify `ClaudeExecutor` to use `ProviderRegistry`
-- Select provider based on `task.code_source`
-- Use `provider.build_command()` instead of strategy selection
-- Validate capabilities with `provider.validate_request()`
-
-**Option B: Keep Both Systems**
-- Keep current strategy system for Claude (battle-tested)
-- Add provider system as alternative path
-- Use `code_source` field to route to appropriate system
-
-### 2. Unit Tests (Step 8.1)
-
-Create `tests/providers/` directory with:
-- `test_base.py` - Test dataclasses, capability validation
-- `test_registry.py` - Test lazy loading, registration
-- `test_claude_adapter.py` - Test command building, output parsing
-- `test_codex_adapter.py` - Test command building, capability rejection
-
-### 3. Frontend TypeScript Issues
-
-Pre-existing TypeScript errors in frontend (not related to this PR):
-- `import.meta.env` type issues in `api.ts`
-- Nullable string parameter issues in `Dashboard.tsx`
-
----
-
-## Verification Checklist
-
-### Completed ✅
+## Verification Checklist ✅ ALL COMPLETE
 
 - [x] Code compiles without errors
-- [x] All 93 existing tests pass
+- [x] All 165 tests pass (93 original + 72 provider tests)
 - [x] Linting passes (`ruff check`)
 - [x] `codegeass provider list` shows providers
 - [x] `codegeass provider info claude` shows details
@@ -242,12 +219,8 @@ Pre-existing TypeScript errors in frontend (not related to this PR):
 - [x] Dashboard TaskForm shows provider selector
 - [x] Plan Mode disabled when non-Claude provider selected
 - [x] Existing tasks (no code_source in YAML) load with default "claude"
-
-### Pending ⏳
-
-- [ ] Executor uses provider adapters for command execution
-- [ ] Unit tests for providers module
-- [ ] Frontend TypeScript build passes (pre-existing issues)
+- [x] Executor validates provider capabilities before execution
+- [x] Non-Claude providers use ProviderStrategy for execution
 
 ---
 
@@ -308,13 +281,19 @@ print(valid, error)  # False, "Codex does not support plan mode..."
 
 1. **Backward Compatibility**: All existing tasks work unchanged. `code_source` defaults to "claude".
 
-2. **Deprecation Path**: Old `get_claude_executable()` in strategies module now imports from providers with deprecation warning.
+2. **Deprecation Path**: Old `get_claude_executable()` and `parse_stream_json()` in execution module now import from providers with deprecation warnings.
 
-3. **Capability Validation**: Validation happens at task creation/update time in CLI, preventing invalid configurations.
+3. **Capability Validation**: Validation happens at two levels:
+   - Task creation/update time in CLI (prevents invalid configurations)
+   - Executor execute() time (fail-fast before subprocess spawn)
 
 4. **Frontend UX**: Plan Mode switch is disabled (not hidden) when provider doesn't support it, with explanatory warning.
 
 5. **Model Mapping**: Codex adapter maps Claude model names to OpenAI equivalents (sonnet→gpt-4o, haiku→gpt-4o-mini, opus→o1).
+
+6. **Strategy Pattern Preserved**: For Claude provider, the existing battle-tested strategy pattern is used. For non-Claude providers, the new ProviderStrategy wrapper is used.
+
+7. **Pre-existing Frontend Issues**: TypeScript build errors (`import.meta.env`, nullable strings) existed before this PR and are not addressed here.
 
 ---
 

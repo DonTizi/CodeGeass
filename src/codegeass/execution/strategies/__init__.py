@@ -11,6 +11,7 @@ from codegeass.execution.strategies.plan_mode import (
     ResumeWithApprovalStrategy,
     ResumeWithFeedbackStrategy,
 )
+from codegeass.execution.strategies.provider import ProviderStrategy
 from codegeass.execution.strategies.skill import AppendSystemPromptStrategy, SkillStrategy
 
 __all__ = [
@@ -25,5 +26,6 @@ __all__ = [
     "ResumeContext",
     "ResumeWithApprovalStrategy",
     "ResumeWithFeedbackStrategy",
+    "ProviderStrategy",
     "get_claude_executable",
 ]
