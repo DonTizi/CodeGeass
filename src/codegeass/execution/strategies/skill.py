@@ -60,6 +60,9 @@ class SkillStrategy(BaseStrategy):
         if context.task.max_turns:
             cmd.extend(["--max-turns", str(context.task.max_turns)])
 
+        if context.skill.allowed_tools:
+            cmd.extend(["--allowedTools", ",".join(context.skill.allowed_tools)])
+
         if context.task.autonomous:
             cmd.append("--dangerously-skip-permissions")
 
