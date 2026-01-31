@@ -1,4 +1,14 @@
-"""Notification domain models."""
+"""Notification domain models.
+
+This module defines the core data structures for the notification system:
+
+- NotificationEvent: Event types that trigger notifications
+- Channel: A configured notification destination (Telegram, Discord, etc.)
+- NotificationConfig: Per-task notification settings
+- NotificationDefaults: Project-wide default notification settings
+
+Credentials are stored separately in ~/.codegeass/credentials.yaml.
+"""
 
 import uuid
 from dataclasses import dataclass, field
@@ -8,7 +18,17 @@ from typing import Any, Self
 
 
 class NotificationEvent(str, Enum):
-    """Types of events that can trigger notifications."""
+    """Types of events that can trigger notifications.
+
+    Events can be subscribed to on a per-task basis via NotificationConfig.
+
+    Values:
+        TASK_START: Fired when a task begins execution.
+        TASK_COMPLETE: Fired when a task finishes (success or failure).
+        TASK_SUCCESS: Fired only on successful completion.
+        TASK_FAILURE: Fired only on execution failure.
+        DAILY_SUMMARY: Fired once daily with execution statistics.
+    """
 
     TASK_START = "task_start"
     TASK_COMPLETE = "task_complete"
@@ -18,7 +38,16 @@ class NotificationEvent(str, Enum):
 
     @classmethod
     def from_string(cls, value: str) -> "NotificationEvent":
-        """Create from string value."""
+        """Create from string value.
+
+        Handles both full format ("task_start") and short format ("start").
+
+        Args:
+            value: Event name, with or without "task_" prefix.
+
+        Returns:
+            Corresponding NotificationEvent enum value.
+        """
         # Handle both "task_start" and "start" formats
         normalized = value.lower().strip()
         if not normalized.startswith("task_") and normalized != "daily_summary":
@@ -92,15 +121,29 @@ class Channel:
 
 @dataclass
 class NotificationConfig:
-    """Configuration for notifications on a task.
+    """Configuration for notifications on a specific task.
 
-    This is embedded in Task.notifications field.
+    This dataclass is embedded in Task.notifications field and controls
+    which events trigger notifications and to which channels.
+
+    Attributes:
+        channels: List of channel IDs to notify (references Channel.id).
+        events: List of events that trigger notifications.
+        include_output: If True, includes task output in notification message.
+        mention_on_failure: If True, uses @mentions/pings on failure events.
+
+    Example:
+        >>> config = NotificationConfig(
+        ...     channels=["abc123"],
+        ...     events=[NotificationEvent.TASK_FAILURE],
+        ...     mention_on_failure=True
+        ... )
     """
 
-    channels: list[str] = field(default_factory=list)  # Channel IDs
-    events: list[NotificationEvent] = field(default_factory=list)  # Events to notify on
-    include_output: bool = False  # Include task output in message
-    mention_on_failure: bool = False  # Mention/ping on failure
+    channels: list[str] = field(default_factory=list)
+    events: list[NotificationEvent] = field(default_factory=list)
+    include_output: bool = False
+    mention_on_failure: bool = False
 
     @classmethod
     def from_dict(cls, data: dict[str, Any] | None) -> Self | None:
@@ -140,9 +183,24 @@ class NotificationConfig:
 
 @dataclass
 class NotificationDefaults:
-    """Default notification settings for the project."""
+    """Default notification settings for the project.
 
-    enabled: bool = False  # OPT-IN: notifications disabled by default
+    These defaults apply to all tasks that don't have explicit
+    NotificationConfig. Stored in config/settings.yaml.
+
+    Attributes:
+        enabled: Master switch for notifications (OPT-IN, default False).
+        events: Default events to notify on (default: [TASK_FAILURE]).
+        include_output: Default for including output in messages.
+
+    Example:
+        >>> defaults = NotificationDefaults(
+        ...     enabled=True,
+        ...     events=[NotificationEvent.TASK_FAILURE, NotificationEvent.DAILY_SUMMARY]
+        ... )
+    """
+
+    enabled: bool = False
     events: list[NotificationEvent] = field(
         default_factory=lambda: [NotificationEvent.TASK_FAILURE]
     )

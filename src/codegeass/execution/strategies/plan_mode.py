@@ -1,4 +1,18 @@
-"""Plan mode and resume strategies."""
+"""Plan mode and resume strategies.
+
+This module provides strategies for the plan-approve-execute workflow:
+
+1. PlanModeStrategy: Runs Claude in read-only mode to generate a plan
+2. ResumeWithApprovalStrategy: Executes approved plan with full permissions
+3. ResumeWithFeedbackStrategy: Continues planning with user feedback
+
+Workflow:
+    1. Task runs with PlanModeStrategy (read-only)
+    2. Claude produces a plan (stored as approval)
+    3. User reviews plan via dashboard/Telegram/CLI
+    4. User approves -> ResumeWithApprovalStrategy executes
+    5. Or user provides feedback -> ResumeWithFeedbackStrategy refines plan
+"""
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -30,7 +44,17 @@ APPROVAL_SYSTEM_PROMPT = (
 
 @dataclass
 class ResumeContext:
-    """Context for resuming a Claude session."""
+    """Context for resuming a Claude session.
+
+    Used when resuming a paused session, either after approval
+    or with user feedback for further refinement.
+
+    Attributes:
+        task: The task being executed.
+        session_id: Claude session ID from the planning phase.
+        working_dir: Directory where the session runs.
+        feedback: Optional user feedback for plan refinement.
+    """
 
     task: Task
     session_id: str
@@ -44,10 +68,33 @@ class PlanModeStrategy(BaseStrategy):
     This runs Claude in read-only planning mode where it can analyze
     the codebase and produce a plan, but cannot make any modifications.
     The plan can then be reviewed and approved before execution.
+
+    Key Characteristics:
+        - Read-only: No file modifications allowed
+        - Full analysis: Can read files, search code, explore codebase
+        - Plan output: Produces a reviewable plan with proposed changes
+        - Session saved: Claude session ID preserved for later resume
+
+    Use Cases:
+        - Safe automated code review
+        - Change impact analysis
+        - Architectural planning with human approval
+
+    Example:
+        >>> strategy = PlanModeStrategy(timeout=600)
+        >>> result = executor.execute(task, strategy)
+        >>> # result.session_id can be used with ResumeWithApprovalStrategy
     """
 
     def build_command(self, context: ExecutionContext) -> list[str]:
-        """Build command for plan mode execution."""
+        """Build command for plan mode execution.
+
+        Args:
+            context: Execution context with task and optional skill.
+
+        Returns:
+            Command list with --permission-mode plan flag.
+        """
         if context.skill:
             prompt = f"/{context.skill.name}"
             if context.prompt:
@@ -81,14 +128,43 @@ class ResumeWithApprovalStrategy(BaseStrategy):
 
     Used after user approves a plan - resumes the Claude session with
     --dangerously-skip-permissions to execute the approved plan.
+
+    This is the "execute" phase of the plan-approve-execute workflow.
+    The session context from planning is preserved, allowing Claude to
+    proceed with the exact changes it proposed.
+
+    Workflow:
+        1. PlanModeStrategy produced a plan and session_id
+        2. User reviewed and approved via dashboard/Telegram/CLI
+        3. This strategy resumes with full write permissions
+        4. Claude executes the approved changes
+
+    Example:
+        >>> strategy = ResumeWithApprovalStrategy(timeout=600)
+        >>> context.session_id = approved_session_id
+        >>> result = executor.execute(task, strategy)
     """
 
     def __init__(self, timeout: int = 300):
-        """Initialize with task timeout."""
+        """Initialize with task timeout.
+
+        Args:
+            timeout: Maximum execution time in seconds (default 300).
+        """
         super().__init__(timeout)
 
     def build_command(self, context: ExecutionContext) -> list[str]:
-        """Build command to resume with approval."""
+        """Build command to resume with approval.
+
+        Args:
+            context: Execution context with session_id from planning phase.
+
+        Returns:
+            Command list with --resume and --dangerously-skip-permissions.
+
+        Raises:
+            ValueError: If context.session_id is not set.
+        """
         if not context.session_id:
             raise ValueError("ResumeWithApprovalStrategy requires session_id in context")
 
@@ -107,15 +183,49 @@ class ResumeWithFeedbackStrategy(BaseStrategy):
 
     Used when user clicks "Discuss" - resumes the Claude session with
     user feedback, still in plan mode for iterative refinement.
+
+    This enables a conversational refinement loop where the user can
+    ask questions, request changes, or provide additional context
+    before approving the plan.
+
+    Workflow:
+        1. PlanModeStrategy produced a plan
+        2. User provides feedback: "Also consider error handling"
+        3. This strategy resumes with feedback, still in plan mode
+        4. Claude refines the plan based on feedback
+        5. User can approve or provide more feedback
+
+    Example:
+        >>> strategy = ResumeWithFeedbackStrategy(
+        ...     feedback="Please also add unit tests for the changes",
+        ...     timeout=600
+        ... )
+        >>> context.session_id = discussion_session_id
+        >>> result = executor.execute(task, strategy)
     """
 
     def __init__(self, feedback: str, timeout: int = 300):
-        """Initialize with feedback text."""
+        """Initialize with feedback text.
+
+        Args:
+            feedback: User's feedback or questions about the plan.
+            timeout: Maximum execution time in seconds (default 300).
+        """
         super().__init__(timeout)
         self.feedback = feedback
 
     def build_command(self, context: ExecutionContext) -> list[str]:
-        """Build command to resume with feedback."""
+        """Build command to resume with feedback.
+
+        Args:
+            context: Execution context with session_id from planning phase.
+
+        Returns:
+            Command list with --resume, feedback as prompt, still in plan mode.
+
+        Raises:
+            ValueError: If context.session_id is not set.
+        """
         if not context.session_id:
             raise ValueError("ResumeWithFeedbackStrategy requires session_id in context")
 
