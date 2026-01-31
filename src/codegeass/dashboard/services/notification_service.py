@@ -1,5 +1,6 @@
 """Notification service for dashboard backend."""
 
+import logging
 
 from codegeass.notifications.models import Channel as CoreChannel
 from codegeass.notifications.registry import get_provider_registry
@@ -146,7 +147,8 @@ class NotificationService:
                         ],
                     )
                 )
-            except Exception:
+            except Exception as e:
+                logging.warning(f"Failed to load provider {name}: {e}")
                 continue
         return providers
 
