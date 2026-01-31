@@ -79,6 +79,12 @@ export function Settings() {
         config[field.name] = formData[field.name];
       }
     }
+    // Include optional config fields if provided
+    for (const field of providerInfo.optional_config) {
+      if (formData[field.name]) {
+        config[field.name] = formData[field.name];
+      }
+    }
 
     const data: ChannelCreate = {
       name: formData.name,
@@ -205,7 +211,15 @@ export function Settings() {
                 <DialogHeader>
                   <DialogTitle>Add Notification Channel</DialogTitle>
                   <DialogDescription>
-                    Configure a new notification channel to receive task alerts.
+                    Configure a new notification channel to receive task alerts.{' '}
+                    <a
+                      href="https://dontizi.github.io/CodeGeass/latest/guides/setup-notifications/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline hover:text-primary/80"
+                    >
+                      Setup guide →
+                    </a>
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
@@ -267,6 +281,26 @@ export function Settings() {
                           />
                         </div>
                       ))}
+
+                      {selectedProviderInfo.optional_config.length > 0 && (
+                        <>
+                          {selectedProviderInfo.optional_config.map((field) => (
+                            <div key={field.name} className="grid gap-2">
+                              <Label htmlFor={field.name} className="text-muted-foreground">
+                                {field.description} (optional)
+                              </Label>
+                              <Input
+                                id={field.name}
+                                value={formData[field.name] || ''}
+                                onChange={(e) =>
+                                  setFormData({ ...formData, [field.name]: e.target.value })
+                                }
+                                placeholder={field.default?.toString() || field.name}
+                              />
+                            </div>
+                          ))}
+                        </>
+                      )}
                     </>
                   )}
                 </div>

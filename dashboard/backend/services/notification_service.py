@@ -1,6 +1,7 @@
 """Notification service for dashboard backend."""
 
 import asyncio
+import logging
 from typing import Any
 
 from config import settings
@@ -143,7 +144,8 @@ class NotificationService:
                         ],
                     )
                 )
-            except Exception:
+            except Exception as e:
+                logging.warning(f"Failed to load provider {name}: {e}")
                 continue
         return providers
 

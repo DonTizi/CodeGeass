@@ -22,6 +22,7 @@ from .config import settings
 from .routers import (
     approvals_router,
     executions_router,
+    filesystem_router,
     logs_router,
     notifications_router,
     projects_router,
@@ -164,6 +165,7 @@ app.include_router(approvals_router)
 app.include_router(executions_router)
 app.include_router(projects_router)
 app.include_router(providers_router)
+app.include_router(filesystem_router)
 
 
 # Health check
