@@ -1,6 +1,6 @@
 # Quick Start
 
-Get up and running with CodeGeass in 5 minutes.
+Get CodeGeass running and create your first task.
 
 ## Step 1: Install CodeGeass
 

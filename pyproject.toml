@@ -1,14 +1,14 @@
 [project]
 name = "codegeass"
 version = "0.2.6"
-description = "Claude Code Scheduler Framework - Orchestrate automated Claude Code sessions"
+description = "Task orchestration for AI coding agents - scheduling, skills, approvals, and monitoring"
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
     {name = "DonTizi"}
 ]
-keywords = ["claude", "scheduler", "automation", "cli"]
+keywords = ["ai", "agents", "claude", "codex", "automation", "scheduling", "skills", "orchestration"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",

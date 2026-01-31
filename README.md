@@ -8,20 +8,21 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Claude Code Scheduler Framework** - Orchestrate automated Claude Code sessions with templates, prompts and skills, executed via CRON with your Pro/Max subscription.
+Task orchestration for AI coding agents.
+
+Schedule AI coding tasks across multiple projects, use reusable skills, review changes before execution, and monitor everything through a web dashboard.
 
 ## Features
 
-- **Scheduled Tasks**: Define tasks with CRON expressions for automated execution
-- **Multi-Provider Support**: Use Claude Code, OpenAI Codex, or other AI coding assistants
-- **Multi-Project Support**: Manage multiple projects from a single installation with shared skills
-- **Skills Integration**: Use Claude Code skills (`.claude/skills/`) for consistent, reusable prompts
-- **Multiple Strategies**: Headless, autonomous, or skill-based execution
-- **Session Management**: Track execution history with detailed logs
-- **CLI Interface**: Full-featured command line tool for task management
-- **Web Dashboard**: React + FastAPI dashboard for monitoring and management
-- **Notifications**: Telegram, Discord, and Microsoft Teams notifications with plan approval support
-- **24/7 Service**: Automatic scheduler for macOS (launchd) and Linux (systemd)
+- **Scheduled tasks**: Define tasks with CRON expressions
+- **Multi-project**: Manage multiple repos from one installation
+- **Skills system**: Reusable prompts following the [Agent Skills](https://agentskills.io) standard
+- **Execution modes**: Read-only, plan-first, or autonomous
+- **Plan approval**: Review changes before they're applied (Telegram/Discord/Teams)
+- **Notifications**: Get notified when tasks complete or need attention
+- **Dashboard**: Web UI for management and real-time monitoring
+- **Multi-provider**: Works with Claude Code, OpenAI Codex, and more
+- **Subscription-first**: Uses your Claude Pro/Max subscription, not API credits
 
 ## Installation
 
@@ -83,56 +84,39 @@ codegeass --version
 
 ## Quick Start
 
-### 1. Full Setup (One Command)
-
 ```bash
+# Install
+pipx install codegeass
 codegeass setup
-```
 
-This will:
-- Detect your OS (macOS/Linux)
-- Install the 24/7 background scheduler
-- Show you the next steps
-
-### 2. Initialize a Project
-
-```bash
-cd /path/to/your/project
-codegeass init
-```
-
-### 3. Create a Task
-
-```bash
-# Using a skill
+# Create a task
 codegeass task create \
   --name daily-review \
   --skill code-review \
-  --schedule "0 9 * * 1-5" \
-  --working-dir /path/to/project
+  --schedule "0 9 * * 1-5"
 
-# Using a direct prompt
+# Run it
+codegeass task run daily-review
+
+# Open dashboard
+codegeass dashboard
+```
+
+### More Examples
+
+```bash
+# Task with a direct prompt
 codegeass task create \
   --name check-tests \
   --prompt "Run the test suite and report any failures" \
   --schedule "0 3 * * *" \
   --working-dir /path/to/project
-```
 
-### 4. Manage Tasks
-
-```bash
+# List and monitor
 codegeass task list              # List all tasks
 codegeass task show daily-review # Show task details
-codegeass task run daily-review  # Run manually
-```
-
-### 5. Monitor
-
-```bash
 codegeass logs list              # View execution logs
 codegeass scheduler upcoming     # See upcoming runs
-codegeass dashboard              # Open web dashboard
 ```
 
 ## Scheduler Management

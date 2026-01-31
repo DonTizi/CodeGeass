@@ -278,9 +278,9 @@ pass_context = click.make_pass_decorator(Context, ensure=True)
 def cli(
     ctx: click.Context, verbose: bool, project_dir: Path | None, project_name: str | None
 ) -> None:
-    """CodeGeass - Claude Code Scheduler Framework.
+    """CodeGeass - Task orchestration for AI coding agents.
 
-    Orchestrate automated Claude Code sessions with templates, prompts and skills.
+    Schedule tasks, manage projects, use reusable skills, and monitor execution.
     """
     context = Context()
     context.verbose = verbose
