@@ -33,8 +33,16 @@ codegeass task create \
   --schedule "0 9 * * 1-5" \
   --prompt "Your prompt here" \
   --working-dir /path/to/project \
-  --mode autonomous \
+  --autonomous \
   --plan-mode
+
+# With specific code provider
+codegeass task create \
+  --name codex-task \
+  --schedule "0 10 * * *" \
+  --prompt "Analyze dependencies" \
+  --working-dir /path/to/project \
+  --code-source codex
 ```
 
 ### List Tasks
@@ -73,6 +81,13 @@ codegeass task disable daily-review
 codegeass task enable daily-review
 ```
 
+### Stop a Running Task
+
+```bash
+# Stop a task that is currently executing
+codegeass task stop daily-review
+```
+
 ### Delete a Task
 
 ```bash
@@ -99,6 +114,17 @@ This gracefully terminates the Claude process (SIGTERM, then SIGKILL if needed).
 | `headless` | Safe, read-only (default) |
 | `autonomous` | Full Claude capabilities |
 | `skill` | Invoke a predefined skill |
+
+## Code Providers
+
+Tasks can use different code execution providers via the `--code-source` option:
+
+| Provider | Description | Capabilities |
+|----------|-------------|--------------|
+| `claude` | Claude Code (default) | plan, resume, auto, stream |
+| `codex` | OpenAI Codex | auto, stream |
+
+See [provider command](provider.md) for more details.
 
 ## Schedule Format
 

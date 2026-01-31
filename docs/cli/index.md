@@ -44,6 +44,9 @@ codegeass task list
 # Run a task manually
 codegeass task run my-task
 
+# Stop a running task
+codegeass task stop my-task
+
 # Enable/disable a task
 codegeass task enable my-task
 codegeass task disable my-task
