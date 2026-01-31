@@ -18,6 +18,7 @@ from codegeass.cli.commands.task.run_control import (
     run_task,
     stop_task,
 )
+from codegeass.cli.commands.task.tag import tag
 from codegeass.cli.commands.task.update_stats import stats_task, update_task
 
 
@@ -38,5 +39,6 @@ task.add_command(delete_task)
 task.add_command(update_task)
 task.add_command(stats_task)
 task.add_command(stop_task)
+task.add_command(tag)
 
 __all__ = ["task"]
