@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-01-31
+
+### Fixed
+
+- **Dashboard Code Source Field**: Fix missing "Code Source" dropdown in task creation dialog when installing from PyPI (#22)
+  - Pre-built static files were outdated (from v0.1.4), now rebuilt with all features
+  - Added `scripts/build-dashboard.sh` to automate frontend build before releases
+
+### Added
+
+- **Dashboard Build Automation**: Proper release engineering for the bundled dashboard
+  - `scripts/build-dashboard.sh`: Builds frontend and copies to package static directory
+  - CI validation: New `dashboard` job ensures frontend can build on every PR
+  - Release skill updated to require dashboard rebuild before each release
+
+- **Providers API**: Added `/api/providers` endpoint to bundled dashboard
+  - Lists available code execution providers (Claude Code, OpenAI Codex)
+  - Shows provider capabilities and availability status
+  - Required for Code Source dropdown functionality
+
+### Changed
+
+- **Dashboard Architecture Clarified**: `src/codegeass/dashboard/` is now the source of truth
+  - Bundled version ships with PyPI package
+  - Development version (`dashboard/`) is for local dev with hot reload
+
 ## [0.2.3] - 2026-01-31
 
 ### Fixed
@@ -228,7 +254,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANTHROPIC_API_KEY deliberately unset in CRON to use Pro/Max subscription
 - No API tokens in configuration files
 
-[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.3...HEAD
+[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.4...HEAD
+[0.2.4]: https://github.com/DonTizi/CodeGeass/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/DonTizi/CodeGeass/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/DonTizi/CodeGeass/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/DonTizi/CodeGeass/compare/v0.2.0...v0.2.1
