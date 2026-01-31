@@ -2,70 +2,104 @@
 
 This guide covers setting up CodeGeass for 24/7 production use with automatic task scheduling.
 
-## Overview
+## Quick Setup (Recommended)
+
+The easiest way to set up the 24/7 scheduler is with the setup command:
+
+```bash
+codegeass setup
+```
+
+This automatically:
+
+1. Detects your operating system
+2. Installs the appropriate scheduler:
+   - **macOS**: launchd service
+   - **Linux**: systemd user timer
+3. Starts the scheduler immediately
+
+The scheduler runs every minute and executes any due tasks.
+
+### Verify It's Running
+
+```bash
+# macOS
+launchctl list | grep codegeass
+
+# Linux
+systemctl --user status codegeass-scheduler.timer
+```
+
+### Uninstall
+
+```bash
+codegeass uninstall-scheduler
+```
+
+---
+
+## Manual Setup (Advanced)
+
+If you prefer manual configuration or need custom settings, follow the instructions below.
+
+### Linux (systemd)
 
 CodeGeass can run as a systemd user service that:
 
 - Starts automatically when your machine boots
-- Runs the scheduler every 5 minutes
+- Runs the scheduler every minute
 - Executes due tasks automatically
 - Logs all activity to the system journal
 
-## Prerequisites
+#### Prerequisites
 
-- CodeGeass installed (`pip install codegeass`)
+- CodeGeass installed (`pipx install codegeass`)
 - A CodeGeass project initialized with tasks
 - Linux with systemd (most modern distributions)
 - User lingering enabled (for services to run without login)
 
-## Quick Install
+#### Manual Installation
 
-```bash
-# Navigate to your CodeGeass project
-cd /path/to/your/project
-
-# Run the installer
-./service/install.sh
-
-# Or specify a different working directory
-./service/install.sh /path/to/another/project
-```
-
-The installer will:
-
-1. Copy service files to `~/.config/systemd/user/`
-2. Configure the working directory
-3. Enable lingering for your user
-4. Start the timer
-
-## Manual Installation
-
-If you prefer to install manually:
-
-### 1. Copy Service Files
+##### 1. Create Service Files
 
 ```bash
 # Create systemd user directory
 mkdir -p ~/.config/systemd/user
 
-# Copy files (adjust paths as needed)
-cp service/codegeass-scheduler.service ~/.config/systemd/user/
-cp service/codegeass-scheduler.timer ~/.config/systemd/user/
+# Create service file
+cat > ~/.config/systemd/user/codegeass-scheduler.service << 'EOF'
+[Unit]
+Description=CodeGeass Scheduler - Run due tasks
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/YOUR_USER/.local/bin/codegeass scheduler run-due
+Environment="PATH=/usr/local/bin:/usr/bin:/bin:/home/YOUR_USER/.local/bin"
+Environment="ANTHROPIC_API_KEY="
+
+[Install]
+WantedBy=default.target
+EOF
+
+# Create timer file
+cat > ~/.config/systemd/user/codegeass-scheduler.timer << 'EOF'
+[Unit]
+Description=CodeGeass Scheduler Timer
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=1min
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target
+EOF
 ```
 
-### 2. Configure Working Directory
+Replace `YOUR_USER` with your username, or use `$HOME` path.
 
-Edit the service file to set your project path:
-
-```bash
-# Edit the service file
-nano ~/.config/systemd/user/codegeass-scheduler.service
-
-# Replace WORKING_DIR_PLACEHOLDER with your project path
-# For example: /home/user/my-project
-```
-
-### 3. Enable and Start
+##### 2. Enable and Start
 
 ```bash
 # Reload systemd
@@ -79,152 +113,170 @@ systemctl --user enable codegeass-scheduler.timer
 systemctl --user start codegeass-scheduler.timer
 ```
 
+### macOS (launchd)
+
+#### Manual Installation
+
+```bash
+# Create LaunchAgents directory
+mkdir -p ~/Library/LaunchAgents
+
+# Create plist file
+cat > ~/Library/LaunchAgents/com.codegeass.scheduler.plist << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.codegeass.scheduler</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/YOUR_USER/.local/bin/codegeass</string>
+        <string>scheduler</string>
+        <string>run-due</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>60</integer>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/tmp/codegeass-scheduler.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/codegeass-scheduler.err</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin:/Users/YOUR_USER/.local/bin</string>
+    </dict>
+</dict>
+</plist>
+EOF
+
+# Replace YOUR_USER with your username
+sed -i '' "s/YOUR_USER/$USER/g" ~/Library/LaunchAgents/com.codegeass.scheduler.plist
+
+# Load the service
+launchctl load ~/Library/LaunchAgents/com.codegeass.scheduler.plist
+```
+
 ## Service Management
 
 ### Check Status
 
 ```bash
-# Timer status (shows next run time)
+# Linux - Timer status (shows next run time)
 systemctl --user status codegeass-scheduler.timer
 
-# Service status (shows last run result)
+# Linux - Service status (shows last run result)
 systemctl --user status codegeass-scheduler.service
+
+# macOS
+launchctl list | grep codegeass
 ```
 
 ### View Logs
 
 ```bash
-# Follow logs in real-time
+# Linux - Follow logs in real-time
 journalctl --user -u codegeass-scheduler -f
 
-# View recent logs
+# Linux - View recent logs
 journalctl --user -u codegeass-scheduler --since "1 hour ago"
 
-# View all logs
-journalctl --user -u codegeass-scheduler
+# macOS
+tail -f /tmp/codegeass-scheduler.log
+cat /tmp/codegeass-scheduler.err
 ```
 
 ### Manual Execution
 
 ```bash
-# Run the scheduler immediately
+# Linux - Run the scheduler immediately
 systemctl --user start codegeass-scheduler.service
 
 # This is equivalent to:
-codegeass scheduler run
+codegeass scheduler run-due
 ```
 
 ### Stop and Disable
 
 ```bash
-# Stop the timer
-systemctl --user stop codegeass-scheduler.timer
-
-# Disable on boot
-systemctl --user disable codegeass-scheduler.timer
-```
-
-## Uninstallation
-
-```bash
-# Run the uninstaller
-./service/uninstall.sh
-```
-
-Or manually:
-
-```bash
-# Stop and disable
+# Linux
 systemctl --user stop codegeass-scheduler.timer
 systemctl --user disable codegeass-scheduler.timer
 
-# Remove files
-rm ~/.config/systemd/user/codegeass-scheduler.service
-rm ~/.config/systemd/user/codegeass-scheduler.timer
-
-# Reload
-systemctl --user daemon-reload
+# macOS
+launchctl unload ~/Library/LaunchAgents/com.codegeass.scheduler.plist
 ```
 
 ## Configuration
 
 ### Timer Interval
 
-The default interval is 5 minutes. To change it, edit the timer file:
+#### Linux (systemd)
+
+Edit `~/.config/systemd/user/codegeass-scheduler.timer`:
 
 ```ini
-# ~/.config/systemd/user/codegeass-scheduler.timer
 [Timer]
-# Run every minute
-OnCalendar=*:*
+# Run every minute (default)
+OnUnitActiveSec=1min
 
-# Run every 10 minutes
-OnCalendar=*:0/10
+# Run every 5 minutes
+OnUnitActiveSec=5min
 
 # Run every hour
-OnCalendar=*:00
+OnUnitActiveSec=1h
 ```
 
-After editing, reload:
+After editing:
 
 ```bash
 systemctl --user daemon-reload
 systemctl --user restart codegeass-scheduler.timer
 ```
 
+#### macOS (launchd)
+
+Edit `~/Library/LaunchAgents/com.codegeass.scheduler.plist`:
+
+```xml
+<key>StartInterval</key>
+<integer>60</integer>  <!-- seconds, 60 = 1 minute -->
+```
+
+After editing:
+
+```bash
+launchctl unload ~/Library/LaunchAgents/com.codegeass.scheduler.plist
+launchctl load ~/Library/LaunchAgents/com.codegeass.scheduler.plist
+```
+
 ### Environment Variables
 
-The service automatically sets:
+The scheduler automatically unsets `ANTHROPIC_API_KEY` to ensure Claude uses your subscription, not API credits.
 
-- `ANTHROPIC_API_KEY=""` - Ensures Claude uses subscription, not API credits
-- `HOME` - Your home directory
-- `PATH` - Standard system paths
+To add custom environment variables:
 
-To add custom environment variables, edit the service file:
+#### Linux
+
+Edit the service file and add:
 
 ```ini
 [Service]
 Environment="MY_VAR=value"
 ```
 
-### Security Hardening
+#### macOS
 
-The service runs with security hardening:
+Add to the plist:
 
-- `NoNewPrivileges=yes` - Prevents privilege escalation
-- `ProtectSystem=strict` - Read-only filesystem except allowed paths
-- `ProtectHome=read-only` - Home directory is read-only except allowed paths
-
-If you need to write to additional directories, add them to `ReadWritePaths`:
-
-```ini
-[Service]
-ReadWritePaths=%h/.codegeass %h/.claude /path/to/project/data
-```
-
-## Multiple Projects
-
-To run schedulers for multiple projects, create separate service instances:
-
-```bash
-# Copy with a different name
-cp ~/.config/systemd/user/codegeass-scheduler.service \
-   ~/.config/systemd/user/codegeass-project2.service
-
-# Edit the new service with different WorkingDirectory
-nano ~/.config/systemd/user/codegeass-project2.service
-
-# Create matching timer
-cp ~/.config/systemd/user/codegeass-scheduler.timer \
-   ~/.config/systemd/user/codegeass-project2.timer
-
-# Edit timer to reference correct service
-# Unit=codegeass-project2.service
-
-# Enable and start
-systemctl --user daemon-reload
-systemctl --user enable codegeass-project2.timer
-systemctl --user start codegeass-project2.timer
+```xml
+<key>EnvironmentVariables</key>
+<dict>
+    <key>MY_VAR</key>
+    <string>value</string>
+</dict>
 ```
 
 ## Troubleshooting
@@ -232,16 +284,19 @@ systemctl --user start codegeass-project2.timer
 ### Service Won't Start
 
 ```bash
-# Check for errors
+# Linux - Check for errors
 journalctl --user -u codegeass-scheduler -n 50
 
+# macOS - Check error log
+cat /tmp/codegeass-scheduler.err
+
 # Common issues:
-# - codegeass not in PATH: Use full path in ExecStart
-# - Working directory doesn't exist: Check WorkingDirectory
+# - codegeass not in PATH: Use full path in ExecStart/ProgramArguments
+# - Working directory doesn't exist
 # - Missing config: Ensure config/schedules.yaml exists
 ```
 
-### Timer Not Running
+### Timer Not Running (Linux)
 
 ```bash
 # Check timer status
@@ -254,15 +309,6 @@ loginctl show-user $USER | grep Linger
 loginctl enable-linger $USER
 ```
 
-### Permission Issues
-
-```bash
-# Check if service can access required directories
-# The service runs with restricted permissions by default
-
-# If you see permission errors, check ReadWritePaths in the service file
-```
-
 ### Service Runs But Tasks Don't Execute
 
 ```bash
@@ -270,7 +316,7 @@ loginctl enable-linger $USER
 codegeass scheduler upcoming
 
 # Run manually to see output
-codegeass scheduler run
+codegeass scheduler run-due
 
 # Check task configuration
 codegeass task list
@@ -284,18 +330,18 @@ Configure notifications to receive alerts when tasks complete or fail:
 
 ```bash
 # Add Telegram notifications
-codegeass notification add --provider telegram --token $BOT_TOKEN --chat-id $CHAT_ID
+codegeass notification add --provider telegram --name "My Alerts"
 
 # Test notifications
-codegeass notification test my-notification
+codegeass notification test my-alerts
 ```
 
 ### With System Monitoring
 
-The service logs to the system journal, which can be integrated with monitoring tools:
+The service logs to the system journal (Linux) or files (macOS), which can be integrated with monitoring tools:
 
 ```bash
-# Export logs to a file
+# Linux - Export logs to a file
 journalctl --user -u codegeass-scheduler --since "1 day ago" > scheduler.log
 
 # Send alerts on errors (example with grep)
@@ -305,5 +351,4 @@ journalctl --user -u codegeass-scheduler -f | grep -i error
 ## Next Steps
 
 - [Notifications Setup](setup-notifications.md) - Get alerts for task execution
-- [CRON Automation](cron-setup.md) - Alternative to systemd using CRON
 - [Task Creation](create-task.md) - Create and schedule tasks

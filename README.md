@@ -21,35 +21,50 @@
 - **CLI Interface**: Full-featured command line tool for task management
 - **Web Dashboard**: React + FastAPI dashboard for monitoring and management
 - **Notifications**: Telegram, Discord, and Microsoft Teams notifications with plan approval support
-- **24/7 Service**: Systemd service for automatic scheduling
+- **24/7 Service**: Automatic scheduler for macOS (launchd) and Linux (systemd)
 
 ## Installation
 
-### One-Line Install (Recommended)
+### Using pipx (Recommended)
 
-Installs CodeGeass + 24/7 scheduler service (works on macOS and Linux):
+[pipx](https://pipx.pypa.io/) installs CLI tools in isolated environments. This is the recommended method:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DonTizi/CodeGeass/main/install.sh | bash
+# Install pipx if you don't have it
+# macOS
+brew install pipx && pipx ensurepath
+
+# Linux
+python3 -m pip install --user pipx && pipx ensurepath
+
+# Then install CodeGeass + start the 24/7 scheduler
+pipx install codegeass
+codegeass setup
 ```
 
-This will:
-- Install CodeGeass from PyPI
-- Check/install Claude CLI
-- Set up automatic scheduler (launchd on macOS, systemd on Linux)
-- Configure directories
+### Using pip (in a virtual environment)
 
-### Manual Install
+If you prefer using pip, we recommend a virtual environment:
 
 ```bash
-# From PyPI
+# Create and activate a virtual environment
+python3 -m venv ~/.codegeass-venv
+source ~/.codegeass-venv/bin/activate
+
+# Install CodeGeass
 pip install codegeass
 
-# With notification support
-pip install codegeass[notifications]
+# Add to PATH (add this to your ~/.bashrc or ~/.zshrc)
+export PATH="$HOME/.codegeass-venv/bin:$PATH"
 
-# Verify
-codegeass --version
+# Setup with 24/7 scheduler
+codegeass setup
+```
+
+### With notification support
+
+```bash
+pipx install "codegeass[notifications]"
 ```
 
 ### From Source
@@ -60,21 +75,33 @@ cd CodeGeass
 pip install -e .
 ```
 
-### Uninstall
+### Verify Installation
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/DonTizi/CodeGeass/main/uninstall.sh | bash
+codegeass --version
 ```
 
 ## Quick Start
 
-### 1. Initialize Project
+### 1. Full Setup (One Command)
 
 ```bash
+codegeass setup
+```
+
+This will:
+- Detect your OS (macOS/Linux)
+- Install the 24/7 background scheduler
+- Show you the next steps
+
+### 2. Initialize a Project
+
+```bash
+cd /path/to/your/project
 codegeass init
 ```
 
-### 2. Create a Task
+### 3. Create a Task
 
 ```bash
 # Using a skill
@@ -92,22 +119,34 @@ codegeass task create \
   --working-dir /path/to/project
 ```
 
-### 3. List Tasks
+### 4. Manage Tasks
 
 ```bash
-codegeass task list
+codegeass task list              # List all tasks
+codegeass task show daily-review # Show task details
+codegeass task run daily-review  # Run manually
 ```
 
-### 4. Run Task Manually
+### 5. Monitor
 
 ```bash
-codegeass task run daily-review
+codegeass logs list              # View execution logs
+codegeass scheduler upcoming     # See upcoming runs
+codegeass dashboard              # Open web dashboard
 ```
 
-### 5. Install CRON
+## Scheduler Management
 
 ```bash
-codegeass scheduler install-cron
+# Check scheduler status
+# macOS
+launchctl list | grep codegeass
+
+# Linux
+systemctl --user status codegeass-scheduler.timer
+
+# Uninstall scheduler
+codegeass uninstall-scheduler
 ```
 
 ## CLI Commands
@@ -141,7 +180,6 @@ codegeass scheduler status       # Show scheduler status
 codegeass scheduler run          # Run due tasks
 codegeass scheduler run --force  # Run all enabled tasks
 codegeass scheduler upcoming     # Show upcoming tasks
-codegeass scheduler install-cron # Install crontab entry
 ```
 
 ### Logs
@@ -317,7 +355,7 @@ scheduler:
 
 **Important**: CodeGeass is designed to use your Claude Pro/Max subscription, NOT API credits.
 
-The CRON runner script (`scripts/cron-runner.sh`) automatically unsets `ANTHROPIC_API_KEY` to ensure your subscription is used.
+The scheduler automatically unsets `ANTHROPIC_API_KEY` to ensure your subscription is used.
 
 ## Architecture
 
@@ -359,12 +397,18 @@ codegeass/
 A React + FastAPI dashboard for managing tasks and viewing logs.
 
 ```bash
+codegeass dashboard
+```
+
+Then open http://localhost:8001
+
+Or run manually:
+
+```bash
 cd dashboard
 ./setup.sh    # First-time setup
 ./run.sh      # Run frontend (5173) + backend (8001)
 ```
-
-Then open http://localhost:5173
 
 ## Development
 
@@ -386,6 +430,62 @@ python -m build
 
 - **Live docs**: https://dontizi.github.io/codegeass/
 - **Build locally**: `pip install -e ".[docs]" && mkdocs serve`
+
+## Uninstalling
+
+### Complete Uninstall
+
+Remove everything (scheduler, config, logs, tasks):
+
+```bash
+codegeass uninstall --all
+pipx uninstall codegeass
+```
+
+### Partial Uninstall
+
+Remove scheduler only (keep your tasks and config):
+
+```bash
+codegeass uninstall-scheduler
+pipx uninstall codegeass
+```
+
+### Uninstall Options
+
+```bash
+codegeass uninstall --all              # Remove everything
+codegeass uninstall --all -y           # Skip confirmation
+codegeass uninstall --all --keep-global   # Keep ~/.codegeass/
+codegeass uninstall --all --keep-project  # Keep config/ and data/
+```
+
+## Troubleshooting
+
+### Permission denied on macOS with pipx
+
+```bash
+mkdir -p ~/.local/bin && chmod 755 ~/.local/bin
+pipx install codegeass
+```
+
+### Command not found after install
+
+```bash
+# Restart your terminal, or run:
+source ~/.bashrc  # or ~/.zshrc
+```
+
+### Scheduler not running
+
+```bash
+# Check logs
+# macOS
+cat /tmp/codegeass-scheduler.log
+
+# Linux
+journalctl --user -u codegeass-scheduler -f
+```
 
 ## Release Process
 
