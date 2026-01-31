@@ -310,6 +310,7 @@ from codegeass.cli.commands import (  # noqa: E402
     logs,
     notification,
     project,
+    provider,
     scheduler,
     skill,
     task,
@@ -324,6 +325,7 @@ cli.add_command(approval.approval)
 cli.add_command(cron.cron)
 cli.add_command(execution.execution)
 cli.add_command(project.project)
+cli.add_command(provider.provider)
 cli.add_command(dashboard.dashboard)
 
 

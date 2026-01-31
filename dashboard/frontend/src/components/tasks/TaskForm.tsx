@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { TaskCreate, Channel } from '@/types';
+import type { TaskCreate, Channel, Provider } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
@@ -32,7 +32,7 @@ import {
 } from '@/components/ui/DropdownMenu';
 import { api } from '@/lib/api';
 import { useSkillsStore, useNotificationsStore, useProjectsStore } from '@/stores';
-import { Bell, X, ChevronDown, Shield, MessageSquare, FolderOpen } from 'lucide-react';
+import { Bell, X, ChevronDown, Shield, MessageSquare, FolderOpen, AlertTriangle } from 'lucide-react';
 
 // Provider icons/colors for visual distinction
 const PROVIDER_CONFIG: Record<string, { color: string; label: string }> = {
@@ -84,6 +84,8 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
   const [cronValid, setCronValid] = useState<boolean | null>(null);
   const [cronDescription, setCronDescription] = useState<string>('');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [providers, setProviders] = useState<Provider[]>([]);
+  const [loadingProviders, setLoadingProviders] = useState(false);
 
   const [formData, setFormData] = useState<TaskCreate>({
     name: '',
@@ -95,6 +97,7 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
     timeout: 300,
     enabled: true,
     notifications: null,
+    code_source: 'claude',
     plan_mode: false,
     plan_timeout: 3600,
     plan_max_iterations: 5,
@@ -112,11 +115,25 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
     initialData?.notifications?.include_output || false
   );
 
+  // Fetch providers
+  const fetchProviders = async () => {
+    setLoadingProviders(true);
+    try {
+      const data = await api.providers.list();
+      setProviders(data);
+    } catch (error) {
+      console.error('Failed to fetch providers:', error);
+    } finally {
+      setLoadingProviders(false);
+    }
+  };
+
   useEffect(() => {
     if (open) {
       fetchSkills();
       fetchChannels();
       fetchProjects();
+      fetchProviders();
     }
   }, [open, fetchSkills, fetchChannels, fetchProjects]);
 
@@ -165,6 +182,17 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
       setIncludeOutput(initialData.notifications?.include_output || false);
     }
   }, [initialData]);
+
+  // Get selected provider capabilities
+  const selectedProvider = providers.find((p) => p.name === formData.code_source);
+  const supportsPlanMode = selectedProvider?.capabilities?.plan_mode ?? true;
+
+  // When provider changes and it doesn't support plan mode, disable it
+  useEffect(() => {
+    if (!supportsPlanMode && formData.plan_mode) {
+      setFormData((prev) => ({ ...prev, plan_mode: false }));
+    }
+  }, [supportsPlanMode, formData.plan_mode]);
 
   const validateCron = async (expression: string) => {
     if (!expression) {
@@ -298,8 +326,8 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
             )}
           </div>
 
-          {/* Skill or Prompt */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Skill, Model, and Code Source */}
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="skill">Skill</Label>
               <Select
@@ -340,6 +368,40 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
                   <SelectItem value="haiku">Haiku (Fast)</SelectItem>
                   <SelectItem value="sonnet">Sonnet (Balanced)</SelectItem>
                   <SelectItem value="opus">Opus (Powerful)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="code_source">Code Source</Label>
+              <Select
+                value={formData.code_source || 'claude'}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, code_source: value }))
+                }
+                disabled={loadingProviders}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select provider" />
+                </SelectTrigger>
+                <SelectContent>
+                  {providers.map((provider) => (
+                    <SelectItem
+                      key={provider.name}
+                      value={provider.name}
+                      disabled={!provider.is_available}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span>{provider.display_name}</span>
+                        {!provider.is_available && (
+                          <span className="text-xs text-muted-foreground">(not installed)</span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                  {providers.length === 0 && (
+                    <SelectItem value="claude">Claude Code</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -404,6 +466,16 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
               <span className="text-xs text-muted-foreground">(Interactive approval)</span>
             </div>
 
+            {!supportsPlanMode && (
+              <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/30 rounded-md">
+                <AlertTriangle className="h-4 w-4 text-warning" />
+                <p className="text-sm text-warning">
+                  {selectedProvider?.display_name || formData.code_source} does not support Plan Mode.
+                  Only Claude Code supports interactive plan approval.
+                </p>
+              </div>
+            )}
+
             <div className="flex items-center space-x-2">
               <Switch
                 id="plan_mode"
@@ -411,8 +483,9 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
                 onCheckedChange={(checked) =>
                   setFormData((prev) => ({ ...prev, plan_mode: checked }))
                 }
+                disabled={!supportsPlanMode}
               />
-              <Label htmlFor="plan_mode" className="text-sm">
+              <Label htmlFor="plan_mode" className={`text-sm ${!supportsPlanMode ? 'text-muted-foreground' : ''}`}>
                 Enable Plan Mode
               </Label>
             </div>

@@ -194,6 +194,9 @@ class Task:
     max_turns: int | None = None
     timeout: int = 300
 
+    # Code execution provider (claude, codex, etc.)
+    code_source: str = "claude"
+
     # Task state
     enabled: bool = True
     variables: dict[str, Any] = field(default_factory=dict)
@@ -258,6 +261,7 @@ class Task:
             autonomous=data.get("autonomous", False),
             max_turns=data.get("max_turns"),
             timeout=data.get("timeout", 300),
+            code_source=data.get("code_source", "claude"),  # Default to claude for backward compat
             enabled=data.get("enabled", True),
             variables=data.get("variables", {}),
             last_run=data.get("last_run"),
@@ -282,6 +286,7 @@ class Task:
             "autonomous": self.autonomous,
             "max_turns": self.max_turns,
             "timeout": self.timeout,
+            "code_source": self.code_source,
             "enabled": self.enabled,
             "variables": self.variables,
             "last_run": self.last_run,

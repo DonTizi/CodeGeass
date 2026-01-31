@@ -25,6 +25,8 @@ export interface Task {
   last_status: TaskStatus | null;
   next_run: string | null;
   schedule_description: string | null;
+  // Code execution provider
+  code_source: string;
   // Plan mode configuration
   plan_mode: boolean;
   plan_timeout: number;
@@ -56,6 +58,8 @@ export interface TaskCreate {
   enabled?: boolean;
   variables?: Record<string, unknown>;
   notifications?: TaskNotificationConfig | null;
+  // Code execution provider
+  code_source?: string;
   // Plan mode configuration
   plan_mode?: boolean;
   plan_timeout?: number;
@@ -76,6 +80,8 @@ export interface TaskUpdate {
   enabled?: boolean;
   variables?: Record<string, unknown>;
   notifications?: TaskNotificationConfig | null;
+  // Code execution provider
+  code_source?: string;
   // Plan mode configuration
   plan_mode?: boolean;
   plan_timeout?: number;

@@ -71,6 +71,7 @@ import type {
   TaskWithProject,
   SkillWithSource,
   ActiveExecution,
+  Provider,
 } from '@/types';
 
 /**
@@ -331,6 +332,20 @@ const filesystem = {
 };
 
 /**
+ * Code Execution Providers API
+ */
+const providers = {
+  list: () => fetchApi<Provider[]>('/api/providers'),
+
+  get: (name: string) => fetchApi<Provider>(`/api/providers/${name}`),
+
+  listAvailable: () =>
+    fetchApi<{ name: string; display_name: string; is_available: boolean; supports_plan_mode: boolean }[]>(
+      '/api/providers/available'
+    ),
+};
+
+/**
  * CRON validation API
  */
 const cron = {
@@ -363,6 +378,7 @@ export const api = {
   scheduler,
   notifications,
   projects,
+  providers,
   executions,
   filesystem,
   cron,
