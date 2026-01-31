@@ -26,28 +26,34 @@ class ProjectRepository:
         """
         self._file = registry_file or self.DEFAULT_REGISTRY_PATH
 
+    # Default enabled platforms
+    DEFAULT_PLATFORMS = ["claude", "codex"]
+
     def _read(self) -> dict[str, Any]:
         """Read the registry file."""
         if not self._file.exists():
             return {
                 "version": self.CURRENT_VERSION,
                 "default_project": None,
+                "enabled_platforms": self.DEFAULT_PLATFORMS.copy(),
                 "shared_skills_dir": str(Path.home() / ".codegeass" / "skills"),
                 "projects": [],
             }
 
         with open(self._file) as f:
             content = yaml.safe_load(f)
-            return (
-                content
-                if content
-                else {
+            if not content:
+                return {
                     "version": self.CURRENT_VERSION,
                     "default_project": None,
+                    "enabled_platforms": self.DEFAULT_PLATFORMS.copy(),
                     "shared_skills_dir": str(Path.home() / ".codegeass" / "skills"),
                     "projects": [],
                 }
-            )
+            # Ensure enabled_platforms exists for backward compatibility
+            if "enabled_platforms" not in content:
+                content["enabled_platforms"] = self.DEFAULT_PLATFORMS.copy()
+            return content
 
     def _write(self, data: dict[str, Any]) -> None:
         """Write the registry file."""
@@ -225,3 +231,65 @@ class ProjectRepository:
             self.save(project)
             return True
         return False
+
+    # Platform management methods
+
+    def get_enabled_platforms(self) -> list[str]:
+        """Get list of enabled platforms (e.g., ['claude', 'codex'])."""
+        data = self._read()
+        return data.get("enabled_platforms", self.DEFAULT_PLATFORMS.copy())
+
+    def set_enabled_platforms(self, platforms: list[str]) -> None:
+        """Set the list of enabled platforms.
+
+        Args:
+            platforms: List of platform names (e.g., ['claude', 'codex'])
+        """
+        data = self._read()
+        data["enabled_platforms"] = platforms
+        self._write(data)
+
+    def enable_platform(self, platform: str) -> bool:
+        """Enable a platform. Returns True if platform was added.
+
+        Args:
+            platform: Platform name (e.g., 'claude', 'codex')
+
+        Returns:
+            True if platform was added, False if already enabled
+        """
+        platforms = self.get_enabled_platforms()
+        platform = platform.lower()
+        if platform not in platforms:
+            platforms.append(platform)
+            self.set_enabled_platforms(platforms)
+            return True
+        return False
+
+    def disable_platform(self, platform: str) -> bool:
+        """Disable a platform. Returns True if platform was removed.
+
+        Args:
+            platform: Platform name (e.g., 'claude', 'codex')
+
+        Returns:
+            True if platform was removed, False if not enabled
+        """
+        platforms = self.get_enabled_platforms()
+        platform = platform.lower()
+        if platform in platforms:
+            platforms.remove(platform)
+            self.set_enabled_platforms(platforms)
+            return True
+        return False
+
+    def is_platform_enabled(self, platform: str) -> bool:
+        """Check if a platform is enabled.
+
+        Args:
+            platform: Platform name (e.g., 'claude', 'codex')
+
+        Returns:
+            True if platform is enabled
+        """
+        return platform.lower() in self.get_enabled_platforms()
