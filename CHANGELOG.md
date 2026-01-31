@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.7] - 2026-01-31
+
+### Fixed
+
+- **Dashboard Skills Loading**: Fix dashboard API returning empty skills list (#31)
+  - Use `ChainedSkillRegistry` instead of basic `SkillRegistry` in dashboard
+  - Dashboard now loads skills from both project (`.claude/skills/`) and global (`~/.claude/skills/`) directories
+  - CLI and dashboard now return the same skills
+
 ## [0.2.6] - 2026-01-31
 
 ### Added
@@ -288,7 +297,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANTHROPIC_API_KEY deliberately unset in CRON to use Pro/Max subscription
 - No API tokens in configuration files
 
-[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.6...HEAD
+[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.7...HEAD
+[0.2.7]: https://github.com/DonTizi/CodeGeass/compare/v0.2.6...v0.2.7
 [0.2.6]: https://github.com/DonTizi/CodeGeass/compare/v0.2.5...v0.2.6
 [0.2.5]: https://github.com/DonTizi/CodeGeass/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/DonTizi/CodeGeass/compare/v0.2.3...v0.2.4
