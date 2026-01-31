@@ -5,8 +5,8 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from codegeass.cli.main import pass_context, Context
-from codegeass.providers import get_provider_registry, ProviderNotFoundError
+from codegeass.cli.main import Context, pass_context
+from codegeass.providers import ProviderNotFoundError, get_provider_registry
 
 console = Console()
 

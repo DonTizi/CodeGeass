@@ -181,7 +181,7 @@ def create_task(
     code_source: str,
 ) -> None:
     """Create a new scheduled task."""
-    from codegeass.providers import get_provider_registry, ProviderNotFoundError
+    from codegeass.providers import ProviderNotFoundError, get_provider_registry
 
     # Validate inputs
     if not skill and not prompt:
@@ -203,7 +203,7 @@ def create_task(
             console.print(
                 f"[red]Error: Provider '{code_source}' does not support plan mode[/red]"
             )
-            console.print(f"Plan mode is only available with: claude")
+            console.print("Plan mode is only available with: claude")
             raise SystemExit(1)
 
     except ProviderNotFoundError:
@@ -434,7 +434,7 @@ def update_task(
         t.plan_max_iterations = plan_max_iterations
     if code_source is not None:
         # Validate the provider
-        from codegeass.providers import get_provider_registry, ProviderNotFoundError
+        from codegeass.providers import ProviderNotFoundError, get_provider_registry
 
         registry = get_provider_registry()
         try:
