@@ -22,6 +22,7 @@ from .config import settings
 from .routers import (
     approvals_router,
     executions_router,
+    filesystem_router,
     logs_router,
     notifications_router,
     projects_router,
@@ -164,6 +165,7 @@ app.include_router(approvals_router)
 app.include_router(executions_router)
 app.include_router(projects_router)
 app.include_router(providers_router)
+app.include_router(filesystem_router)
 
 
 # Health check
@@ -209,6 +211,12 @@ if STATIC_DIR.exists():
         # Check if it's an API route
         if full_path.startswith("api/") or full_path in ["health", "ws"]:
             return {"error": "Not found"}
+
+        # Check if the requested file exists in static directory (e.g., logo.png, favicon.ico)
+        if full_path:
+            static_file = STATIC_DIR / full_path
+            if static_file.exists() and static_file.is_file():
+                return FileResponse(static_file)
 
         # Serve index.html for SPA routing
         index_file = STATIC_DIR / "index.html"
