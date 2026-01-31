@@ -21,7 +21,7 @@ console = Console()
 @click.option("--skill", "-k", help="Skill to invoke")
 @click.option("--prompt", "-p", help="Direct prompt (if no skill)")
 @click.option("--model", "-m", default="sonnet", help="Model (haiku, sonnet, opus)")
-@click.option("--autonomous", is_flag=True, help="Enable autonomous mode")
+@click.option("--no-autonomous", "no_autonomous", is_flag=True, help="Disable autonomous mode")
 @click.option("--timeout", "-t", default=300, help="Timeout in seconds")
 @click.option("--max-turns", type=int, help="Max agentic turns")
 @click.option("--tools", help="Comma-separated list of allowed tools")
@@ -61,7 +61,7 @@ def create_task(
     skill: str | None,
     prompt: str | None,
     model: str,
-    autonomous: bool,
+    no_autonomous: bool,
     timeout: int,
     max_turns: int | None,
     tools: str | None,
@@ -96,6 +96,9 @@ def create_task(
 
     allowed_tools = [t.strip() for t in tools.split(",")] if tools else []
     notifications = _build_notifications(notify, notify_on, notify_include_output)
+
+    # Autonomous is True by default, use --no-autonomous to disable
+    autonomous = not no_autonomous
 
     new_task = Task.create(
         name=name,

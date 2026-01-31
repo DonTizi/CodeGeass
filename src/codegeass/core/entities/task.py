@@ -23,7 +23,7 @@ class Task:
     prompt: str | None = None  # Direct prompt (if no skill)
     allowed_tools: list[str] = field(default_factory=list)
     model: str = "sonnet"
-    autonomous: bool = False
+    autonomous: bool = True  # Default to autonomous mode for all tasks
     max_turns: int | None = None
     timeout: int = 300
 
@@ -86,7 +86,7 @@ class Task:
             prompt=data.get("prompt"),
             allowed_tools=data.get("allowed_tools", []),
             model=data.get("model", "sonnet"),
-            autonomous=data.get("autonomous", False),
+            autonomous=data.get("autonomous", True),
             max_turns=data.get("max_turns"),
             timeout=data.get("timeout", 300),
             code_source=data.get("code_source", "claude"),
