@@ -183,13 +183,14 @@ codegeass notification providers         # List available providers
 ### Providers
 
 ```bash
-codegeass provider list           # List available code execution providers
-codegeass provider info <name>    # Show provider details
+codegeass provider list          # List available code execution providers
+codegeass provider info <name>   # Show provider details
+codegeass provider check         # Check provider availability
 ```
 
 ## Notifications
 
-Send notifications to chat platforms (Telegram, Discord) when tasks start, complete, or fail.
+Send notifications to chat platforms (Telegram, Discord, Microsoft Teams) when tasks start, complete, or fail.
 
 ### Setup
 
@@ -201,6 +202,9 @@ codegeass notification add --provider telegram --name "My Alerts"
 
 # Add Discord channel (interactive prompt for webhook URL)
 codegeass notification add --provider discord --name "DevOps Channel"
+
+# Add Microsoft Teams channel (interactive prompt for webhook URL)
+codegeass notification add --provider teams --name "Dev Team"
 ```
 
 2. **Test the channel**:
@@ -227,7 +231,7 @@ codegeass task create \
 | Provider | Requirements | Features |
 |----------|--------------|----------|
 | **Telegram** | Bot token from @BotFather, Chat ID | Message editing, inline buttons, HTML formatting |
-| **Discord** | Webhook URL | Markdown formatting |
+| **Discord** | Webhook URL | Markdown formatting, embeds |
 | **Microsoft Teams** | Power Automate Workflows webhook URL | Adaptive Cards, Dashboard-based approvals |
 
 ### Configuration
