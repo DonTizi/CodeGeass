@@ -114,7 +114,7 @@ class ChannelRepository:
         """Get a channel with its resolved credentials.
 
         Args:
-            channel_id: Channel ID
+            channel_id: Channel ID or name (CLI allows both)
 
         Returns:
             Tuple of (channel, credentials_dict)
@@ -125,7 +125,10 @@ class ChannelRepository:
         """
         logger.debug(f"Getting channel {channel_id} with credentials")
 
+        # Try by ID first, then by name (CLI allows both)
         channel = self.find_by_id(channel_id)
+        if not channel:
+            channel = self.find_by_name(channel_id)
         if not channel:
             logger.error(f"Channel {channel_id} not found")
             raise ChannelNotFoundError(channel_id)

@@ -12,6 +12,7 @@ import {
   BarChart3,
   CheckCircle,
   Square,
+  Bell,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -29,7 +30,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/AlertDialog';
-import { useTasksStore, useLogsStore, useExecutionsStore } from '@/stores';
+import { useTasksStore, useLogsStore, useExecutionsStore, useNotificationsStore } from '@/stores';
 import { toast } from '@/components/ui/Toaster';
 import type { TaskCreate, TaskUpdate, ExecutionResult } from '@/types';
 import {
@@ -58,6 +59,7 @@ export function TaskDetail() {
     stopTask,
   } = useTasksStore();
   const { fetchTaskLogs } = useLogsStore();
+  const { channels, fetchChannels } = useNotificationsStore();
 
   const [logs, setLogs] = useState<ExecutionResult[]>([]);
   const [editOpen, setEditOpen] = useState(false);
@@ -71,13 +73,18 @@ export function TaskDetail() {
   );
   const isRunning = !!activeExecution;
 
+  // Helper to find channel by ID or name
+  const findChannel = (identifier: string) =>
+    channels.find((c) => c.id === identifier || c.name === identifier);
+
   useEffect(() => {
     if (taskId) {
       fetchTask(taskId);
       fetchTaskStats(taskId);
       fetchTaskLogs(taskId, 20).then(setLogs);
+      fetchChannels();
     }
-  }, [taskId, fetchTask, fetchTaskStats, fetchTaskLogs]);
+  }, [taskId, fetchTask, fetchTaskStats, fetchTaskLogs, fetchChannels]);
 
   if (!task) {
     // Show execution monitor even while task is loading
@@ -359,6 +366,48 @@ export function TaskDetail() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Notifications Card */}
+            {task.notifications && task.notifications.channels.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="h-4 w-4" />
+                    Notifications
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Channels</p>
+                    <div className="flex flex-wrap gap-1">
+                      {task.notifications.channels.map((channelId) => {
+                        const channel = findChannel(channelId);
+                        return (
+                          <Badge key={channelId} variant="outline">
+                            {channel?.name || channelId}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Events</p>
+                    <div className="flex flex-wrap gap-1">
+                      {task.notifications.events.map((event) => (
+                        <Badge key={event} variant="secondary">
+                          {event.replace('task_', '')}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  {task.notifications.include_output && (
+                    <p className="text-sm text-muted-foreground">
+                      ✓ Include output in notifications
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </div>
         </TabsContent>
 

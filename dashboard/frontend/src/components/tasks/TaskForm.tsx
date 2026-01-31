@@ -65,6 +65,16 @@ const CRON_EXAMPLES = [
   { expression: '0 8 1 * *', label: '1st of month' },
 ] as const;
 
+// Helper to find channel by ID or name (CLI allows both)
+function findChannel(channels: Channel[], identifier: string): Channel | undefined {
+  return channels.find((c) => c.id === identifier || c.name === identifier);
+}
+
+// Helper to check if a channel is selected (by ID or name)
+function isChannelSelected(selectedChannels: string[], channel: Channel): boolean {
+  return selectedChannels.some((id) => id === channel.id || id === channel.name);
+}
+
 export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: TaskFormProps) {
   const navigate = useNavigate();
   const { skills, fetchSkills } = useSkillsStore();
@@ -536,13 +546,13 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
                           {providerChannels.map((channel) => (
                             <DropdownMenuCheckboxItem
                               key={channel.id}
-                              checked={selectedChannels.includes(channel.id)}
+                              checked={isChannelSelected(selectedChannels, channel)}
                               onCheckedChange={(checked) => {
                                 if (checked) {
                                   setSelectedChannels((prev) => [...prev, channel.id]);
                                 } else {
                                   setSelectedChannels((prev) =>
-                                    prev.filter((id) => id !== channel.id)
+                                    prev.filter((id) => id !== channel.id && id !== channel.name)
                                   );
                                 }
                               }}
@@ -559,7 +569,7 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
                   {selectedChannels.length > 0 && (
                     <div className="flex flex-wrap gap-2">
                       {selectedChannels.map((channelId) => {
-                        const channel = channels.find((c) => c.id === channelId);
+                        const channel = findChannel(channels, channelId);
                         if (!channel) return null;
                         const providerConfig = PROVIDER_CONFIG[channel.provider];
                         return (
@@ -576,7 +586,7 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
                               type="button"
                               onClick={() =>
                                 setSelectedChannels((prev) =>
-                                  prev.filter((id) => id !== channelId)
+                                  prev.filter((id) => id !== channelId && id !== channel.name)
                                 )
                               }
                               className="ml-1 rounded-full hover:bg-muted p-0.5"
