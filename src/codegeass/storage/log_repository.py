@@ -29,6 +29,9 @@ class LogRepository:
 
     def save(self, result: ExecutionResult) -> None:
         """Save an execution result."""
+        # Ensure directory exists (defensive, should already exist from __init__)
+        self._logs_dir.mkdir(parents=True, exist_ok=True)
+
         # Save to task-specific file
         task_log = self._get_log_file(result.task_id)
         with open(task_log, "a") as f:
