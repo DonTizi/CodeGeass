@@ -22,6 +22,7 @@ codegeass [OPTIONS] COMMAND [ARGS]...
 | [`task`](task.md) | Manage scheduled tasks |
 | [`skill`](skill.md) | Manage skills |
 | [`project`](project.md) | Manage multiple projects |
+| [`provider`](provider.md) | Manage code execution providers |
 | [`scheduler`](scheduler.md) | Scheduler operations |
 | [`logs`](logs.md) | View execution logs |
 | [`notification`](notification.md) | Manage notifications |

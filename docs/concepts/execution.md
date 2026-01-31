@@ -1,6 +1,46 @@
 # Execution Modes
 
-CodeGeass supports different execution strategies for running Claude. Each mode offers different capabilities and safety levels.
+CodeGeass supports different execution strategies for running AI coding assistants. Each mode offers different capabilities and safety levels.
+
+## Code Providers
+
+CodeGeass uses a **Universal Provider Architecture** that supports multiple AI coding assistants through a standardized adapter pattern.
+
+### Supported Providers
+
+| Provider | Description | Status |
+|----------|-------------|--------|
+| **Claude Code** | Anthropic's Claude CLI (`claude`) | ✅ Default |
+| **OpenAI Codex** | OpenAI's code assistant (`codex`) | ✅ Available |
+
+### Selecting a Provider
+
+```bash
+# Use Claude Code (default)
+codegeass task create --name my-task --code-source claude ...
+
+# Use OpenAI Codex
+codegeass task create --name my-task --code-source codex ...
+
+# List available providers
+codegeass provider list
+
+# Show provider details
+codegeass provider info claude
+```
+
+### Provider Capabilities
+
+Each provider declares its capabilities, which affects available execution modes:
+
+```bash
+codegeass provider info claude
+```
+
+Output shows:
+- Supported modes (headless, autonomous, skill)
+- Available models
+- Configuration requirements
 
 ## Execution Strategies
 
@@ -165,6 +205,19 @@ codegeass logs tail
 1. **Clear prompts** - Reduce Claude's confusion
 2. **Scoped tasks** - Smaller scope = faster execution
 3. **Use skills** - Reusable prompts are more efficient
+
+## Stopping Executions
+
+Running tasks can be stopped gracefully:
+
+```bash
+# Stop a running task
+codegeass task stop <task-name>
+```
+
+This sends SIGTERM to the Claude process, followed by SIGKILL if it doesn't terminate within 5 seconds.
+
+The Dashboard also provides a Stop button on task cards and the task detail page.
 
 ## Related
 

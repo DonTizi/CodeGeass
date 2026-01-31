@@ -272,6 +272,30 @@ codegeass task create \
 
 **Output format:** Returns a JSON security report with findings, severity levels, CWE references, and remediation suggestions.
 
+### refactor
+
+Automated refactoring of monolithic code into clean, single-responsibility modules.
+
+**What it does:**
+
+- **Identifies** files exceeding size/complexity thresholds
+- **Analyzes** responsibilities and suggests splits
+- **Extracts** modules following SOLID principles
+- **Preserves** backward compatibility via re-exports
+- **Tests** changes with linting and existing tests
+
+**Usage:**
+
+```bash
+codegeass task create \
+  --name weekly-refactor \
+  --skill refactor \
+  --skill-args "src/codegeass/cli/" \
+  --schedule "0 3 * * 0"
+```
+
+**Output:** Creates a PR with modular code structure and detailed explanation of changes.
+
 ### Other Skills
 
 | Skill | Description |
@@ -280,6 +304,7 @@ codegeass task create \
 | `security-audit` | OWASP vulnerability analysis |
 | `test-runner` | Execute and analyze test suites |
 | `dependency-check` | Check dependencies for updates and vulnerabilities |
+| `refactor` | Split monolithic code into clean modules following SOLID principles |
 
 ## Best Practices
 

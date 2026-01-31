@@ -83,6 +83,15 @@ codegeass task delete old-task
 codegeass task delete old-task --yes
 ```
 
+### Stop a Running Task
+
+```bash
+# Stop a task that's currently executing
+codegeass task stop daily-review
+```
+
+This gracefully terminates the Claude process (SIGTERM, then SIGKILL if needed).
+
 ## Task Modes
 
 | Mode | Description |

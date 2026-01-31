@@ -83,6 +83,7 @@ nav:
     - task: cli/task.md
     - skill: cli/skill.md
     - project: cli/project.md
+    - provider: cli/provider.md
     - scheduler: cli/scheduler.md
     - logs: cli/logs.md
     - notification: cli/notification.md
