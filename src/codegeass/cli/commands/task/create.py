@@ -52,6 +52,13 @@ console = Console()
     default="claude",
     help="Code execution provider (claude, codex)",
 )
+@click.option(
+    "--tag",
+    "-T",
+    "tags",
+    multiple=True,
+    help="Tag for task organization (can specify multiple)",
+)
 @pass_context
 def create_task(
     ctx: Context,
@@ -73,6 +80,7 @@ def create_task(
     plan_timeout: int,
     plan_max_iterations: int,
     code_source: str,
+    tags: tuple[str, ...],
 ) -> None:
     """Create a new scheduled task."""
     _validate_inputs(skill, prompt, schedule, code_source, plan_mode)
@@ -117,6 +125,7 @@ def create_task(
         plan_mode=plan_mode,
         plan_timeout=plan_timeout,
         plan_max_iterations=plan_max_iterations,
+        tags=list(tags),
     )
 
     ctx.task_repo.save(new_task)
@@ -126,6 +135,8 @@ def create_task(
     console.print(f"Schedule: {schedule} ({CronParser.describe(schedule)})")
     console.print(f"Next run: {CronParser.get_next(schedule).strftime('%Y-%m-%d %H:%M')}")
     console.print(f"Code Source: {code_source}")
+    if tags:
+        console.print(f"Tags: {', '.join(tags)}")
     if plan_mode:
         console.print(f"[cyan]Plan Mode: timeout={plan_timeout}s, iter={plan_max_iterations}[/]")
 
