@@ -3,6 +3,9 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
+# Skip all tests if httpx is not installed
+pytest.importorskip("httpx")
+
 from codegeass.notifications.providers.teams import TeamsProvider
 from codegeass.notifications.providers.teams_utils import (
     TeamsAdaptiveCardBuilder,

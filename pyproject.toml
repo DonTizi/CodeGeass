@@ -55,7 +55,7 @@ dev = [
 notifications = [
     "python-telegram-bot>=21.0",
     "discord-webhook>=1.4",
-    # Note: Teams now uses httpx (included via fastapi) instead of pymsteams
+    "httpx>=0.27.0",  # For Teams Workflows webhook support
 ]
 docs = [
     "mkdocs>=1.5",
