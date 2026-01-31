@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from codegeass.core.entities import Task
+from codegeass.core.specifications import Specification
 from codegeass.storage.yaml_backend import YAMLListBackend
 
 
@@ -74,3 +75,14 @@ class TaskRepository:
             self.update(task)
             return True
         return False
+
+    def find_by_spec(self, spec: Specification[Task]) -> list[Task]:
+        """Find tasks matching a specification.
+
+        Args:
+            spec: Specification to match against
+
+        Returns:
+            List of tasks satisfying the specification
+        """
+        return [task for task in self.find_all() if spec.is_satisfied_by(task)]
