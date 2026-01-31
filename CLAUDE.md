@@ -6,6 +6,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Never add "Co-Authored-By: Claude" or similar attribution lines in commits or messages**
 
+- **Always run tests and CI before pushing**: Before committing and pushing any changes, always run:
+  ```bash
+  ruff check src/codegeass && pytest tests/ -v
+  ```
+  Do not push code that fails linting or tests.
+
 - **CLI + Dashboard Sync**: When implementing new features for the CLI backend, always consider if they need to be exposed in the dashboard. If so, implement the full stack:
   1. CLI command in `src/codegeass/cli/`
   2. Backend API endpoint in `dashboard/backend/routers/`
