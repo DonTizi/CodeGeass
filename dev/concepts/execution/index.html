@@ -690,6 +690,56 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#code-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Code Providers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Code Providers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supported-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#selecting-a-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Selecting a Provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#provider-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provider Capabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#execution-strategies" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -845,6 +895,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#stopping-executions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stopping Executions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#related" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -938,6 +999,8 @@
       
         
           
+        
+      
         
       
         
@@ -1085,6 +1148,34 @@
     
   
     project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/provider/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    provider
   
 
     
@@ -1663,6 +1754,56 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#code-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Code Providers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Code Providers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#supported-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported Providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#selecting-a-provider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Selecting a Provider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#provider-capabilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provider Capabilities
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#execution-strategies" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1818,6 +1959,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#stopping-executions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stopping Executions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#related" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1849,11 +2001,56 @@
 
 
 <h1 id="execution-modes">Execution Modes<a class="headerlink" href="#execution-modes" title="Permanent link">&para;</a></h1>
-<p>CodeGeass supports different execution strategies for running Claude. Each mode offers different capabilities and safety levels.</p>
+<p>CodeGeass supports different execution strategies for running AI coding assistants. Each mode offers different capabilities and safety levels.</p>
+<h2 id="code-providers">Code Providers<a class="headerlink" href="#code-providers" title="Permanent link">&para;</a></h2>
+<p>CodeGeass uses a <strong>Universal Provider Architecture</strong> that supports multiple AI coding assistants through a standardized adapter pattern.</p>
+<h3 id="supported-providers">Supported Providers<a class="headerlink" href="#supported-providers" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Description</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Claude Code</strong></td>
+<td>Anthropic's Claude CLI (<code>claude</code>)</td>
+<td>✅ Default</td>
+</tr>
+<tr>
+<td><strong>OpenAI Codex</strong></td>
+<td>OpenAI's code assistant (<code>codex</code>)</td>
+<td>✅ Available</td>
+</tr>
+</tbody>
+</table>
+<h3 id="selecting-a-provider">Selecting a Provider<a class="headerlink" href="#selecting-a-provider" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Use Claude Code (default)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>codegeass<span class="w"> </span>task<span class="w"> </span>create<span class="w"> </span>--name<span class="w"> </span>my-task<span class="w"> </span>--code-source<span class="w"> </span>claude<span class="w"> </span>...
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Use OpenAI Codex</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>codegeass<span class="w"> </span>task<span class="w"> </span>create<span class="w"> </span>--name<span class="w"> </span>my-task<span class="w"> </span>--code-source<span class="w"> </span>codex<span class="w"> </span>...
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># List available providers</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>codegeass<span class="w"> </span>provider<span class="w"> </span>list
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="c1"># Show provider details</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>codegeass<span class="w"> </span>provider<span class="w"> </span>info<span class="w"> </span>claude
+</code></pre></div>
+<h3 id="provider-capabilities">Provider Capabilities<a class="headerlink" href="#provider-capabilities" title="Permanent link">&para;</a></h3>
+<p>Each provider declares its capabilities, which affects available execution modes:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>codegeass<span class="w"> </span>provider<span class="w"> </span>info<span class="w"> </span>claude
+</code></pre></div>
+<p>Output shows:
+- Supported modes (headless, autonomous, skill)
+- Available models
+- Configuration requirements</p>
 <h2 id="execution-strategies">Execution Strategies<a class="headerlink" href="#execution-strategies" title="Permanent link">&para;</a></h2>
 <h3 id="headless-strategy-default">Headless Strategy (Default)<a class="headerlink" href="#headless-strategy-default" title="Permanent link">&para;</a></h3>
 <p>The safest mode - read-only execution using <code>claude -p</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>codegeass<span class="w"> </span>task<span class="w"> </span>create<span class="w"> </span>--mode<span class="w"> </span>headless<span class="w"> </span>...
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>codegeass<span class="w"> </span>task<span class="w"> </span>create<span class="w"> </span>--mode<span class="w"> </span>headless<span class="w"> </span>...
 </code></pre></div>
 <p><strong>Capabilities:</strong>
 - Read files
@@ -1871,7 +2068,7 @@
 - Learning about codebases</p>
 <h3 id="autonomous-strategy">Autonomous Strategy<a class="headerlink" href="#autonomous-strategy" title="Permanent link">&para;</a></h3>
 <p>Full Claude capabilities with <code>--dangerously-skip-permissions</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>codegeass<span class="w"> </span>task<span class="w"> </span>create<span class="w"> </span>--mode<span class="w"> </span>autonomous<span class="w"> </span>...
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>codegeass<span class="w"> </span>task<span class="w"> </span>create<span class="w"> </span>--mode<span class="w"> </span>autonomous<span class="w"> </span>...
 </code></pre></div>
 <p><strong>Capabilities:</strong>
 - All headless capabilities
@@ -1894,7 +2091,7 @@
 </div>
 <h3 id="skill-strategy">Skill Strategy<a class="headerlink" href="#skill-strategy" title="Permanent link">&para;</a></h3>
 <p>Invokes predefined skills with controlled permissions:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>codegeass<span class="w"> </span>task<span class="w"> </span>create<span class="w"> </span>--mode<span class="w"> </span>skill<span class="w"> </span>--skill<span class="w"> </span>review<span class="w"> </span>...
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>codegeass<span class="w"> </span>task<span class="w"> </span>create<span class="w"> </span>--mode<span class="w"> </span>skill<span class="w"> </span>--skill<span class="w"> </span>review<span class="w"> </span>...
 </code></pre></div>
 <p><strong>Capabilities:</strong>
 - Defined by the skill's <code>allowed-tools</code> field
@@ -1954,19 +2151,19 @@
 </tbody>
 </table>
 <h2 id="execution-flow">Execution Flow<a class="headerlink" href="#execution-flow" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>┌─────────────────────────────────────────────────────────┐
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>│                    Task Execution                       │
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>├─────────────────────────────────────────────────────────┤
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>│                                                         │
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>│  1. Load task configuration                             │
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>│  2. Determine execution strategy                        │
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>│  3. Prepare working directory                           │
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>│  4. Execute Claude with appropriate flags               │
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>│  5. Capture output and session data                     │
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>│  6. Log results                                         │
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>│  7. Send notifications (if configured)                  │
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>│                                                         │
-<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>└─────────────────────────────────────────────────────────┘
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>┌─────────────────────────────────────────────────────────┐
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>│                    Task Execution                       │
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>├─────────────────────────────────────────────────────────┤
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>│                                                         │
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>│  1. Load task configuration                             │
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>│  2. Determine execution strategy                        │
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>│  3. Prepare working directory                           │
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>│  4. Execute Claude with appropriate flags               │
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>│  5. Capture output and session data                     │
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>│  6. Log results                                         │
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>│  7. Send notifications (if configured)                  │
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>│                                                         │
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>└─────────────────────────────────────────────────────────┘
 </code></pre></div>
 <h2 id="command-mapping">Command Mapping<a class="headerlink" href="#command-mapping" title="Permanent link">&para;</a></h2>
 <table>
@@ -1993,27 +2190,27 @@
 </table>
 <h2 id="session-data">Session Data<a class="headerlink" href="#session-data" title="Permanent link">&para;</a></h2>
 <p>Each execution creates session data in <code>data/sessions/</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;abc123&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">&quot;task_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;daily-review&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">&quot;started_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-01-15T09:00:00Z&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nt">&quot;completed_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-01-15T09:05:23Z&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;completed&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span><span class="nt">&quot;mode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;headless&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">  </span><span class="nt">&quot;output&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">  </span><span class="nt">&quot;exit_code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="p">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;abc123&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">&quot;task_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;daily-review&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">&quot;started_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-01-15T09:00:00Z&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">&quot;completed_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2024-01-15T09:05:23Z&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;completed&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">  </span><span class="nt">&quot;mode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;headless&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">  </span><span class="nt">&quot;output&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">  </span><span class="nt">&quot;exit_code&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="p">}</span>
 </code></pre></div>
 <h2 id="execution-logs">Execution Logs<a class="headerlink" href="#execution-logs" title="Permanent link">&para;</a></h2>
 <p>View execution history:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># List recent executions</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>codegeass<span class="w"> </span>logs<span class="w"> </span>list
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Show execution details</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>codegeass<span class="w"> </span>logs<span class="w"> </span>show<span class="w"> </span>&lt;execution-id&gt;
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># Follow logs in real-time</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>codegeass<span class="w"> </span>logs<span class="w"> </span>tail
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># List recent executions</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>codegeass<span class="w"> </span>logs<span class="w"> </span>list
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Show execution details</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>codegeass<span class="w"> </span>logs<span class="w"> </span>show<span class="w"> </span>&lt;execution-id&gt;
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1"># Follow logs in real-time</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>codegeass<span class="w"> </span>logs<span class="w"> </span>tail
 </code></pre></div>
 <h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
 <h3 id="choosing-a-mode">Choosing a Mode<a class="headerlink" href="#choosing-a-mode" title="Permanent link">&para;</a></h3>
@@ -2035,6 +2232,13 @@
 <li><strong>Scoped tasks</strong> - Smaller scope = faster execution</li>
 <li><strong>Use skills</strong> - Reusable prompts are more efficient</li>
 </ol>
+<h2 id="stopping-executions">Stopping Executions<a class="headerlink" href="#stopping-executions" title="Permanent link">&para;</a></h2>
+<p>Running tasks can be stopped gracefully:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Stop a running task</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>codegeass<span class="w"> </span>task<span class="w"> </span>stop<span class="w"> </span>&lt;task-name&gt;
+</code></pre></div>
+<p>This sends SIGTERM to the Claude process, followed by SIGKILL if it doesn't terminate within 5 seconds.</p>
+<p>The Dashboard also provides a Stop button on task cards and the task detail page.</p>
 <h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../tasks/">Tasks</a> - Task configuration</li>

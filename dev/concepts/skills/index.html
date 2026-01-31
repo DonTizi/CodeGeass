@@ -907,6 +907,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#refactor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        refactor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#other-skills" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1131,6 +1142,8 @@
       
         
       
+        
+      
     
     
     
@@ -1258,6 +1271,34 @@
     
   
     project
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cli/provider/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    provider
   
 
     
@@ -2137,6 +2178,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#refactor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        refactor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#other-skills" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2438,6 +2490,24 @@
 <a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">  </span>--schedule<span class="w"> </span><span class="s2">&quot;0 2 * * 0&quot;</span>
 </code></pre></div>
 <p><strong>Output format:</strong> Returns a JSON security report with findings, severity levels, CWE references, and remediation suggestions.</p>
+<h3 id="refactor">refactor<a class="headerlink" href="#refactor" title="Permanent link">&para;</a></h3>
+<p>Automated refactoring of monolithic code into clean, single-responsibility modules.</p>
+<p><strong>What it does:</strong></p>
+<ul>
+<li><strong>Identifies</strong> files exceeding size/complexity thresholds</li>
+<li><strong>Analyzes</strong> responsibilities and suggests splits</li>
+<li><strong>Extracts</strong> modules following SOLID principles</li>
+<li><strong>Preserves</strong> backward compatibility via re-exports</li>
+<li><strong>Tests</strong> changes with linting and existing tests</li>
+</ul>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>codegeass<span class="w"> </span>task<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span>--name<span class="w"> </span>weekly-refactor<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span>--skill<span class="w"> </span>refactor<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span>--skill-args<span class="w"> </span><span class="s2">&quot;src/codegeass/cli/&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">  </span>--schedule<span class="w"> </span><span class="s2">&quot;0 3 * * 0&quot;</span>
+</code></pre></div>
+<p><strong>Output:</strong> Creates a PR with modular code structure and detailed explanation of changes.</p>
 <h3 id="other-skills">Other Skills<a class="headerlink" href="#other-skills" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -2462,6 +2532,10 @@
 <tr>
 <td><code>dependency-check</code></td>
 <td>Check dependencies for updates and vulnerabilities</td>
+</tr>
+<tr>
+<td><code>refactor</code></td>
+<td>Split monolithic code into clean modules following SOLID principles</td>
 </tr>
 </tbody>
 </table>
