@@ -37,7 +37,7 @@ class CodexAdapter(CodeProvider):
             resume=False,  # Codex does NOT support session resume
             streaming=True,
             autonomous=True,
-            autonomous_flag="--yolo",
+            autonomous_flag="--full-auto",
             models=["gpt-5.2-codex", "gpt-5.2", "gpt-5.1-codex-max", "gpt-5.1-codex-mini"],
         )
 
@@ -87,10 +87,7 @@ class CodexAdapter(CodeProvider):
         executable = self.get_executable()
         command = [executable, "exec"]
 
-        # Prompt
-        command.extend(["--prompt", request.prompt])
-
-        # Model selection
+        # Model selection (must come before positional prompt)
         if request.model:
             # Map Claude model names to Codex models for backward compatibility
             model_map = {
@@ -99,14 +96,17 @@ class CodexAdapter(CodeProvider):
                 "opus": "gpt-5.1-codex-max",
             }
             codex_model = model_map.get(request.model, request.model)
-            command.extend(["--model", codex_model])
+            command.extend(["-m", codex_model])
 
-        # Autonomous mode
+        # Autonomous mode (--full-auto for sandboxed auto-execution)
         if request.autonomous:
-            command.append("--yolo")
+            command.append("--full-auto")
 
         # JSON output format
         command.append("--json")
+
+        # Prompt is a positional argument (must be last)
+        command.append(request.prompt)
 
         return command
 

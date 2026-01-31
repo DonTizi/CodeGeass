@@ -40,7 +40,7 @@ class TestCodexAdapter:
         # But supports streaming and autonomous
         assert caps.streaming is True
         assert caps.autonomous is True
-        assert caps.autonomous_flag == "--yolo"
+        assert caps.autonomous_flag == "--full-auto"
         # Has OpenAI Codex models
         assert "gpt-5.2-codex" in caps.models
         assert "gpt-5.1-codex-mini" in caps.models
@@ -71,8 +71,8 @@ class TestCodexAdapter:
             cmd = adapter.build_command(request)
 
         # Should map sonnet -> gpt-5.2-codex
-        assert "--model" in cmd
-        idx = cmd.index("--model")
+        assert "-m" in cmd
+        idx = cmd.index("-m")
         assert cmd[idx + 1] == "gpt-5.2-codex"
 
     def test_build_command_haiku_mapping(self, adapter):
@@ -86,7 +86,7 @@ class TestCodexAdapter:
         with patch.object(adapter, "get_executable", return_value="/usr/bin/codex"):
             cmd = adapter.build_command(request)
 
-        idx = cmd.index("--model")
+        idx = cmd.index("-m")
         assert cmd[idx + 1] == "gpt-5.1-codex-mini"
 
     def test_build_command_opus_mapping(self, adapter):
@@ -100,7 +100,7 @@ class TestCodexAdapter:
         with patch.object(adapter, "get_executable", return_value="/usr/bin/codex"):
             cmd = adapter.build_command(request)
 
-        idx = cmd.index("--model")
+        idx = cmd.index("-m")
         assert cmd[idx + 1] == "gpt-5.1-codex-max"
 
     def test_build_command_native_codex_model(self, adapter):
@@ -114,7 +114,7 @@ class TestCodexAdapter:
         with patch.object(adapter, "get_executable", return_value="/usr/bin/codex"):
             cmd = adapter.build_command(request)
 
-        idx = cmd.index("--model")
+        idx = cmd.index("-m")
         assert cmd[idx + 1] == "gpt-5.2-codex"
 
     def test_build_command_autonomous(self, adapter):
@@ -128,8 +128,8 @@ class TestCodexAdapter:
         with patch.object(adapter, "get_executable", return_value="/usr/bin/codex"):
             cmd = adapter.build_command(request)
 
-        # Codex uses --yolo for autonomous mode
-        assert "--yolo" in cmd
+        # Codex uses --full-auto for autonomous mode
+        assert "--full-auto" in cmd
 
     def test_validate_request_plan_mode_rejected(self, adapter):
         """Test that plan_mode is rejected."""
