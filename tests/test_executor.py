@@ -20,9 +20,20 @@ class TestExecutionStrategies:
 
     @pytest.fixture(autouse=True)
     def mock_claude_executable(self):
-        """Mock get_claude_executable to return 'claude'."""
-        with patch(
-            "codegeass.execution.strategies.get_claude_executable", return_value="claude"
+        """Mock get_claude_executable in all strategy modules."""
+        with (
+            patch(
+                "codegeass.execution.strategies.headless.get_claude_executable",
+                return_value="claude",
+            ),
+            patch(
+                "codegeass.execution.strategies.autonomous.get_claude_executable",
+                return_value="claude",
+            ),
+            patch(
+                "codegeass.execution.strategies.skill.get_claude_executable",
+                return_value="claude",
+            ),
         ):
             yield
 
@@ -158,9 +169,20 @@ class TestStrategyExecution:
 
     @pytest.fixture(autouse=True)
     def mock_claude_executable(self):
-        """Mock get_claude_executable to return 'claude'."""
-        with patch(
-            "codegeass.execution.strategies.get_claude_executable", return_value="claude"
+        """Mock get_claude_executable in all strategy modules."""
+        with (
+            patch(
+                "codegeass.execution.strategies.headless.get_claude_executable",
+                return_value="claude",
+            ),
+            patch(
+                "codegeass.execution.strategies.autonomous.get_claude_executable",
+                return_value="claude",
+            ),
+            patch(
+                "codegeass.execution.strategies.skill.get_claude_executable",
+                return_value="claude",
+            ),
         ):
             yield
 

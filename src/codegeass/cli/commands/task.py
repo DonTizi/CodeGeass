@@ -473,6 +473,6 @@ def stop_task(ctx: Context, name: str) -> None:
     stopped = tracker.stop_execution(execution.execution_id)
 
     if stopped:
-        console.print(f"[green]Task execution stopped successfully[/green]")
+        console.print("[green]Task execution stopped successfully[/green]")
     else:
-        console.print(f"[yellow]Could not stop execution (may have already finished)[/yellow]")
+        console.print("[yellow]Could not stop execution (may have already finished)[/yellow]")
