@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.10] - 2026-01-31
+
+### Added
+
+- **Unified Init Command**: Merge `project add` and `project init` into single `codegeass init` command (#37)
+  - `codegeass init [PATH]` now creates config structure AND registers project automatically
+  - Options: `--name`, `--description`, `--model`, `--timeout`, `--autonomous`, `--no-shared-skills`, `--set-default`, `--force`
+  - Dashboard API also supports initialization when adding projects
+  - BREAKING CHANGE: Use `codegeass init [PATH]` instead of `project add` / `project init`
+
+### Changed
+
+- **Tasks Autonomous by Default**: Tasks now default to `autonomous=True` (#35)
+  - Replace `--autonomous` flag with `--no-autonomous` in CLI
+  - Aligns with typical use case where scheduled tasks need write access
+  - Plan mode tasks remain read-only until approved (unchanged behavior)
+
+### Fixed
+
+- **SkillStrategy Missing allowedTools**: Add `--allowedTools` flag to `SkillStrategy.build_command()` (#35)
+  - Skills with `allowed-tools` frontmatter now correctly whitelist tools
+  - Aligns `SkillStrategy` with `AppendSystemPromptStrategy` behavior
+
 ## [0.2.9] - 2026-01-31
 
 ### Added
@@ -334,7 +357,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANTHROPIC_API_KEY deliberately unset in CRON to use Pro/Max subscription
 - No API tokens in configuration files
 
-[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.9...HEAD
+[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.10...HEAD
+[0.2.10]: https://github.com/DonTizi/CodeGeass/compare/v0.2.9...v0.2.10
 [0.2.9]: https://github.com/DonTizi/CodeGeass/compare/v0.2.8...v0.2.9
 [0.2.8]: https://github.com/DonTizi/CodeGeass/compare/v0.2.7...v0.2.8
 [0.2.7]: https://github.com/DonTizi/CodeGeass/compare/v0.2.6...v0.2.7
