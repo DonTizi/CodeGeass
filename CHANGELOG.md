@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-01-31
+
+### Added
+
+- **Setup & Uninstall CLI Commands**: One-command scheduler installation (#15)
+  - `codegeass setup`: Detects OS and installs appropriate scheduler (launchd on macOS, systemd on Linux, cron as fallback)
+  - `codegeass uninstall`: Remove scheduler with optional `--all` to remove global config and project data
+  - Supports `--force` for reinstall, `--keep-global` and `--keep-project` flags
+
+### Changed
+
+- **Simplified Installation**: Replace curl-based installation with pipx (recommended) and pip in venv
+- Remove legacy `install.sh` and `uninstall.sh` scripts in favor of CLI commands
+
+### Documentation
+
+- Updated README, installation guide, quickstart, and production setup with new installation methods
+
 ## [0.2.0] - 2026-01-31
 
 ### Added
@@ -187,7 +205,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANTHROPIC_API_KEY deliberately unset in CRON to use Pro/Max subscription
 - No API tokens in configuration files
 
-[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/DonTizi/CodeGeass/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/DonTizi/CodeGeass/compare/v0.1.4...v0.2.0
 [0.1.4]: https://github.com/DonTizi/CodeGeass/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/DonTizi/CodeGeass/compare/v0.1.2...v0.1.3
