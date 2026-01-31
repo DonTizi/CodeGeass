@@ -4,10 +4,7 @@ This strategy wraps a CodeProvider to execute tasks using non-Claude providers
 like OpenAI Codex while maintaining compatibility with the existing strategy pattern.
 """
 
-import subprocess
-from datetime import datetime
-
-from codegeass.core.value_objects import ExecutionResult, ExecutionStatus
+from codegeass.core.value_objects import ExecutionResult
 from codegeass.execution.strategies.base import BaseStrategy
 from codegeass.execution.strategies.context import ExecutionContext
 from codegeass.providers.base import CodeProvider, ExecutionRequest
@@ -18,6 +15,8 @@ class ProviderStrategy(BaseStrategy):
 
     This allows non-Claude providers to be used with the existing executor
     by delegating command building and output parsing to the provider.
+
+    Inherits streaming execution from BaseStrategy for real-time output.
     """
 
     def __init__(self, provider: CodeProvider):
@@ -67,7 +66,10 @@ class ProviderStrategy(BaseStrategy):
         return self._provider.build_command(request)
 
     def execute(self, context: ExecutionContext) -> ExecutionResult:
-        """Execute using the provider.
+        """Execute using streaming from BaseStrategy.
+
+        Uses the inherited streaming execution to provide real-time output
+        to the dashboard.
 
         Args:
             context: The execution context
@@ -75,72 +77,24 @@ class ProviderStrategy(BaseStrategy):
         Returns:
             ExecutionResult with execution details
         """
-        started_at = datetime.now()
-        command = self.build_command(context)
+        # Use BaseStrategy's streaming execute which calls build_command
+        # This provides real-time output via tracker.append_output()
+        result = super().execute(context)
 
-        try:
-            # Run the command
-            result = subprocess.run(
-                command,
-                cwd=context.working_dir,
-                capture_output=True,
-                text=True,
-                timeout=context.task.timeout,
-            )
-
-            # Parse output using provider
-            output_text, session_id = self._provider.parse_output(result.stdout)
-
-            # Determine status based on exit code
-            if result.returncode == 0:
-                status = ExecutionStatus.SUCCESS
-            else:
-                status = ExecutionStatus.FAILURE
-
-            return ExecutionResult(
-                task_id=context.task.id,
-                session_id=session_id or context.session_id or "",
-                status=status,
-                output=output_text or result.stdout,
-                started_at=started_at,
-                finished_at=datetime.now(),
-                exit_code=result.returncode,
-                error=result.stderr if result.returncode != 0 else None,
+        # Add provider metadata
+        if result.metadata is None:
+            result = ExecutionResult(
+                task_id=result.task_id,
+                session_id=result.session_id,
+                status=result.status,
+                output=result.output,
+                started_at=result.started_at,
+                finished_at=result.finished_at,
+                exit_code=result.exit_code,
+                error=result.error,
                 metadata={"provider": self._provider.name},
             )
+        else:
+            result.metadata["provider"] = self._provider.name
 
-        except subprocess.TimeoutExpired:
-            return ExecutionResult(
-                task_id=context.task.id,
-                session_id=context.session_id or "",
-                status=ExecutionStatus.TIMEOUT,
-                output="",
-                started_at=started_at,
-                finished_at=datetime.now(),
-                error=f"Execution timed out after {context.task.timeout}s",
-                metadata={"provider": self._provider.name},
-            )
-
-        except FileNotFoundError:
-            return ExecutionResult(
-                task_id=context.task.id,
-                session_id=context.session_id or "",
-                status=ExecutionStatus.FAILURE,
-                output="",
-                started_at=started_at,
-                finished_at=datetime.now(),
-                error=f"Provider executable not found: {command[0]}",
-                metadata={"provider": self._provider.name},
-            )
-
-        except Exception as e:
-            return ExecutionResult(
-                task_id=context.task.id,
-                session_id=context.session_id or "",
-                status=ExecutionStatus.FAILURE,
-                output="",
-                started_at=started_at,
-                finished_at=datetime.now(),
-                error=str(e),
-                metadata={"provider": self._provider.name},
-            )
+        return result

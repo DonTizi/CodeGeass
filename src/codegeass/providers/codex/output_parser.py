@@ -18,10 +18,11 @@ def parse_jsonl_output(raw_output: str) -> ParsedOutput:
 
     Codex outputs one JSON object per line (JSONL format).
     Common event types:
-    - {"type": "message", "content": "..."} - text output
-    - {"type": "tool_call", ...} - tool invocations
+    - {"type": "thread.started", "thread_id": "..."} - session start
+    - {"type": "item.completed", "item": {"type": "agent_message", "text": "..."}} - response
+    - {"type": "turn.completed", "usage": {...}} - turn end with token usage
+    - {"type": "message", "content": "..."} - legacy text output
     - {"type": "error", "message": "..."} - errors
-    - {"type": "done", ...} - completion marker
 
     Args:
         raw_output: Raw output from Codex CLI
@@ -43,14 +44,25 @@ def parse_jsonl_output(raw_output: str) -> ParsedOutput:
         try:
             data = json.loads(line)
 
-            # Extract session_id if present
+            # Extract session_id / thread_id if present
             if "session_id" in data and not session_id:
                 session_id = data["session_id"]
+            if "thread_id" in data and not session_id:
+                session_id = data["thread_id"]
 
             # Extract text from message events
             event_type = data.get("type", "")
 
-            if event_type == "message":
+            # Codex item.completed event - main response format
+            if event_type == "item.completed":
+                item = data.get("item", {})
+                item_type = item.get("type", "")
+                item_text = item.get("text", "")
+                # Only include agent_message, not reasoning/thinking
+                if item_type == "agent_message" and item_text:
+                    text_parts.append(item_text)
+
+            elif event_type == "message":
                 content = data.get("content", "")
                 if content:
                     text_parts.append(content)

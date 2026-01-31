@@ -235,3 +235,30 @@ Done."""
         output = '{"session_id":"sess-abc-123","type":"message","content":"Hello"}'
         result = parse_jsonl_output(output)
         assert result.session_id == "sess-abc-123"
+
+    def test_parse_item_completed_agent_message(self):
+        """Test parsing item.completed with agent_message type."""
+        output = '{"type":"item.completed","item":{"id":"item_0","type":"agent_message","text":"Hello from Codex!"}}'
+        result = parse_jsonl_output(output)
+        assert "Hello from Codex!" in result.text
+
+    def test_parse_thread_id_as_session(self):
+        """Test extracting thread_id as session_id."""
+        output = '{"type":"thread.started","thread_id":"thread-123-abc"}'
+        result = parse_jsonl_output(output)
+        assert result.session_id == "thread-123-abc"
+
+    def test_parse_full_codex_output(self):
+        """Test parsing realistic full Codex output."""
+        output = (
+            '{"type":"thread.started","thread_id":"019c1224-096d-7182"}\n'
+            '{"type":"turn.started"}\n'
+            '{"type":"item.completed","item":{"id":"item_0","type":"reasoning","text":"Thinking..."}}\n'
+            '{"type":"item.completed","item":{"id":"item_1","type":"agent_message","text":"Hello! How can I help?"}}\n'
+            '{"type":"turn.completed","usage":{"input_tokens":100,"output_tokens":20}}'
+        )
+        result = parse_jsonl_output(output)
+        assert result.session_id == "019c1224-096d-7182"
+        assert "Hello! How can I help?" in result.text
+        # Reasoning should NOT be included
+        assert "Thinking..." not in result.text
