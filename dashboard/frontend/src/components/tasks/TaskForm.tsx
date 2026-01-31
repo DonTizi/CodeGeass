@@ -42,6 +42,19 @@ const PROVIDER_CONFIG: Record<string, { color: string; label: string }> = {
   teams: { color: 'bg-purple-500', label: 'Teams' },
 };
 
+// Model display labels
+const MODEL_LABELS: Record<string, { label: string; description: string }> = {
+  // Claude models
+  haiku: { label: 'Haiku', description: 'Fast' },
+  sonnet: { label: 'Sonnet', description: 'Balanced' },
+  opus: { label: 'Opus', description: 'Powerful' },
+  // OpenAI Codex models
+  'gpt-5.2-codex': { label: 'GPT-5.2 Codex', description: 'Default' },
+  'gpt-5.2': { label: 'GPT-5.2', description: 'Frontier' },
+  'gpt-5.1-codex-max': { label: 'GPT-5.1 Codex Max', description: 'Deep reasoning' },
+  'gpt-5.1-codex-mini': { label: 'GPT-5.1 Codex Mini', description: 'Fast & cheap' },
+};
+
 interface TaskFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -187,12 +200,23 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
   const selectedProvider = providers.find((p) => p.name === formData.code_source);
   const supportsPlanMode = selectedProvider?.capabilities?.plan_mode ?? true;
 
-  // When provider changes and it doesn't support plan mode, disable it
+  // Get available models for the selected provider
+  const availableModels = selectedProvider?.capabilities?.models || ['sonnet'];
+
+  // When provider changes, reset model to first available and disable plan mode if unsupported
   useEffect(() => {
-    if (!supportsPlanMode && formData.plan_mode) {
-      setFormData((prev) => ({ ...prev, plan_mode: false }));
+    if (selectedProvider) {
+      const models = selectedProvider.capabilities?.models || [];
+      // Reset model if current model is not available for this provider
+      if (models.length > 0 && formData.model && !models.includes(formData.model)) {
+        setFormData((prev) => ({ ...prev, model: models[0] }));
+      }
+      // Disable plan mode if not supported
+      if (!supportsPlanMode && formData.plan_mode) {
+        setFormData((prev) => ({ ...prev, plan_mode: false }));
+      }
     }
-  }, [supportsPlanMode, formData.plan_mode]);
+  }, [selectedProvider, supportsPlanMode]);
 
   const validateCron = async (expression: string) => {
     if (!expression) {
@@ -357,7 +381,7 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
               <Label htmlFor="model">Model</Label>
               <Select
                 value={formData.model}
-                onValueChange={(value: 'haiku' | 'sonnet' | 'opus') =>
+                onValueChange={(value) =>
                   setFormData((prev) => ({ ...prev, model: value }))
                 }
               >
@@ -365,9 +389,18 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="haiku">Haiku (Fast)</SelectItem>
-                  <SelectItem value="sonnet">Sonnet (Balanced)</SelectItem>
-                  <SelectItem value="opus">Opus (Powerful)</SelectItem>
+                  {availableModels.map((model) => {
+                    const modelInfo = MODEL_LABELS[model] || {
+                      label: model,
+                      description: ''
+                    };
+                    return (
+                      <SelectItem key={model} value={model}>
+                        {modelInfo.label}
+                        {modelInfo.description && ` (${modelInfo.description})`}
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>

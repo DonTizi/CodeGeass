@@ -38,7 +38,7 @@ class CodexAdapter(CodeProvider):
             streaming=True,
             autonomous=True,
             autonomous_flag="--yolo",
-            models=["gpt-4o", "gpt-4o-mini", "o1", "o3-mini"],
+            models=["gpt-5.2-codex", "gpt-5.2", "gpt-5.1-codex-max", "gpt-5.1-codex-mini"],
         )
 
     def get_executable(self) -> str:
@@ -92,11 +92,11 @@ class CodexAdapter(CodeProvider):
 
         # Model selection
         if request.model:
-            # Map common model names to Codex models
+            # Map Claude model names to Codex models for backward compatibility
             model_map = {
-                "sonnet": "gpt-4o",
-                "haiku": "gpt-4o-mini",
-                "opus": "o1",
+                "sonnet": "gpt-5.2-codex",
+                "haiku": "gpt-5.1-codex-mini",
+                "opus": "gpt-5.1-codex-max",
             }
             codex_model = model_map.get(request.model, request.model)
             command.extend(["--model", codex_model])

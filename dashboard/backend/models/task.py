@@ -75,7 +75,7 @@ class TaskCreate(BaseModel):
     skill: str | None = Field(None, description="Skill name to execute")
     prompt: str | None = Field(None, description="Direct prompt (if no skill)")
     allowed_tools: list[str] = Field(default_factory=list)
-    model: str = Field("sonnet", pattern="^(haiku|sonnet|opus)$")
+    model: str = Field("sonnet", description="Model to use (provider-specific)")
     autonomous: bool = False
     max_turns: int | None = Field(None, ge=1, le=100)
     timeout: int = Field(300, ge=30, le=3600)
@@ -96,7 +96,7 @@ class TaskUpdate(BaseModel):
     skill: str | None = None
     prompt: str | None = None
     allowed_tools: list[str] | None = None
-    model: str | None = Field(None, pattern="^(haiku|sonnet|opus)$")
+    model: str | None = Field(None, description="Model to use (provider-specific)")
     autonomous: bool | None = None
     max_turns: int | None = Field(None, ge=1, le=100)
     timeout: int | None = Field(None, ge=30, le=3600)

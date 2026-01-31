@@ -41,9 +41,9 @@ class TestCodexAdapter:
         assert caps.streaming is True
         assert caps.autonomous is True
         assert caps.autonomous_flag == "--yolo"
-        # Has OpenAI models
-        assert "gpt-4o" in caps.models
-        assert "gpt-4o-mini" in caps.models
+        # Has OpenAI Codex models
+        assert "gpt-5.2-codex" in caps.models
+        assert "gpt-5.1-codex-mini" in caps.models
 
     def test_build_command_basic(self, adapter):
         """Test building a basic command."""
@@ -60,7 +60,7 @@ class TestCodexAdapter:
         assert "Hello world" in cmd
 
     def test_build_command_with_model_mapping(self, adapter):
-        """Test that Claude model names are mapped to OpenAI equivalents."""
+        """Test that Claude model names are mapped to Codex equivalents."""
         request = ExecutionRequest(
             prompt="Test",
             working_dir=Path("/tmp"),
@@ -70,13 +70,13 @@ class TestCodexAdapter:
         with patch.object(adapter, "get_executable", return_value="/usr/bin/codex"):
             cmd = adapter.build_command(request)
 
-        # Should map sonnet -> gpt-4o
+        # Should map sonnet -> gpt-5.2-codex
         assert "--model" in cmd
         idx = cmd.index("--model")
-        assert cmd[idx + 1] == "gpt-4o"
+        assert cmd[idx + 1] == "gpt-5.2-codex"
 
     def test_build_command_haiku_mapping(self, adapter):
-        """Test haiku -> gpt-4o-mini mapping."""
+        """Test haiku -> gpt-5.1-codex-mini mapping."""
         request = ExecutionRequest(
             prompt="Test",
             working_dir=Path("/tmp"),
@@ -87,10 +87,10 @@ class TestCodexAdapter:
             cmd = adapter.build_command(request)
 
         idx = cmd.index("--model")
-        assert cmd[idx + 1] == "gpt-4o-mini"
+        assert cmd[idx + 1] == "gpt-5.1-codex-mini"
 
     def test_build_command_opus_mapping(self, adapter):
-        """Test opus -> o1 mapping."""
+        """Test opus -> gpt-5.1-codex-max mapping."""
         request = ExecutionRequest(
             prompt="Test",
             working_dir=Path("/tmp"),
@@ -101,7 +101,21 @@ class TestCodexAdapter:
             cmd = adapter.build_command(request)
 
         idx = cmd.index("--model")
-        assert cmd[idx + 1] == "o1"
+        assert cmd[idx + 1] == "gpt-5.1-codex-max"
+
+    def test_build_command_native_codex_model(self, adapter):
+        """Test using native Codex model name directly."""
+        request = ExecutionRequest(
+            prompt="Test",
+            working_dir=Path("/tmp"),
+            model="gpt-5.2-codex",
+        )
+
+        with patch.object(adapter, "get_executable", return_value="/usr/bin/codex"):
+            cmd = adapter.build_command(request)
+
+        idx = cmd.index("--model")
+        assert cmd[idx + 1] == "gpt-5.2-codex"
 
     def test_build_command_autonomous(self, adapter):
         """Test building command with autonomous mode."""

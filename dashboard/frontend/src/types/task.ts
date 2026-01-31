@@ -14,7 +14,7 @@ export interface Task {
   skill: string | null;
   prompt: string | null;
   allowed_tools: string[];
-  model: 'haiku' | 'sonnet' | 'opus';
+  model: string;
   autonomous: boolean;
   max_turns: number | null;
   timeout: number;
@@ -51,7 +51,7 @@ export interface TaskCreate {
   skill?: string | null;
   prompt?: string | null;
   allowed_tools?: string[];
-  model?: 'haiku' | 'sonnet' | 'opus';
+  model?: string;
   autonomous?: boolean;
   max_turns?: number | null;
   timeout?: number;
@@ -73,7 +73,7 @@ export interface TaskUpdate {
   skill?: string | null;
   prompt?: string | null;
   allowed_tools?: string[];
-  model?: 'haiku' | 'sonnet' | 'opus';
+  model?: string;
   autonomous?: boolean;
   max_turns?: number | null;
   timeout?: number;
