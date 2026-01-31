@@ -1,8 +1,37 @@
 # Quick Start
 
-Create your first automated Claude task in 5 minutes.
+Get up and running with CodeGeass in 5 minutes.
 
-## Step 1: Create a Task
+## Step 1: Install CodeGeass
+
+```bash
+# macOS
+brew install pipx && pipx ensurepath
+source ~/.zshrc
+
+# Linux
+python3 -m pip install --user pipx && pipx ensurepath
+source ~/.bashrc
+
+# Install CodeGeass
+pipx install codegeass
+```
+
+## Step 2: Setup the Scheduler
+
+Run the setup command to install the 24/7 background scheduler:
+
+```bash
+codegeass setup
+```
+
+This automatically detects your OS and installs:
+- **macOS**: launchd service
+- **Linux**: systemd user timer
+
+The scheduler runs every minute and executes any due tasks.
+
+## Step 3: Create Your First Task
 
 Create a simple task that runs daily:
 
@@ -15,7 +44,7 @@ codegeass task create \
 
 This creates a task named `hello-world` that runs at 9 AM every day.
 
-## Step 2: View Your Task
+## Step 4: View Your Task
 
 ```bash
 # List all tasks
@@ -25,7 +54,7 @@ codegeass task list
 codegeass task show hello-world
 ```
 
-## Step 3: Run Manually
+## Step 5: Run Manually
 
 Test your task without waiting for the schedule:
 
@@ -36,7 +65,7 @@ codegeass task run hello-world
 !!! tip "Working Directory"
     By default, tasks run in the current directory. Use `--working-dir` to specify a different location.
 
-## Step 4: Check Results
+## Step 6: Check Results
 
 View execution logs:
 
@@ -51,19 +80,23 @@ codegeass logs show <execution-id>
 codegeass logs tail
 ```
 
-## Step 5: Enable Scheduling
+## Step 7: Verify Scheduling
 
-Install the CRON job to run tasks automatically:
+The scheduler is already running from `codegeass setup`. Verify it:
 
 ```bash
-# Install scheduler
-codegeass cron install
-
 # Check upcoming runs
 codegeass scheduler upcoming
 
 # View scheduler status
 codegeass scheduler status
+
+# Check scheduler is running
+# macOS
+launchctl list | grep codegeass
+
+# Linux
+systemctl --user status codegeass-scheduler.timer
 ```
 
 ## A Real-World Example
@@ -115,6 +148,16 @@ codegeass --project web task run daily-review
 
 !!! tip "Shared Skills"
     Place commonly-used skills in `~/.codegeass/skills/` to make them available across all your projects.
+
+## Open the Dashboard
+
+CodeGeass includes a web dashboard for visual management:
+
+```bash
+codegeass dashboard
+```
+
+Then open http://localhost:8001 in your browser.
 
 ## Next Steps
 

@@ -312,6 +312,7 @@ from codegeass.cli.commands import (  # noqa: E402
     project,
     provider,
     scheduler,
+    setup,
     skill,
     task,
 )
@@ -327,6 +328,9 @@ cli.add_command(execution.execution)
 cli.add_command(project.project)
 cli.add_command(provider.provider)
 cli.add_command(dashboard.dashboard)
+cli.add_command(setup.setup)
+cli.add_command(setup.uninstall_scheduler)
+cli.add_command(setup.uninstall)
 
 
 @cli.command()
