@@ -5,3 +5,4 @@ export { useSchedulerStore } from './scheduler.store';
 export { useNotificationsStore } from './notifications.store';
 export { useExecutionsStore } from './executions.store';
 export { useProjectsStore } from './projects.store';
+export { useFilterStore } from './filter.store';
