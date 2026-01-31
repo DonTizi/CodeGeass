@@ -153,21 +153,37 @@ class Context:
     @property
     def skill_registry(self):
         if self._skill_registry is None:
-            # Use ChainedSkillRegistry if we have a project with shared skills
-            if self._current_project:
-                from codegeass.factory.skill_resolver import ChainedSkillRegistry
+            # Use ChainedSkillRegistry with multi-platform support
+            from codegeass.factory.skill_resolver import ChainedSkillRegistry, Platform
 
-                shared_dir = self.project_repo.get_shared_skills_dir()
+            # Get enabled platforms from project repository
+            enabled_platform_names = self.project_repo.get_enabled_platforms()
+            platforms = []
+            for name in enabled_platform_names:
+                try:
+                    platforms.append(Platform(name.lower()))
+                except ValueError:
+                    # Skip invalid platform names
+                    pass
+
+            # Default to Claude if no valid platforms
+            if not platforms:
+                platforms = [Platform.CLAUDE]
+
+            if self._current_project:
+                # Multi-platform mode with project
                 self._skill_registry = ChainedSkillRegistry(
-                    project_skills_dir=self.skills_dir,
-                    shared_skills_dir=shared_dir,
-                    use_shared=self._current_project.use_shared_skills,
+                    project_dir=self._current_project.path,
+                    platforms=platforms,
+                    include_global=self._current_project.use_shared_skills,
                 )
             else:
-                # Fall back to simple registry for single-project mode
-                from codegeass.factory.registry import SkillRegistry
-
-                self._skill_registry = SkillRegistry(self.skills_dir)
+                # Multi-platform mode without specific project (use cwd)
+                self._skill_registry = ChainedSkillRegistry(
+                    project_dir=self.project_dir,
+                    platforms=platforms,
+                    include_global=True,
+                )
         return self._skill_registry
 
     @property
