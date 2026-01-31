@@ -15,7 +15,7 @@ class CodexAdapter(CodeProvider):
     Codex is OpenAI's coding assistant. Key differences from Claude Code:
     - Does NOT support plan mode (read-only planning)
     - Does NOT support session resume
-    - Supports autonomous mode with --yolo flag
+    - Supports autonomous mode with --full-auto flag
     - Uses JSONL output format
     """
 
@@ -96,7 +96,7 @@ class CodexAdapter(CodeProvider):
                 "opus": "gpt-5.1-codex-max",
             }
             codex_model = model_map.get(request.model, request.model)
-            command.extend(["-m", codex_model])
+            command.extend(["--model", codex_model])
 
         # Autonomous mode (--full-auto for sandboxed auto-execution)
         if request.autonomous:

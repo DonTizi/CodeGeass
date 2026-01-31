@@ -71,8 +71,8 @@ class TestCodexAdapter:
             cmd = adapter.build_command(request)
 
         # Should map sonnet -> gpt-5.2-codex
-        assert "-m" in cmd
-        idx = cmd.index("-m")
+        assert "--model" in cmd
+        idx = cmd.index("--model")
         assert cmd[idx + 1] == "gpt-5.2-codex"
 
     def test_build_command_haiku_mapping(self, adapter):
@@ -86,7 +86,7 @@ class TestCodexAdapter:
         with patch.object(adapter, "get_executable", return_value="/usr/bin/codex"):
             cmd = adapter.build_command(request)
 
-        idx = cmd.index("-m")
+        idx = cmd.index("--model")
         assert cmd[idx + 1] == "gpt-5.1-codex-mini"
 
     def test_build_command_opus_mapping(self, adapter):
@@ -100,7 +100,7 @@ class TestCodexAdapter:
         with patch.object(adapter, "get_executable", return_value="/usr/bin/codex"):
             cmd = adapter.build_command(request)
 
-        idx = cmd.index("-m")
+        idx = cmd.index("--model")
         assert cmd[idx + 1] == "gpt-5.1-codex-max"
 
     def test_build_command_native_codex_model(self, adapter):
@@ -114,7 +114,7 @@ class TestCodexAdapter:
         with patch.object(adapter, "get_executable", return_value="/usr/bin/codex"):
             cmd = adapter.build_command(request)
 
-        idx = cmd.index("-m")
+        idx = cmd.index("--model")
         assert cmd[idx + 1] == "gpt-5.2-codex"
 
     def test_build_command_autonomous(self, adapter):
