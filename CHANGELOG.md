@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-01-31
+
+### Fixed
+
+- **Dashboard Scheduler Status**: Fix dashboard showing "Stopped" when using launchd (macOS) or systemd (Linux) (#18)
+  - Renamed `_is_cron_installed()` to `_is_scheduler_running()`
+  - Now detects launchd (`com.codegeass.scheduler`) on macOS
+  - Now detects systemd (`codegeass-scheduler.timer`) on Linux
+  - Falls back to cron detection
+
+### Documentation
+
+- Added rule to CLAUDE.md to always run tests before pushing
+
 ## [0.2.1] - 2026-01-31
 
 ### Added
@@ -205,7 +219,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANTHROPIC_API_KEY deliberately unset in CRON to use Pro/Max subscription
 - No API tokens in configuration files
 
-[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/DonTizi/CodeGeass/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/DonTizi/CodeGeass/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/DonTizi/CodeGeass/compare/v0.1.4...v0.2.0
 [0.1.4]: https://github.com/DonTizi/CodeGeass/compare/v0.1.3...v0.1.4
