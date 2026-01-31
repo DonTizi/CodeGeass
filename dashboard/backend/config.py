@@ -1,7 +1,11 @@
 """Configuration for CodeGeass Dashboard backend."""
 
+import hashlib
 import os
 from pathlib import Path
+
+# Global data directory - all execution data stored here
+GLOBAL_DATA_DIR = Path.home() / ".codegeass" / "data"
 
 
 class Settings:
@@ -10,7 +14,6 @@ class Settings:
     # Base paths
     PROJECT_DIR: Path = Path(__file__).parent.parent.parent
     CONFIG_DIR: Path = PROJECT_DIR / "config"
-    DATA_DIR: Path = PROJECT_DIR / "data"
     SKILLS_DIR: Path = PROJECT_DIR / ".claude" / "skills"
 
     # API settings
@@ -36,23 +39,33 @@ class Settings:
 
     @property
     def data_dir(self) -> Path:
-        return self.DATA_DIR
+        """Get data directory for the current project.
+
+        Data is stored globally at ~/.codegeass/data/{project-id}/ to avoid
+        polluting project directories.
+
+        Uses CODEGEASS_PROJECT_ID env var if set, otherwise generates a hash
+        from the project path.
+        """
+        project_id = os.getenv("CODEGEASS_PROJECT_ID")
+        if project_id:
+            return GLOBAL_DATA_DIR / project_id
+        # Hash the project path for unregistered projects
+        path_hash = hashlib.md5(str(self.PROJECT_DIR.resolve()).encode()).hexdigest()[:8]
+        return GLOBAL_DATA_DIR / path_hash
 
     @property
     def skills_dir(self) -> Path:
         return self.SKILLS_DIR
 
-    @classmethod
-    def get_schedules_path(cls) -> Path:
-        return cls.CONFIG_DIR / "schedules.yaml"
+    def get_schedules_path(self) -> Path:
+        return self.CONFIG_DIR / "schedules.yaml"
 
-    @classmethod
-    def get_logs_dir(cls) -> Path:
-        return cls.DATA_DIR / "logs"
+    def get_logs_dir(self) -> Path:
+        return self.data_dir / "logs"
 
-    @classmethod
-    def get_sessions_dir(cls) -> Path:
-        return cls.DATA_DIR / "sessions"
+    def get_sessions_dir(self) -> Path:
+        return self.data_dir / "sessions"
 
 
 settings = Settings()

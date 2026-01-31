@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.9] - 2026-01-31
+
+### Added
+
+- **Centralized Data Storage**: All execution data now stored in `~/.codegeass/data/{project-id}/` (#34)
+  - Logs, sessions, and approvals no longer pollute project directories
+  - No need to add `data/` to `.gitignore` anymore
+  - Data organized by project ID for easy management
+  - New CLI commands:
+    - `codegeass data stats [--all-projects]`: Show data usage statistics
+    - `codegeass data cleanup [--sessions N] [--logs N] [--approvals N] [--dry-run]`: Clean up old data
+    - `codegeass data purge [PROJECT_ID]`: Delete all data for a project
+    - `codegeass data migrate [--remove-old]`: Migrate from project-local to global storage
+    - `codegeass data location`: Show data directory paths
+
+- **Data Retention Policy**: Industry-standard retention periods
+  - Sessions: 7 days (debugging, can regenerate)
+  - Logs: 30 days (Azure default, industry standard)
+  - Approvals: 90 days (audit trail, security best practices)
+
+### Fixed
+
+- **Data Directory Creation**: Ensure directories are created before writing files
+  - Added defensive mkdir calls in `SessionManager._save_session()` and `LogRepository.save()`
+
 ## [0.2.8] - 2026-01-31
 
 ### Changed
@@ -309,7 +334,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANTHROPIC_API_KEY deliberately unset in CRON to use Pro/Max subscription
 - No API tokens in configuration files
 
-[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.8...HEAD
+[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.9...HEAD
+[0.2.9]: https://github.com/DonTizi/CodeGeass/compare/v0.2.8...v0.2.9
 [0.2.8]: https://github.com/DonTizi/CodeGeass/compare/v0.2.7...v0.2.8
 [0.2.7]: https://github.com/DonTizi/CodeGeass/compare/v0.2.6...v0.2.7
 [0.2.6]: https://github.com/DonTizi/CodeGeass/compare/v0.2.5...v0.2.6

@@ -1,7 +1,11 @@
 """Configuration for CodeGeass Dashboard backend."""
 
+import hashlib
 import os
 from pathlib import Path
+
+# Global data directory - all execution data stored here
+GLOBAL_DATA_DIR = Path.home() / ".codegeass" / "data"
 
 
 class Settings:
@@ -21,7 +25,20 @@ class Settings:
 
     @property
     def data_dir(self) -> Path:
-        return self.project_dir / "data"
+        """Get data directory for the current project.
+
+        Data is stored globally at ~/.codegeass/data/{project-id}/ to avoid
+        polluting project directories.
+
+        Uses CODEGEASS_PROJECT_ID env var if set, otherwise generates a hash
+        from the project path.
+        """
+        project_id = os.getenv("CODEGEASS_PROJECT_ID")
+        if project_id:
+            return GLOBAL_DATA_DIR / project_id
+        # Hash the project path for unregistered projects
+        path_hash = hashlib.md5(str(self.project_dir.resolve()).encode()).hexdigest()[:8]
+        return GLOBAL_DATA_DIR / path_hash
 
     @property
     def skills_dir(self) -> Path:

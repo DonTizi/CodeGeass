@@ -43,8 +43,12 @@ class Project:
 
     @property
     def data_dir(self) -> Path:
-        """Get the data directory for this project."""
-        return self.path / "data"
+        """Get the data directory for this project.
+
+        Data is stored globally at ~/.codegeass/data/{project-id}/ to avoid
+        polluting project directories and simplify .gitignore.
+        """
+        return Path.home() / ".codegeass" / "data" / self.id
 
     @property
     def logs_dir(self) -> Path:
@@ -55,6 +59,11 @@ class Project:
     def sessions_dir(self) -> Path:
         """Get the sessions directory for this project."""
         return self.data_dir / "sessions"
+
+    @property
+    def approvals_file(self) -> Path:
+        """Get the approvals file for this project."""
+        return self.data_dir / "approvals.yaml"
 
     @classmethod
     def create(

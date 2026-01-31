@@ -1,5 +1,6 @@
 """Main CLI entry point for CodeGeass."""
 
+import hashlib
 from pathlib import Path
 
 import click
@@ -9,6 +10,9 @@ from codegeass import __version__
 
 # Global console for rich output
 console = Console()
+
+# Global data directory - all execution data stored here
+GLOBAL_DATA_DIR = Path.home() / ".codegeass" / "data"
 
 
 def _detect_project_dir() -> Path:
@@ -30,9 +34,29 @@ def _detect_project_dir() -> Path:
     return cwd
 
 
+def _get_data_dir_for_path(project_path: Path, project_id: str | None = None) -> Path:
+    """Get the global data directory for a project.
+
+    Data is stored in ~/.codegeass/data/{project-id}/ to avoid polluting
+    project directories.
+
+    Args:
+        project_path: Path to the project
+        project_id: Optional project ID from registry (uses hash if not provided)
+
+    Returns:
+        Path to the project's data directory
+    """
+    if project_id:
+        return GLOBAL_DATA_DIR / project_id
+    # Use hash for unregistered projects
+    path_hash = hashlib.md5(str(project_path.resolve()).encode()).hexdigest()[:8]
+    return GLOBAL_DATA_DIR / path_hash
+
+
 DEFAULT_PROJECT_DIR = _detect_project_dir()
 DEFAULT_CONFIG_DIR = DEFAULT_PROJECT_DIR / "config"
-DEFAULT_DATA_DIR = DEFAULT_PROJECT_DIR / "data"
+DEFAULT_DATA_DIR = _get_data_dir_for_path(DEFAULT_PROJECT_DIR)
 DEFAULT_SKILLS_DIR = DEFAULT_PROJECT_DIR / ".claude" / "skills"
 
 
@@ -84,6 +108,7 @@ class Context:
         if project:
             self.project_dir = project.path
             self.config_dir = project.config_dir
+            # Data is stored globally at ~/.codegeass/data/{project-id}/
             self.data_dir = project.data_dir
             self.skills_dir = project.skills_dir
 
@@ -93,6 +118,7 @@ class Context:
             self._skill_registry = None
             self._session_manager = None
             self._scheduler = None
+            self._approval_repo = None
 
     def detect_project_from_cwd(self) -> bool:
         """Try to detect and set current project from cwd.
@@ -301,7 +327,8 @@ def cli(
         # Explicit project directory via --project-dir flag
         context.project_dir = project_dir
         context.config_dir = project_dir / "config"
-        context.data_dir = project_dir / "data"
+        # Data is stored globally - use hash for unregistered projects
+        context.data_dir = _get_data_dir_for_path(project_dir)
         context.skills_dir = project_dir / ".claude" / "skills"
     else:
         # Try to auto-detect project from cwd
@@ -322,6 +349,7 @@ from codegeass.cli.commands import (  # noqa: E402
     approval,
     cron,
     dashboard,
+    data,
     execution,
     logs,
     notification,
@@ -340,6 +368,7 @@ cli.add_command(logs.logs)
 cli.add_command(notification.notification)
 cli.add_command(approval.approval)
 cli.add_command(cron.cron)
+cli.add_command(data.data)
 cli.add_command(execution.execution)
 cli.add_command(project.project)
 cli.add_command(provider.provider)
@@ -355,15 +384,24 @@ def init(ctx: Context) -> None:
     """Initialize CodeGeass project structure."""
     from rich.panel import Panel
 
-    # Create directories
-    dirs_to_create = [
+    # Create project-local directories (config, skills)
+    project_dirs = [
         ctx.config_dir,
-        ctx.data_dir / "logs",
-        ctx.data_dir / "sessions",
         ctx.skills_dir,
     ]
 
-    for dir_path in dirs_to_create:
+    for dir_path in project_dirs:
+        dir_path.mkdir(parents=True, exist_ok=True)
+        if ctx.verbose:
+            console.print(f"Created: {dir_path}")
+
+    # Create global data directories at ~/.codegeass/data/{project-id}/
+    data_dirs = [
+        ctx.data_dir / "logs",
+        ctx.data_dir / "sessions",
+    ]
+
+    for dir_path in data_dirs:
         dir_path.mkdir(parents=True, exist_ok=True)
         if ctx.verbose:
             console.print(f"Created: {dir_path}")
@@ -378,8 +416,6 @@ claude:
 
 paths:
   skills: .claude/skills/
-  logs: data/logs/
-  sessions: data/sessions/
 
 scheduler:
   check_interval: 60
@@ -402,7 +438,8 @@ tasks: []
             "[green]CodeGeass initialized successfully![/green]\n\n"
             f"Project directory: {ctx.project_dir}\n"
             f"Config directory: {ctx.config_dir}\n"
-            f"Skills directory: {ctx.skills_dir}\n\n"
+            f"Skills directory: {ctx.skills_dir}\n"
+            f"Data directory: {ctx.data_dir}\n\n"
             "Next steps:\n"
             "1. Create skills in .claude/skills/\n"
             "2. Add tasks with: codegeass task create\n"

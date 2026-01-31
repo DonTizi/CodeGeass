@@ -3,6 +3,7 @@
 from codegeass.cli.commands import (
     approval,
     cron,
+    data,
     execution,
     logs,
     notification,
@@ -14,6 +15,7 @@ from codegeass.cli.commands import (
 __all__ = [
     "approval",
     "cron",
+    "data",
     "execution",
     "logs",
     "notification",

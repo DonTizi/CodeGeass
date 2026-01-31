@@ -79,6 +79,8 @@ class SessionManager:
     def _save_session(self, session: Session) -> None:
         """Save session to disk."""
         session_file = self._get_session_file(session.id)
+        # Ensure directory exists (defensive, should already exist from __init__)
+        session_file.parent.mkdir(parents=True, exist_ok=True)
         with open(session_file, "w") as f:
             json.dump(session.to_dict(), f, indent=2)
 
