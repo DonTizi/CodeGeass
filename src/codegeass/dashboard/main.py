@@ -4,9 +4,16 @@ import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from datetime import datetime
+from importlib.metadata import version as get_version
 from pathlib import Path
 
 from fastapi import FastAPI
+
+# Get version from package metadata (single source of truth: pyproject.toml)
+try:
+    _version = get_version("codegeass")
+except Exception:
+    _version = "unknown"
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -133,7 +140,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 app = FastAPI(
     title="CodeGeass Dashboard API",
     description="API for managing CodeGeass scheduled tasks",
-    version="1.0.0",
+    version=_version,
     lifespan=lifespan,
 )
 

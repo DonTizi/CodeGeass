@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-01-31
+
+### Fixed
+
+- **Version Display**: Fix `codegeass --version` and dashboard API showing wrong version
+  - CLI version was hardcoded to 0.1.3, dashboard API was hardcoded to 1.0.0
+  - Now both read version dynamically from package metadata using `importlib.metadata`
+  - Single source of truth: `pyproject.toml`
+
 ## [0.2.2] - 2026-01-31
 
 ### Fixed
@@ -219,7 +228,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANTHROPIC_API_KEY deliberately unset in CRON to use Pro/Max subscription
 - No API tokens in configuration files
 
-[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.3...HEAD
+[0.2.3]: https://github.com/DonTizi/CodeGeass/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/DonTizi/CodeGeass/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/DonTizi/CodeGeass/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/DonTizi/CodeGeass/compare/v0.1.4...v0.2.0
