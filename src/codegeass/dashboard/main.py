@@ -25,6 +25,7 @@ from .routers import (
     logs_router,
     notifications_router,
     projects_router,
+    providers_router,
     scheduler_router,
     skills_router,
     tasks_router,
@@ -162,6 +163,7 @@ app.include_router(notifications_router)
 app.include_router(approvals_router)
 app.include_router(executions_router)
 app.include_router(projects_router)
+app.include_router(providers_router)
 
 
 # Health check

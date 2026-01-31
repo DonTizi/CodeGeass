@@ -14,8 +14,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **CLI + Dashboard Sync**: When implementing new features for the CLI backend, always consider if they need to be exposed in the dashboard. If so, implement the full stack:
   1. CLI command in `src/codegeass/cli/`
-  2. Backend API endpoint in `dashboard/backend/routers/`
+  2. Backend API endpoint in `src/codegeass/dashboard/routers/` (the bundled version)
   3. Frontend UI in `dashboard/frontend/src/`
+  4. **Rebuild the dashboard**: `./scripts/build-dashboard.sh`
+
+  **IMPORTANT**: The bundled dashboard (`src/codegeass/dashboard/`) is the source of truth for the backend. The development dashboard (`dashboard/backend/`) mirrors it for local development. Always update `src/codegeass/dashboard/` first.
 
 - **Always verify before completion**: After implementing changes, start both frontend and backend to confirm they work. If they fail, troubleshoot until fixed.
 
@@ -54,14 +57,23 @@ ruff check src/codegeass --fix     # Auto-fix lint issues
 ### Dashboard
 
 ```bash
+# Development mode (hot reload)
 cd dashboard
 ./setup.sh    # First-time setup
 ./run.sh      # Run frontend (5173) + backend (8001)
 
-# Or manually:
-cd dashboard/backend && source venv/bin/activate && uvicorn main:app --port 8001 --reload
-cd dashboard/frontend && npm run dev
+# Or use the bundled dashboard (same as PyPI users)
+codegeass dashboard  # Serves on port 8001
+
+# Build dashboard for release (updates src/codegeass/dashboard/static/)
+./scripts/build-dashboard.sh
 ```
+
+**Dashboard Architecture**:
+- `src/codegeass/dashboard/` - Bundled version (ships with PyPI package)
+- `dashboard/` - Development version (for local dev with hot reload)
+
+When making backend changes, update `src/codegeass/dashboard/routers/` first, then sync to `dashboard/backend/routers/` if needed for development.
 
 ### CLI Commands
 
