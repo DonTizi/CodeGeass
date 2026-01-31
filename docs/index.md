@@ -4,56 +4,52 @@
 
 # CodeGeass
 
-**Claude Code Scheduler Framework** - Orchestrate automated Claude Code sessions using CRON jobs with your Claude Pro/Max subscription.
+Task orchestration for AI coding agents.
 
 ---
 
-## What is CodeGeass?
+## What It Does
 
-CodeGeass lets you define reusable AI-powered tasks that run on schedules, execute skills, and track execution history. It's designed for developers who want to automate repetitive coding tasks using Claude's capabilities.
+CodeGeass helps you run AI coding tasks reliably:
+
+- **Schedule tasks** with CRON expressions
+- **Manage multiple projects** from one installation
+- **Use reusable skills** (parameterized prompts)
+- **Choose execution modes**: read-only, plan-first, or autonomous
+- **Review changes** before they're applied
+- **Get notifications** via Telegram, Discord, or Teams
+- **Monitor everything** through a web dashboard
 
 ## Quick Install
 
 ```bash
-# macOS
-brew install pipx && pipx ensurepath && source ~/.zshrc
-
-# Linux
-python3 -m pip install --user pipx && pipx ensurepath && source ~/.bashrc
-
-# Install CodeGeass + 24/7 scheduler
 pipx install codegeass
 codegeass setup
 ```
 
-That's it! The scheduler is now running in the background.
+## How It Works
 
-## Create Your First Task
+1. You define tasks with prompts or skills
+2. Tasks run on schedule (or manually)
+3. AI agents execute in your chosen mode
+4. Results are logged and notifications sent
+5. For plan mode, you review and approve before execution
+
+## Quick Start
 
 ```bash
-# Create a task that runs daily at 9 AM
+# Create a task
 codegeass task create \
   --name daily-review \
-  --schedule "0 9 * * *" \
-  --prompt "Review recent commits and summarize changes"
+  --skill code-review \
+  --schedule "0 9 * * 1-5"
 
-# Run it manually to test
+# Run it
 codegeass task run daily-review
 
-# Check upcoming scheduled runs
-codegeass scheduler upcoming
+# Open dashboard
+codegeass dashboard
 ```
-
-## Key Features
-
-- **Scheduled Automation** - Run Claude Code sessions on CRON schedules
-- **Subscription-First** - Uses your Claude Pro/Max subscription, not API credits
-- **Multi-Project Support** - Manage multiple projects from a single installation with shared skills
-- **Skills System** - Reusable, parameterized prompts following the [Agent Skills](https://agentskills.io) standard
-- **Plan Mode** - Interactive approval workflow for complex tasks
-- **Notifications** - Get notified via Telegram, Discord, or Teams when tasks complete
-- **Execution History** - Full logging and session tracking
-- **Web Dashboard** - Visual management interface
 
 ## Architecture Overview
 
