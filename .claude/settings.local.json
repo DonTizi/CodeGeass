@@ -44,7 +44,9 @@
       "Bash(gh run list:*)",
       "Bash(mypy:*)",
       "Bash(git commit:*)",
-      "WebFetch(domain:developers.openai.com)"
+      "WebFetch(domain:developers.openai.com)",
+      "Bash(git checkout:*)",
+      "Bash(pkill:*)"
     ]
   },
   "enabledMcpjsonServers": [

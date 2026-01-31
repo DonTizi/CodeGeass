@@ -44,7 +44,7 @@ class Task(BaseModel):
     prompt: str | None = None
     allowed_tools: list[str] = Field(default_factory=list)
     model: str = "sonnet"
-    autonomous: bool = False
+    autonomous: bool = True  # Default to autonomous mode
     max_turns: int | None = None
     timeout: int = 300
     enabled: bool = True
@@ -72,7 +72,7 @@ class TaskCreate(BaseModel):
     prompt: str | None = Field(None, description="Direct prompt (if no skill)")
     allowed_tools: list[str] = Field(default_factory=list)
     model: str = Field("sonnet", pattern="^(haiku|sonnet|opus)$")
-    autonomous: bool = False
+    autonomous: bool = True  # Default to autonomous mode
     max_turns: int | None = Field(None, ge=1, le=100)
     timeout: int = Field(300, ge=30, le=3600)
     enabled: bool = True
