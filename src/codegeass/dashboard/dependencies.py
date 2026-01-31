@@ -2,7 +2,7 @@
 
 
 from codegeass.execution.session import SessionManager
-from codegeass.factory.registry import SkillRegistry
+from codegeass.factory.skill_resolver import ChainedSkillRegistry, Platform
 from codegeass.scheduling.scheduler import Scheduler
 from codegeass.storage.approval_repository import PendingApprovalRepository
 from codegeass.storage.channel_repository import ChannelRepository
@@ -24,7 +24,7 @@ _task_repo: TaskRepository | None = None
 _log_repo: LogRepository | None = None
 _channel_repo: ChannelRepository | None = None
 _approval_repo: PendingApprovalRepository | None = None
-_skill_registry: SkillRegistry | None = None
+_skill_registry: ChainedSkillRegistry | None = None
 _session_manager: SessionManager | None = None
 _scheduler: Scheduler | None = None
 _core_notification_service = None  # Core NotificationService for task execution
@@ -49,11 +49,15 @@ def get_log_repo() -> LogRepository:
     return _log_repo
 
 
-def get_skill_registry() -> SkillRegistry:
-    """Get or create SkillRegistry singleton."""
+def get_skill_registry() -> ChainedSkillRegistry:
+    """Get or create ChainedSkillRegistry singleton."""
     global _skill_registry
     if _skill_registry is None:
-        _skill_registry = SkillRegistry.get_instance(settings.skills_dir)
+        _skill_registry = ChainedSkillRegistry(
+            project_dir=settings.project_dir,
+            platforms=[Platform.CLAUDE, Platform.CODEX],
+            include_global=True,
+        )
     return _skill_registry
 
 

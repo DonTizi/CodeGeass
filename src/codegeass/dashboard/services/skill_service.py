@@ -2,7 +2,7 @@
 
 
 from codegeass.core.entities import Skill as CoreSkill
-from codegeass.factory.registry import SkillRegistry
+from codegeass.factory.skill_resolver import ChainedSkillRegistry
 
 from ..models import Skill, SkillSummary
 
@@ -10,7 +10,7 @@ from ..models import Skill, SkillSummary
 class SkillService:
     """Service for managing skills."""
 
-    def __init__(self, skill_registry: SkillRegistry):
+    def __init__(self, skill_registry: ChainedSkillRegistry):
         self.skill_registry = skill_registry
 
     def _core_to_api(self, skill: CoreSkill) -> Skill:
