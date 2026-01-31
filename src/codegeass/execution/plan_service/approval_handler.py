@@ -1,7 +1,10 @@
 """Approval action handlers for plan mode."""
 
+from __future__ import annotations
+
 import logging
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from codegeass.core.entities import Task
 from codegeass.core.value_objects import ExecutionResult
@@ -15,7 +18,9 @@ from codegeass.execution.strategies import (
 )
 from codegeass.execution.tracker import ExecutionTracker, get_execution_tracker
 from codegeass.execution.worktree import WorktreeManager
-from codegeass.storage.approval_repository import PendingApprovalRepository
+
+if TYPE_CHECKING:
+    from codegeass.storage.approval_repository import PendingApprovalRepository
 
 logger = logging.getLogger(__name__)
 

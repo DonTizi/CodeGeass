@@ -12,9 +12,9 @@ from codegeass.execution.plan_approval import MessageRef, PendingApproval
 from codegeass.execution.plan_service.approval_handler import ApprovalHandler
 from codegeass.execution.plan_service.message_sender import ApprovalMessageSender
 from codegeass.notifications.interactive import create_plan_approval_message
-from codegeass.storage.approval_repository import PendingApprovalRepository
 
 if TYPE_CHECKING:
+    from codegeass.storage.approval_repository import PendingApprovalRepository
     from codegeass.storage.channel_repository import ChannelRepository
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ class PlanApprovalService:
 
     def __init__(
         self,
-        approval_repo: PendingApprovalRepository,
+        approval_repo: "PendingApprovalRepository",
         channel_repo: "ChannelRepository",
     ):
         """Initialize with repositories."""
@@ -193,7 +193,7 @@ _plan_service: PlanApprovalService | None = None
 
 
 def get_plan_approval_service(
-    approval_repo: PendingApprovalRepository | None = None,
+    approval_repo: "PendingApprovalRepository | None" = None,
     channel_repo: "ChannelRepository | None" = None,
 ) -> PlanApprovalService:
     """Get the plan approval service instance."""
