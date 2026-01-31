@@ -177,9 +177,9 @@ class DiscordProvider(NotificationProvider):
     ) -> tuple[bool, str]:
         """Test the Discord webhook connection."""
         try:
-            from discord_webhook import AsyncDiscordWebhook
+            import httpx
         except ImportError:
-            return False, "discord-webhook package not installed"
+            return False, "httpx package not installed. Install with: pip install httpx"
 
         # Validate credentials first
         valid, error = self.validate_credentials(credentials)
@@ -187,20 +187,22 @@ class DiscordProvider(NotificationProvider):
             return False, error or "Invalid credentials"
 
         try:
-            # Send a test message
-            webhook = AsyncDiscordWebhook(
-                url=credentials["webhook_url"],
-                content="CodeGeass connection test",
-                username=channel.config.get("username", "CodeGeass"),
-            )
-            response = await webhook.execute()
+            # Send a test message using httpx (same as send method)
+            webhook_url = credentials["webhook_url"]
+            username = channel.config.get("username", "CodeGeass")
 
-            if response and hasattr(response, "status_code"):
+            payload = {
+                "username": username,
+                "content": "✅ CodeGeass connection test successful!",
+            }
+
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(webhook_url, json=payload)
+
                 if 200 <= response.status_code < 300:
                     return True, "Connected! Test message sent successfully."
-                return False, f"Discord API returned status {response.status_code}"
+                return False, f"Discord API returned status {response.status_code}: {response.text}"
 
-            return True, "Connected!"
         except Exception as e:
             return False, f"Connection failed: {e}"
 

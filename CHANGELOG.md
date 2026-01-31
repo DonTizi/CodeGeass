@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.8] - 2026-01-31
+
+### Changed
+
+- **Notification Dependencies Included by Default**: Telegram, Discord, and Teams notification packages are now installed automatically with `pip install codegeass` or `pipx install codegeass`
+  - No longer need to install `codegeass[notifications]` separately
+  - Includes: `python-telegram-bot`, `httpx`
+
+### Fixed
+
+- **Discord Provider**: Use httpx directly instead of discord-webhook library for simpler dependency management
+
 ## [0.2.7] - 2026-01-31
 
 ### Fixed
@@ -297,7 +309,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANTHROPIC_API_KEY deliberately unset in CRON to use Pro/Max subscription
 - No API tokens in configuration files
 
-[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.7...HEAD
+[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.8...HEAD
+[0.2.8]: https://github.com/DonTizi/CodeGeass/compare/v0.2.7...v0.2.8
 [0.2.7]: https://github.com/DonTizi/CodeGeass/compare/v0.2.6...v0.2.7
 [0.2.6]: https://github.com/DonTizi/CodeGeass/compare/v0.2.5...v0.2.6
 [0.2.5]: https://github.com/DonTizi/CodeGeass/compare/v0.2.4...v0.2.5
