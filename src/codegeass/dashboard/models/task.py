@@ -32,6 +32,7 @@ class TaskSummary(BaseModel):
     last_run: str | None = None
     last_status: str | None = None
     next_run: str | None = None
+    tags: list[str] = Field(default_factory=list)
 
 
 class Task(BaseModel):
@@ -53,6 +54,9 @@ class Task(BaseModel):
     notifications: TaskNotificationConfig | None = None
     last_run: str | None = None
     last_status: str | None = None
+
+    # Task organization
+    tags: list[str] = Field(default_factory=list)
 
     # Plan mode configuration
     plan_mode: bool = False
@@ -83,6 +87,7 @@ class TaskCreate(BaseModel):
     plan_mode: bool = Field(False, description="Enable interactive plan approval")
     plan_timeout: int = Field(3600, ge=300, le=86400, description="Approval timeout in seconds")
     plan_max_iterations: int = Field(5, ge=1, le=20, description="Max discuss rounds")
+    tags: list[str] = Field(default_factory=list, description="Tags for organization")
 
 
 class TaskUpdate(BaseModel):
@@ -104,6 +109,7 @@ class TaskUpdate(BaseModel):
     plan_mode: bool | None = None
     plan_timeout: int | None = Field(None, ge=300, le=86400)
     plan_max_iterations: int | None = Field(None, ge=1, le=20)
+    tags: list[str] | None = None
 
 
 class TaskStats(BaseModel):
