@@ -145,6 +145,17 @@ allowed-tools: Read, Grep, Glob
 # Instructions for $ARGUMENTS
 ```
 
+## Available Skills
+
+| Skill | Purpose | Usage |
+|-------|---------|-------|
+| `/new-feature` | Plan new features/integrations with SOLID principles, research docs, create GitHub issue | `/new-feature WhatsApp notification channel` |
+| `/implement` | Implement code from a GitHub issue specification using TDD-style incremental development | `/implement #4` |
+| `/refactor` | Refactor monolithic code into clean modules | `/refactor src/codegeass/cli/` |
+| `/release` | Release new version to PyPI | `/release 0.2.0` |
+| `/code-review` | Automated code review (security, performance, maintainability) | `/code-review .` |
+| `/security-scan` | Security vulnerability scan | `/security-scan` |
+
 ## Frontend Patterns
 
 **lucide-react icons**: Always use `import type` for `LucideIcon`:

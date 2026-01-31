@@ -2,7 +2,8 @@
 
 import asyncio
 import logging
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from codegeass.execution.events import ExecutionEvent
 from codegeass.execution.tracker import ExecutionTracker, get_execution_tracker
