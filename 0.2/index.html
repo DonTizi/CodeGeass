@@ -326,10 +326,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-is-codegeass" class="md-nav__link">
+  <a href="#what-it-does" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What is CodeGeass?
+        What It Does
       
     </span>
   </a>
@@ -348,10 +348,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#create-your-first-task" class="md-nav__link">
+  <a href="#how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Create Your First Task
+        How It Works
       
     </span>
   </a>
@@ -359,10 +359,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#key-features" class="md-nav__link">
+  <a href="#quick-start" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Key Features
+        Quick Start
       
     </span>
   </a>
@@ -1591,10 +1591,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-is-codegeass" class="md-nav__link">
+  <a href="#what-it-does" class="md-nav__link">
     <span class="md-ellipsis">
       
-        What is CodeGeass?
+        What It Does
       
     </span>
   </a>
@@ -1613,10 +1613,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#create-your-first-task" class="md-nav__link">
+  <a href="#how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Create Your First Task
+        How It Works
       
     </span>
   </a>
@@ -1624,10 +1624,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#key-features" class="md-nav__link">
+  <a href="#quick-start" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Key Features
+        Quick Start
       
     </span>
   </a>
@@ -1681,46 +1681,44 @@
 </p>
 
 <h1 id="codegeass">CodeGeass<a class="headerlink" href="#codegeass" title="Permanent link">&para;</a></h1>
-<p><strong>Claude Code Scheduler Framework</strong> - Orchestrate automated Claude Code sessions using CRON jobs with your Claude Pro/Max subscription.</p>
+<p>Task orchestration for AI coding agents.</p>
 <hr />
-<h2 id="what-is-codegeass">What is CodeGeass?<a class="headerlink" href="#what-is-codegeass" title="Permanent link">&para;</a></h2>
-<p>CodeGeass lets you define reusable AI-powered tasks that run on schedules, execute skills, and track execution history. It's designed for developers who want to automate repetitive coding tasks using Claude's capabilities.</p>
+<h2 id="what-it-does">What It Does<a class="headerlink" href="#what-it-does" title="Permanent link">&para;</a></h2>
+<p>CodeGeass helps you run AI coding tasks reliably:</p>
+<ul>
+<li><strong>Schedule tasks</strong> with CRON expressions</li>
+<li><strong>Manage multiple projects</strong> from one installation</li>
+<li><strong>Use reusable skills</strong> (parameterized prompts)</li>
+<li><strong>Choose execution modes</strong>: read-only, plan-first, or autonomous</li>
+<li><strong>Review changes</strong> before they're applied</li>
+<li><strong>Get notifications</strong> via Telegram, Discord, or Teams</li>
+<li><strong>Monitor everything</strong> through a web dashboard</li>
+</ul>
 <h2 id="quick-install">Quick Install<a class="headerlink" href="#quick-install" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># macOS</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>brew<span class="w"> </span>install<span class="w"> </span>pipx<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>pipx<span class="w"> </span>ensurepath<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>~/.zshrc
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Linux</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--user<span class="w"> </span>pipx<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>pipx<span class="w"> </span>ensurepath<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>~/.bashrc
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Install CodeGeass + 24/7 scheduler</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>pipx<span class="w"> </span>install<span class="w"> </span>codegeass
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>codegeass<span class="w"> </span>setup
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pipx<span class="w"> </span>install<span class="w"> </span>codegeass
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>codegeass<span class="w"> </span>setup
 </code></pre></div>
-<p>That's it! The scheduler is now running in the background.</p>
-<h2 id="create-your-first-task">Create Your First Task<a class="headerlink" href="#create-your-first-task" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Create a task that runs daily at 9 AM</span>
+<h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
+<ol>
+<li>You define tasks with prompts or skills</li>
+<li>Tasks run on schedule (or manually)</li>
+<li>AI agents execute in your chosen mode</li>
+<li>Results are logged and notifications sent</li>
+<li>For plan mode, you review and approve before execution</li>
+</ol>
+<h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Create a task</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>codegeass<span class="w"> </span>task<span class="w"> </span>create<span class="w"> </span><span class="se">\</span>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>--name<span class="w"> </span>daily-review<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span>--schedule<span class="w"> </span><span class="s2">&quot;0 9 * * *&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span>--prompt<span class="w"> </span><span class="s2">&quot;Review recent commits and summarize changes&quot;</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span>--skill<span class="w"> </span>code-review<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span>--schedule<span class="w"> </span><span class="s2">&quot;0 9 * * 1-5&quot;</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Run it manually to test</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># Run it</span>
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>codegeass<span class="w"> </span>task<span class="w"> </span>run<span class="w"> </span>daily-review
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># Check upcoming scheduled runs</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>codegeass<span class="w"> </span>scheduler<span class="w"> </span>upcoming
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># Open dashboard</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>codegeass<span class="w"> </span>dashboard
 </code></pre></div>
-<h2 id="key-features">Key Features<a class="headerlink" href="#key-features" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>Scheduled Automation</strong> - Run Claude Code sessions on CRON schedules</li>
-<li><strong>Subscription-First</strong> - Uses your Claude Pro/Max subscription, not API credits</li>
-<li><strong>Multi-Project Support</strong> - Manage multiple projects from a single installation with shared skills</li>
-<li><strong>Skills System</strong> - Reusable, parameterized prompts following the <a href="https://agentskills.io">Agent Skills</a> standard</li>
-<li><strong>Plan Mode</strong> - Interactive approval workflow for complex tasks</li>
-<li><strong>Notifications</strong> - Get notified via Telegram, Discord, or Teams when tasks complete</li>
-<li><strong>Execution History</strong> - Full logging and session tracking</li>
-<li><strong>Web Dashboard</strong> - Visual management interface</li>
-</ul>
 <h2 id="architecture-overview">Architecture Overview<a class="headerlink" href="#architecture-overview" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>┌─────────────────────────────────────────────────────────┐
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>│                     CodeGeass                           │
