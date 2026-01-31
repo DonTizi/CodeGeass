@@ -5,6 +5,7 @@ from .executions import router as executions_router
 from .logs import router as logs_router
 from .notifications import router as notifications_router
 from .projects import router as projects_router
+from .providers import router as providers_router
 from .scheduler import router as scheduler_router
 from .skills import router as skills_router
 from .tasks import router as tasks_router
@@ -18,4 +19,5 @@ __all__ = [
     "approvals_router",
     "executions_router",
     "projects_router",
+    "providers_router",
 ]

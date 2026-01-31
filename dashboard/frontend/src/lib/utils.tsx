@@ -64,7 +64,7 @@ export function formatDuration(seconds: number | null | undefined): string {
 /**
  * Get background color class for execution status
  */
-export function getStatusBgColor(status: ExecutionStatus | string): string {
+export function getStatusBgColor(status: ExecutionStatus | string | null): string {
   switch (status) {
     case 'success':
       return 'bg-success/10 text-success';
@@ -84,7 +84,7 @@ export function getStatusBgColor(status: ExecutionStatus | string): string {
 /**
  * Get icon element for execution status
  */
-export function getStatusIcon(status: ExecutionStatus | string, className = 'h-3 w-3') {
+export function getStatusIcon(status: ExecutionStatus | string | null, className = 'h-3 w-3') {
   const props = { className };
   switch (status) {
     case 'success':
