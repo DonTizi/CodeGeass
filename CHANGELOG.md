@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.5] - 2026-01-31
+
+### Added
+
+- **Teams Notification Form in Dashboard**: Teams provider now appears in the notification channel creation dialog (#25)
+  - Display optional config fields (title, dashboard_url) in the form
+  - Add setup guide link to notifications documentation
+  - Add warning logs when a provider fails to load (helps debug missing providers)
+
+### Fixed
+
+- **Dashboard Static Files**: Fix logo and static assets not loading in bundled dashboard (#26)
+  - Serve static files at root level (`/logo.svg`, `/vite.svg`)
+  - Required for proper asset loading when installed from PyPI
+
+- **Filesystem Router**: Add missing filesystem router to bundled dashboard (#24)
+  - Native folder picker was not working in PyPI version
+  - Sync routers between development and bundled dashboard
+
 ## [0.2.4] - 2026-01-31
 
 ### Fixed
@@ -254,7 +273,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANTHROPIC_API_KEY deliberately unset in CRON to use Pro/Max subscription
 - No API tokens in configuration files
 
-[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.4...HEAD
+[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.5...HEAD
+[0.2.5]: https://github.com/DonTizi/CodeGeass/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/DonTizi/CodeGeass/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/DonTizi/CodeGeass/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/DonTizi/CodeGeass/compare/v0.2.1...v0.2.2
