@@ -983,10 +983,32 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#codegeass-project-disable-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        disable-platform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#codegeass-project-enable" class="md-nav__link">
     <span class="md-ellipsis">
       
         enable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codegeass-project-enable-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        enable-platform
       
     </span>
   </a>
@@ -1009,6 +1031,17 @@
     <span class="md-ellipsis">
       
         list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codegeass-project-platforms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        platforms
       
     </span>
   </a>
@@ -1833,10 +1866,32 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#codegeass-project-disable-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        disable-platform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#codegeass-project-enable" class="md-nav__link">
     <span class="md-ellipsis">
       
         enable
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codegeass-project-enable-platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        enable-platform
       
     </span>
   </a>
@@ -1859,6 +1914,17 @@
     <span class="md-ellipsis">
       
         list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#codegeass-project-platforms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        platforms
       
     </span>
   </a>
@@ -2080,136 +2146,162 @@
 <p><strong>Options:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>  --help  Show this message and exit.
 </code></pre></div>
-<h4 id="codegeass-project-enable">codegeass project enable<a class="headerlink" href="#codegeass-project-enable" title="Permanent link">&para;</a></h4>
-<p>Enable a project.</p>
+<h4 id="codegeass-project-disable-platform">codegeass project disable-platform<a class="headerlink" href="#codegeass-project-disable-platform" title="Permanent link">&para;</a></h4>
+<p>Disable a platform for skill resolution.</p>
+<p>PLATFORM: Platform name (claude, codex)</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>codegeass project enable [OPTIONS] NAME
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>codegeass project disable-platform [OPTIONS] PLATFORM
 </code></pre></div>
 <p><strong>Options:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>  --help  Show this message and exit.
 </code></pre></div>
+<h4 id="codegeass-project-enable">codegeass project enable<a class="headerlink" href="#codegeass-project-enable" title="Permanent link">&para;</a></h4>
+<p>Enable a project.</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>codegeass project enable [OPTIONS] NAME
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>  --help  Show this message and exit.
+</code></pre></div>
+<h4 id="codegeass-project-enable-platform">codegeass project enable-platform<a class="headerlink" href="#codegeass-project-enable-platform" title="Permanent link">&para;</a></h4>
+<p>Enable a platform for skill resolution.</p>
+<p>PLATFORM: Platform name (claude, codex)</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>codegeass project enable-platform [OPTIONS] PLATFORM
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>  --help  Show this message and exit.
+</code></pre></div>
 <h4 id="codegeass-project-init">codegeass project init<a class="headerlink" href="#codegeass-project-init" title="Permanent link">&para;</a></h4>
 <p>Initialize CodeGeass project structure.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>codegeass project init [OPTIONS] [PATH]
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>codegeass project init [OPTIONS] [PATH]
 </code></pre></div>
 <p><strong>Options:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>  -f, --force  Overwrite existing files
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>  --help       Show this message and exit.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>  -f, --force  Overwrite existing files
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>  --help       Show this message and exit.
 </code></pre></div>
 <h4 id="codegeass-project-list">codegeass project list<a class="headerlink" href="#codegeass-project-list" title="Permanent link">&para;</a></h4>
 <p>List all registered projects.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>codegeass project list [OPTIONS]
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>codegeass project list [OPTIONS]
 </code></pre></div>
 <p><strong>Options:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>  --all   Show all projects including disabled
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>  --help  Show this message and exit.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>  --all   Show all projects including disabled
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>  --help  Show this message and exit.
 </code></pre></div>
-<h4 id="codegeass-project-remove">codegeass project remove<a class="headerlink" href="#codegeass-project-remove" title="Permanent link">&para;</a></h4>
-<p>Unregister a project.</p>
+<h4 id="codegeass-project-platforms">codegeass project platforms<a class="headerlink" href="#codegeass-project-platforms" title="Permanent link">&para;</a></h4>
+<p>List all platforms and their status.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>codegeass project remove [OPTIONS] NAME
-</code></pre></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>  -y, --yes  Skip confirmation
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>  --help     Show this message and exit.
-</code></pre></div>
-<h4 id="codegeass-project-set-default">codegeass project set-default<a class="headerlink" href="#codegeass-project-set-default" title="Permanent link">&para;</a></h4>
-<p>Set a project as the default.</p>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>codegeass project set-default [OPTIONS] NAME
-</code></pre></div>
-<p><strong>Options:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>  --help  Show this message and exit.
-</code></pre></div>
-<h4 id="codegeass-project-show">codegeass project show<a class="headerlink" href="#codegeass-project-show" title="Permanent link">&para;</a></h4>
-<p>Show details of a registered project.</p>
-<p><strong>Usage:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>codegeass project show [OPTIONS] NAME
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>codegeass project platforms [OPTIONS]
 </code></pre></div>
 <p><strong>Options:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>  --help  Show this message and exit.
 </code></pre></div>
+<h4 id="codegeass-project-remove">codegeass project remove<a class="headerlink" href="#codegeass-project-remove" title="Permanent link">&para;</a></h4>
+<p>Unregister a project.</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>codegeass project remove [OPTIONS] NAME
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>  -y, --yes  Skip confirmation
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>  --help     Show this message and exit.
+</code></pre></div>
+<h4 id="codegeass-project-set-default">codegeass project set-default<a class="headerlink" href="#codegeass-project-set-default" title="Permanent link">&para;</a></h4>
+<p>Set a project as the default.</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>codegeass project set-default [OPTIONS] NAME
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>  --help  Show this message and exit.
+</code></pre></div>
+<h4 id="codegeass-project-show">codegeass project show<a class="headerlink" href="#codegeass-project-show" title="Permanent link">&para;</a></h4>
+<p>Show details of a registered project.</p>
+<p><strong>Usage:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>codegeass project show [OPTIONS] NAME
+</code></pre></div>
+<p><strong>Options:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>  --help  Show this message and exit.
+</code></pre></div>
 <h4 id="codegeass-project-update">codegeass project update<a class="headerlink" href="#codegeass-project-update" title="Permanent link">&para;</a></h4>
 <p>Update a project's configuration.</p>
 <p><strong>Usage:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>codegeass project update [OPTIONS] NAME
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>codegeass project update [OPTIONS] NAME
 </code></pre></div>
 <p><strong>Options:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>  --new-name TEXT                 New project name
-<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>  -d, --description TEXT          New description
-<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>  -m, --model TEXT                New default model
-<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>  -t, --timeout INTEGER           New default timeout
-<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>  --autonomous / --no-autonomous  Enable/disable autonomous by default
-<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>  --shared-skills / --no-shared-skills
-<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>                                  Enable/disable shared skills
-<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>  --help                          Show this message and exit.
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>  --new-name TEXT                 New project name
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>  -d, --description TEXT          New description
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>  -m, --model TEXT                New default model
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>  -t, --timeout INTEGER           New default timeout
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>  --autonomous / --no-autonomous  Enable/disable autonomous by default
+<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>  --shared-skills / --no-shared-skills
+<a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a>                                  Enable/disable shared skills
+<a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>  --help                          Show this message and exit.
 </code></pre></div>
 <h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h2>
 <h3 id="register-your-first-project">Register Your First Project<a class="headerlink" href="#register-your-first-project" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># Register the current directory</span>
-<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="nb">cd</span><span class="w"> </span>/path/to/my-project
-<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>.
-<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>
-<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="c1"># Or specify the path</span>
-<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>/path/to/my-project<span class="w"> </span>--set-default
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># Register the current directory</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="nb">cd</span><span class="w"> </span>/path/to/my-project
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>.
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="c1"># Or specify the path</span>
+<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>/path/to/my-project<span class="w"> </span>--set-default
 </code></pre></div>
 <h3 id="add-multiple-projects">Add Multiple Projects<a class="headerlink" href="#add-multiple-projects" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># Add several projects</span>
-<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>~/projects/api<span class="w"> </span>--name<span class="w"> </span>api-server
-<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>~/projects/frontend<span class="w"> </span>--name<span class="w"> </span>web-app
-<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>~/projects/mobile<span class="w"> </span>--name<span class="w"> </span>mobile-app
-<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>
-<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="c1"># List all</span>
-<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a>codegeass<span class="w"> </span>project<span class="w"> </span>list
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="c1"># Add several projects</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>~/projects/api<span class="w"> </span>--name<span class="w"> </span>api-server
+<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>~/projects/frontend<span class="w"> </span>--name<span class="w"> </span>web-app
+<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>~/projects/mobile<span class="w"> </span>--name<span class="w"> </span>mobile-app
+<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>
+<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="c1"># List all</span>
+<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>codegeass<span class="w"> </span>project<span class="w"> </span>list
 </code></pre></div>
 <h3 id="configure-project-defaults">Configure Project Defaults<a class="headerlink" href="#configure-project-defaults" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># Set default model and timeout</span>
-<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>~/projects/ml-pipeline<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">  </span>--name<span class="w"> </span>ml-pipeline<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">  </span>--model<span class="w"> </span>opus<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">  </span>--timeout<span class="w"> </span><span class="m">600</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">  </span>--autonomous
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># Set default model and timeout</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>~/projects/ml-pipeline<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">  </span>--name<span class="w"> </span>ml-pipeline<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">  </span>--model<span class="w"> </span>opus<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="w">  </span>--timeout<span class="w"> </span><span class="m">600</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="w">  </span>--autonomous
 </code></pre></div>
 <h3 id="work-with-shared-skills">Work with Shared Skills<a class="headerlink" href="#work-with-shared-skills" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="c1"># Shared skills are enabled by default</span>
-<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>~/project
-<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>
-<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="c1"># Disable shared skills for a project when adding</span>
-<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>~/project<span class="w"> </span>--no-shared-skills
-<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>
-<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="c1"># Or toggle later with update</span>
-<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>codegeass<span class="w"> </span>project<span class="w"> </span>update<span class="w"> </span>my-project<span class="w"> </span>--no-shared-skills
-<a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a>codegeass<span class="w"> </span>project<span class="w"> </span>update<span class="w"> </span>my-project<span class="w"> </span>--shared-skills
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># Shared skills are enabled by default</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>~/project
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="c1"># Disable shared skills for a project when adding</span>
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>~/project<span class="w"> </span>--no-shared-skills
+<a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>
+<a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a><span class="c1"># Or toggle later with update</span>
+<a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a>codegeass<span class="w"> </span>project<span class="w"> </span>update<span class="w"> </span>my-project<span class="w"> </span>--no-shared-skills
+<a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a>codegeass<span class="w"> </span>project<span class="w"> </span>update<span class="w"> </span>my-project<span class="w"> </span>--shared-skills
 </code></pre></div>
 <h3 id="switch-between-projects">Switch Between Projects<a class="headerlink" href="#switch-between-projects" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># Set default project</span>
-<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>codegeass<span class="w"> </span>project<span class="w"> </span>set-default<span class="w"> </span>api-server
-<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>
-<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="c1"># Run commands against specific project (--project must come before the command)</span>
-<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>codegeass<span class="w"> </span>--project<span class="w"> </span>web-app<span class="w"> </span>task<span class="w"> </span>list
-<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>codegeass<span class="w"> </span>--project<span class="w"> </span>api-server<span class="w"> </span>task<span class="w"> </span>run<span class="w"> </span>daily-review
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c1"># Set default project</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>codegeass<span class="w"> </span>project<span class="w"> </span>set-default<span class="w"> </span>api-server
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a>
+<a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="c1"># Run commands against specific project (--project must come before the command)</span>
+<a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a>codegeass<span class="w"> </span>--project<span class="w"> </span>web-app<span class="w"> </span>task<span class="w"> </span>list
+<a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a>codegeass<span class="w"> </span>--project<span class="w"> </span>api-server<span class="w"> </span>task<span class="w"> </span>run<span class="w"> </span>daily-review
 </code></pre></div>
 <h3 id="initialize-a-new-project">Initialize a New Project<a class="headerlink" href="#initialize-a-new-project" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1"># Create project structure in new directory</span>
-<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>mkdir<span class="w"> </span>~/projects/new-app
-<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>codegeass<span class="w"> </span>project<span class="w"> </span>init<span class="w"> </span>~/projects/new-app
-<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>
-<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="c1"># Register it</span>
-<a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>~/projects/new-app<span class="w"> </span>--set-default
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="c1"># Create project structure in new directory</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>mkdir<span class="w"> </span>~/projects/new-app
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>codegeass<span class="w"> </span>project<span class="w"> </span>init<span class="w"> </span>~/projects/new-app
+<a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a>
+<a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a><span class="c1"># Register it</span>
+<a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a>codegeass<span class="w"> </span>project<span class="w"> </span>add<span class="w"> </span>~/projects/new-app<span class="w"> </span>--set-default
 </code></pre></div>
 <h2 id="project-structure">Project Structure<a class="headerlink" href="#project-structure" title="Permanent link">&para;</a></h2>
 <p>When you initialize a project, it creates:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>project/
-<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>├── config/
-<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>│   ├── schedules.yaml     # Task definitions
-<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a>│   └── settings.yaml      # Project settings
-<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>├── data/
-<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>│   ├── logs/              # Execution logs
-<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>│   └── sessions/          # Session data
-<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a>└── .claude/
-<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a>    └── skills/            # Project-specific skills
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>project/
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>├── config/
+<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>│   ├── schedules.yaml     # Task definitions
+<a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a>│   └── settings.yaml      # Project settings
+<a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>├── data/
+<a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a>│   ├── logs/              # Execution logs
+<a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a>│   └── sessions/          # Session data
+<a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a>└── .claude/
+<a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a>    └── skills/            # Project-specific skills
 </code></pre></div>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
 <ul>
