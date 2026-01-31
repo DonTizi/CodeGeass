@@ -172,14 +172,14 @@ async def get_project(project_id: str) -> Project:
 
 @router.post("", response_model=Project, status_code=201)
 async def add_project(data: ProjectCreate) -> Project:
-    """Register a new project."""
+    """Initialize and register a new project.
+
+    This endpoint combines initialization (creating directory structure + config files)
+    with registration, mirroring the CLI 'codegeass init' command behavior.
+    """
     repo = get_project_repo()
 
     path = Path(data.path).resolve()
-
-    # Check if path exists
-    if not path.exists():
-        raise HTTPException(status_code=400, detail=f"Path does not exist: {path}")
 
     # Check if already registered
     existing = repo.find_by_path(path)
@@ -198,6 +198,47 @@ async def add_project(data: ProjectCreate) -> Project:
             detail=f"Project with name '{project_name}' already exists"
         )
 
+    # Create path if it doesn't exist
+    if not path.exists():
+        try:
+            path.mkdir(parents=True, exist_ok=True)
+        except OSError as e:
+            raise HTTPException(status_code=400, detail=f"Failed to create directory: {e}")
+
+    # Initialize project structure (config/, .claude/skills/)
+    config_dir = path / "config"
+    skills_dir = path / ".claude" / "skills"
+
+    for dir_path in [config_dir, skills_dir]:
+        dir_path.mkdir(parents=True, exist_ok=True)
+
+    # Create default config files if they don't exist
+    settings_file = config_dir / "settings.yaml"
+    if not settings_file.exists():
+        default_settings = f"""# CodeGeass Settings
+claude:
+  default_model: {data.default_model}
+  default_timeout: {data.default_timeout}
+  unset_api_key: true
+
+paths:
+  skills: .claude/skills/
+
+scheduler:
+  check_interval: 60
+  max_concurrent: 1
+"""
+        settings_file.write_text(default_settings)
+
+    schedules_file = config_dir / "schedules.yaml"
+    if not schedules_file.exists():
+        default_schedules = """# CodeGeass Scheduled Tasks
+# Add your tasks here
+
+tasks: []
+"""
+        schedules_file.write_text(default_schedules)
+
     # Try to get git remote
     git_remote = None
     git_config = path / ".git" / "config"
@@ -211,7 +252,7 @@ async def add_project(data: ProjectCreate) -> Project:
         except Exception:
             pass
 
-    # Create project
+    # Create and register project
     new_project = ProjectEntity.create(
         name=project_name,
         path=path,
@@ -224,6 +265,12 @@ async def add_project(data: ProjectCreate) -> Project:
     )
 
     repo.save(new_project)
+
+    # Create global data directories at ~/.codegeass/data/{project-id}/
+    global_data_dir = Path.home() / ".codegeass" / "data"
+    data_dir = global_data_dir / new_project.id
+    for dir_path in [data_dir / "logs", data_dir / "sessions"]:
+        dir_path.mkdir(parents=True, exist_ok=True)
 
     # Set as default if first project
     if len(repo.find_all()) == 1:

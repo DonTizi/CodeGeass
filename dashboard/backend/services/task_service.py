@@ -1,20 +1,13 @@
 """Task service wrapping TaskRepository."""
 
-from datetime import datetime
 from pathlib import Path
-from typing import Any
 
-from config import settings
-from models import Task, TaskCreate, TaskUpdate, TaskSummary, TaskStats, TaskNotificationConfig
-
-# Import from codegeass package
-import sys
-sys.path.insert(0, str(settings.project_dir / "src"))
-
-from codegeass.storage.task_repository import TaskRepository
-from codegeass.storage.log_repository import LogRepository
 from codegeass.core.entities import Task as CoreTask
 from codegeass.scheduling.cron_parser import CronParser
+from codegeass.storage.log_repository import LogRepository
+from codegeass.storage.task_repository import TaskRepository
+
+from ..models import Task, TaskCreate, TaskNotificationConfig, TaskStats, TaskSummary, TaskUpdate
 
 
 class TaskService:
@@ -54,6 +47,7 @@ class TaskService:
             prompt=task.prompt,
             allowed_tools=task.allowed_tools or [],
             model=task.model,
+            code_source=task.code_source,
             autonomous=task.autonomous,
             max_turns=task.max_turns,
             timeout=task.timeout,
@@ -62,7 +56,6 @@ class TaskService:
             notifications=notifications,
             last_run=task.last_run,
             last_status=task.last_status,
-            code_source=task.code_source,
             plan_mode=task.plan_mode,
             plan_timeout=task.plan_timeout,
             plan_max_iterations=task.plan_max_iterations,
@@ -90,10 +83,10 @@ class TaskService:
             prompt=task_create.prompt,
             allowed_tools=task_create.allowed_tools,
             model=task_create.model,
+            code_source=task_create.code_source,
             autonomous=task_create.autonomous,
             max_turns=task_create.max_turns,
             timeout=task_create.timeout,
-            code_source=task_create.code_source,
             enabled=task_create.enabled,
             variables=task_create.variables,
             notifications=notifications,

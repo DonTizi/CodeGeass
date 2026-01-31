@@ -44,6 +44,7 @@ class Task(BaseModel):
     prompt: str | None = None
     allowed_tools: list[str] = Field(default_factory=list)
     model: str = "sonnet"
+    code_source: str = Field("claude", description="Code execution provider (claude, codex)")
     autonomous: bool = True  # Default to autonomous mode
     max_turns: int | None = None
     timeout: int = 300
@@ -72,6 +73,7 @@ class TaskCreate(BaseModel):
     prompt: str | None = Field(None, description="Direct prompt (if no skill)")
     allowed_tools: list[str] = Field(default_factory=list)
     model: str = Field("sonnet", pattern="^(haiku|sonnet|opus)$")
+    code_source: str = Field("claude", description="Code execution provider (claude, codex)")
     autonomous: bool = True  # Default to autonomous mode
     max_turns: int | None = Field(None, ge=1, le=100)
     timeout: int = Field(300, ge=30, le=3600)
@@ -92,6 +94,7 @@ class TaskUpdate(BaseModel):
     prompt: str | None = None
     allowed_tools: list[str] | None = None
     model: str | None = Field(None, pattern="^(haiku|sonnet|opus)$")
+    code_source: str | None = Field(None, description="Code execution provider (claude, codex)")
     autonomous: bool | None = None
     max_turns: int | None = Field(None, ge=1, le=100)
     timeout: int | None = Field(None, ge=30, le=3600)

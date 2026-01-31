@@ -378,40 +378,101 @@ cli.add_command(setup.uninstall_scheduler)
 cli.add_command(setup.uninstall)
 
 
+def _get_git_remote(path: Path) -> str | None:
+    """Try to get git remote URL from project."""
+    git_config = path / ".git" / "config"
+    if not git_config.exists():
+        return None
+
+    try:
+        import configparser
+
+        config = configparser.ConfigParser()
+        config.read(git_config)
+        if 'remote "origin"' in config:
+            return config['remote "origin"'].get("url")
+    except Exception:
+        pass
+
+    return None
+
+
 @cli.command()
+@click.argument("path", type=click.Path(path_type=Path), default=".")
+@click.option("--name", "-n", help="Project name (defaults to directory name)")
+@click.option("--description", "-d", default="", help="Project description")
+@click.option("--model", "-m", default="sonnet", help="Default model (haiku, sonnet, opus)")
+@click.option("--timeout", "-t", default=300, type=int, help="Default timeout in seconds")
+@click.option("--autonomous", is_flag=True, help="Enable autonomous mode by default")
+@click.option("--no-shared-skills", is_flag=True, help="Disable shared skills for this project")
+@click.option("--set-default", is_flag=True, help="Set as default project")
+@click.option("--force", "-f", is_flag=True, help="Reinitialize existing project")
 @pass_context
-def init(ctx: Context) -> None:
-    """Initialize CodeGeass project structure."""
+def init(
+    ctx: Context,
+    path: Path,
+    name: str | None,
+    description: str,
+    model: str,
+    timeout: int,
+    autonomous: bool,
+    no_shared_skills: bool,
+    set_default: bool,
+    force: bool,
+) -> None:
+    """Initialize and register a CodeGeass project.
+
+    Creates directory structure (config/, .claude/skills/) and config files,
+    then automatically registers the project in the dashboard.
+
+    Examples:
+
+        codegeass init                    # Initialize current directory
+
+        codegeass init /path/to/project   # Initialize specific path
+
+        codegeass init --name my-project  # Custom project name
+
+        codegeass init --autonomous       # Enable autonomous mode
+    """
     from rich.panel import Panel
 
+    from codegeass.core.entities import Project
+
+    path = path.resolve()
+    repo = ctx.project_repo
+
+    # Check if already registered
+    existing = repo.find_by_path(path)
+    if existing and not force:
+        console.print(f"[yellow]Project already registered: {existing.name}[/yellow]")
+        console.print(f"ID: {existing.id}")
+        console.print(f"Path: {existing.path}")
+        console.print("\nUse --force to reinitialize")
+        return
+
+    # Create project directory if it doesn't exist
+    if not path.exists():
+        path.mkdir(parents=True, exist_ok=True)
+
     # Create project-local directories (config, skills)
-    project_dirs = [
-        ctx.config_dir,
-        ctx.skills_dir,
-    ]
+    config_dir = path / "config"
+    skills_dir = path / ".claude" / "skills"
+
+    project_dirs = [config_dir, skills_dir]
 
     for dir_path in project_dirs:
         dir_path.mkdir(parents=True, exist_ok=True)
         if ctx.verbose:
             console.print(f"Created: {dir_path}")
 
-    # Create global data directories at ~/.codegeass/data/{project-id}/
-    data_dirs = [
-        ctx.data_dir / "logs",
-        ctx.data_dir / "sessions",
-    ]
-
-    for dir_path in data_dirs:
-        dir_path.mkdir(parents=True, exist_ok=True)
-        if ctx.verbose:
-            console.print(f"Created: {dir_path}")
-
-    # Create default config files if they don't exist
-    if not ctx.settings_file.exists():
-        default_settings = """# CodeGeass Settings
+    # Create default config files if they don't exist (or force is set)
+    settings_file = config_dir / "settings.yaml"
+    if not settings_file.exists() or force:
+        default_settings = f"""# CodeGeass Settings
 claude:
-  default_model: sonnet
-  default_timeout: 300
+  default_model: {model}
+  default_timeout: {timeout}
   unset_api_key: true
 
 paths:
@@ -421,29 +482,93 @@ scheduler:
   check_interval: 60
   max_concurrent: 1
 """
-        ctx.settings_file.write_text(default_settings)
-        console.print(f"Created: {ctx.settings_file}")
+        settings_file.write_text(default_settings)
+        console.print(f"Created: {settings_file}")
 
-    if not ctx.schedules_file.exists():
+    schedules_file = config_dir / "schedules.yaml"
+    if not schedules_file.exists() or force:
         default_schedules = """# CodeGeass Scheduled Tasks
 # Add your tasks here
 
 tasks: []
 """
-        ctx.schedules_file.write_text(default_schedules)
-        console.print(f"Created: {ctx.schedules_file}")
+        schedules_file.write_text(default_schedules)
+        console.print(f"Created: {schedules_file}")
+
+    # Register project in ~/.codegeass/projects.yaml
+    project_name = name or path.name
+
+    # Check for name conflict (only if not already registered at this path)
+    if not existing:
+        existing_name = repo.find_by_name(project_name)
+        if existing_name:
+            console.print(f"[red]Error: Project with name '{project_name}' already exists[/red]")
+            console.print("Use --name to specify a different name")
+            raise SystemExit(1)
+
+    git_remote = _get_git_remote(path)
+
+    if existing:
+        # Update existing project settings (but keep the existing name)
+        project_name = existing.name  # Use existing name, not directory name
+        existing.description = description or existing.description
+        existing.default_model = model
+        existing.default_timeout = timeout
+        existing.default_autonomous = autonomous
+        existing.use_shared_skills = not no_shared_skills
+        if git_remote:
+            existing.git_remote = git_remote
+        repo.save(existing)
+        project_id = existing.id
+        console.print(f"[cyan]Updated existing project: {project_name}[/cyan]")
+    else:
+        # Create and register new project
+        new_project = Project.create(
+            name=project_name,
+            path=path,
+            description=description,
+            default_model=model,
+            default_timeout=timeout,
+            default_autonomous=autonomous,
+            git_remote=git_remote,
+            use_shared_skills=not no_shared_skills,
+        )
+        repo.save(new_project)
+        project_id = new_project.id
+        console.print(f"[green]Registered project: {project_name}[/green]")
+
+    # Set as default if requested or if it's the only project
+    all_projects = repo.find_all()
+    if set_default or len(all_projects) == 1:
+        repo.set_default_project(project_id)
+        console.print("[cyan]Set as default project[/cyan]")
+
+    # Create global data directories at ~/.codegeass/data/{project-id}/
+    data_dir = GLOBAL_DATA_DIR / project_id
+    data_dirs = [
+        data_dir / "logs",
+        data_dir / "sessions",
+    ]
+
+    for dir_path in data_dirs:
+        dir_path.mkdir(parents=True, exist_ok=True)
+        if ctx.verbose:
+            console.print(f"Created: {dir_path}")
 
     console.print(
         Panel.fit(
             "[green]CodeGeass initialized successfully![/green]\n\n"
-            f"Project directory: {ctx.project_dir}\n"
-            f"Config directory: {ctx.config_dir}\n"
-            f"Skills directory: {ctx.skills_dir}\n"
-            f"Data directory: {ctx.data_dir}\n\n"
+            f"Project: {project_name}\n"
+            f"ID: {project_id}\n"
+            f"Path: {path}\n"
+            f"Config: {config_dir}\n"
+            f"Skills: {skills_dir}\n"
+            f"Data: {data_dir}\n\n"
             "Next steps:\n"
             "1. Create skills in .claude/skills/\n"
             "2. Add tasks with: codegeass task create\n"
-            "3. Run scheduler: codegeass scheduler run",
+            "3. Run scheduler: codegeass scheduler run\n"
+            "4. Open dashboard: codegeass dashboard",
             title="Initialized",
         )
     )
