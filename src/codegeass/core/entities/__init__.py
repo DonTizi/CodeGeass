@@ -1,14 +1,11 @@
 """Domain entities for CodeGeass.
 
-This module re-exports all entities from the entities/ package.
-Each entity is now in its own module for single-responsibility.
-
-Entities:
-- Skill: Claude Code skill reference
-- Template: Task template with defaults
-- Prompt: Structured prompt with system/task/context
-- Task: Scheduled task configuration
-- Project: Multi-project registration
+Each entity is in its own module for single-responsibility:
+- skill: Skill entity for Claude Code skills
+- template: Template entity for task templates
+- prompt: Prompt entity for structured prompts
+- task: Task entity for scheduled tasks
+- project: Project entity for multi-project support
 """
 
 from codegeass.core.entities.project import Project
