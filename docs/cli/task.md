@@ -35,6 +35,13 @@ codegeass task create \
   --working-dir /path/to/project \
   --mode autonomous \
   --plan-mode
+
+# Using a different code provider
+codegeass task create \
+  --name codex-task \
+  --schedule "0 9 * * *" \
+  --prompt "Review code" \
+  --code-source codex
 ```
 
 ### List Tasks
@@ -72,6 +79,15 @@ codegeass task disable daily-review
 # Enable a task
 codegeass task enable daily-review
 ```
+
+### Stop a Running Task
+
+```bash
+# Stop a running task execution
+codegeass task stop daily-review
+```
+
+This gracefully terminates the Claude process (SIGTERM), falling back to SIGKILL if needed. The Dashboard also provides a Stop button for running tasks.
 
 ### Delete a Task
 

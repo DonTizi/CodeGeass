@@ -2,6 +2,23 @@
 
 CodeGeass supports different execution strategies for running Claude. Each mode offers different capabilities and safety levels.
 
+## Code Execution Providers
+
+CodeGeass v0.1.5+ supports multiple code execution providers, enabling you to use different AI coding assistants:
+
+| Provider | ID | Status |
+|----------|-----|--------|
+| Claude Code | `claude-code` | Default |
+| OpenAI Codex | `codex` | Experimental |
+
+Use the `--code-source` flag when creating tasks to specify a provider:
+
+```bash
+codegeass task create --name my-task --code-source codex ...
+```
+
+See [Provider CLI Reference](../cli/provider.md) for more details.
+
 ## Execution Strategies
 
 ### Headless Strategy (Default)
@@ -166,8 +183,19 @@ codegeass logs tail
 2. **Scoped tasks** - Smaller scope = faster execution
 3. **Use skills** - Reusable prompts are more efficient
 
+## Stopping Running Tasks
+
+You can stop a running task execution at any time:
+
+```bash
+codegeass task stop <task-name>
+```
+
+This sends SIGTERM to the Claude process for graceful shutdown, falling back to SIGKILL if needed. The Dashboard also provides a Stop button for running tasks.
+
 ## Related
 
 - [Tasks](tasks.md) - Task configuration
 - [Skills](skills.md) - Creating skills
 - [Plan Mode](plan-mode.md) - Approval workflow
+- [Provider CLI](../cli/provider.md) - Managing code providers
