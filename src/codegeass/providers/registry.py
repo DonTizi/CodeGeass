@@ -54,7 +54,7 @@ class ProviderRegistry:
             import importlib
 
             module = importlib.import_module(module_path)
-            provider_class = getattr(module, class_name)
+            provider_class: type[CodeProvider] = getattr(module, class_name)
             return provider_class()
         except ImportError as e:
             raise ProviderNotFoundError(name) from e

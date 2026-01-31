@@ -41,7 +41,7 @@ def get_codex_executable() -> str:
                     executable = settings.get("codex", {}).get("executable")
                     if executable and Path(executable).exists():
                         logger.debug(f"Using codex from settings: {executable}")
-                        return executable
+                        return str(executable)
             except Exception as e:
                 logger.warning(f"Failed to load settings from {settings_path}: {e}")
 

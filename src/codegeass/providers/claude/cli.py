@@ -41,7 +41,7 @@ def get_claude_executable() -> str:
                     executable = settings.get("claude", {}).get("executable")
                     if executable and Path(executable).exists():
                         logger.debug(f"Using claude from settings: {executable}")
-                        return executable
+                        return str(executable)
             except Exception as e:
                 logger.warning(f"Failed to load settings from {settings_path}: {e}")
 
