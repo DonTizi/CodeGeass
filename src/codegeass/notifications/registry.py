@@ -19,6 +19,7 @@ class ProviderRegistry:
     _PROVIDERS: dict[str, str] = {
         "telegram": "codegeass.notifications.providers.telegram.TelegramProvider",
         "discord": "codegeass.notifications.providers.discord.DiscordProvider",
+        "teams": "codegeass.notifications.providers.teams.TeamsProvider",
     }
 
     def __init__(self) -> None:

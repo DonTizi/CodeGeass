@@ -104,6 +104,7 @@ class PendingApproval:
     error: str | None = None
     worktree_path: str | None = None  # Isolated worktree for this execution
     task_timeout: int = 300  # Original task execution timeout
+    notification_channels: list[str] = field(default_factory=list)  # Channel IDs for notifications
 
     def __post_init__(self) -> None:
         """Set default timestamps if not provided."""
@@ -127,6 +128,7 @@ class PendingApproval:
         max_iterations: int = 5,
         worktree_path: str | None = None,
         task_timeout: int = 300,
+        notification_channels: list[str] | None = None,
     ) -> Self:
         """Factory method to create a new pending approval."""
         return cls(
@@ -140,6 +142,7 @@ class PendingApproval:
             max_iterations=max_iterations,
             worktree_path=worktree_path,
             task_timeout=task_timeout,
+            notification_channels=notification_channels or [],
         )
 
     @property
@@ -216,6 +219,7 @@ class PendingApproval:
             "error": self.error,
             "worktree_path": self.worktree_path,
             "task_timeout": self.task_timeout,
+            "notification_channels": self.notification_channels,
         }
 
     @classmethod
@@ -240,4 +244,5 @@ class PendingApproval:
             error=data.get("error"),
             worktree_path=data.get("worktree_path"),
             task_timeout=data.get("task_timeout", 300),
+            notification_channels=data.get("notification_channels", []),
         )

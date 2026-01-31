@@ -1,11 +1,14 @@
 """Repository for notification channels."""
 
+import logging
 from pathlib import Path
 
 from codegeass.notifications.exceptions import ChannelNotFoundError
 from codegeass.notifications.models import Channel, NotificationDefaults
 from codegeass.storage.credential_manager import CredentialManager, get_credential_manager
 from codegeass.storage.yaml_backend import YAMLBackend, YAMLListBackend
+
+logger = logging.getLogger(__name__)
 
 
 class ChannelRepository:
@@ -120,16 +123,26 @@ class ChannelRepository:
             ChannelNotFoundError: If channel not found
             CredentialError: If credentials not found
         """
+        logger.debug(f"Getting channel {channel_id} with credentials")
+
         channel = self.find_by_id(channel_id)
         if not channel:
+            logger.error(f"Channel {channel_id} not found")
             raise ChannelNotFoundError(channel_id)
+
+        logger.debug(
+            f"Found channel: name={channel.name}, provider={channel.provider}, "
+            f"credential_key={channel.credential_key}"
+        )
 
         from codegeass.notifications.exceptions import CredentialError
 
         credentials = self._creds.get(channel.credential_key)
         if not credentials:
+            logger.error(f"Credentials not found for key: {channel.credential_key}")
             raise CredentialError(channel.credential_key)
 
+        logger.debug(f"Credentials found with keys: {list(credentials.keys())}")
         return channel, credentials
 
     def get_credentials_for_channel(self, channel: Channel) -> dict[str, str] | None:

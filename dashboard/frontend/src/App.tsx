@@ -7,6 +7,7 @@ import { Skills } from '@/pages/Skills'
 import { Logs } from '@/pages/Logs'
 import { Settings } from '@/pages/Settings'
 import { Projects } from '@/pages/Projects'
+import { ApprovalDetail } from '@/pages/ApprovalDetail'
 import { Toaster } from '@/components/ui/Toaster'
 import { useExecutionWebSocket } from '@/hooks/useExecutionWebSocket'
 
@@ -22,6 +23,7 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="tasks" element={<Tasks />} />
           <Route path="tasks/:taskId" element={<TaskDetail />} />
+          <Route path="approvals/:approvalId" element={<ApprovalDetail />} />
           <Route path="skills" element={<Skills />} />
           <Route path="logs" element={<Logs />} />
           <Route path="projects" element={<Projects />} />

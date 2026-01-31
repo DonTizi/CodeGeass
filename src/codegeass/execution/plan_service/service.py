@@ -105,13 +105,20 @@ class PlanApprovalService:
                 )
 
                 if result.get("success"):
-                    msg_ref = MessageRef(
-                        message_id=result["message_id"],
-                        chat_id=result.get("chat_id", ""),
-                        provider=result.get("provider", "telegram"),
-                    )
-                    approval.add_message_ref(msg_ref)
                     success_count += 1
+                    # Store message reference for later editing (only if we got a message_id)
+                    # Teams webhooks don't return message IDs, so we skip storing refs for them
+                    msg_id = result.get("message_id")
+                    if msg_id is not None:
+                        msg_ref = MessageRef(
+                            message_id=msg_id,
+                            chat_id=result.get("chat_id", ""),
+                            provider=result.get("provider", "telegram"),
+                        )
+                        approval.add_message_ref(msg_ref)
+                        logger.info(f"Stored message ref for {channel_id}: msg_id={msg_id}")
+                    else:
+                        logger.info(f"Sent to {channel_id} (no message_id - Teams webhook)")
 
             except Exception as e:
                 logger.error(f"Failed to send approval request to {channel_id}: {e}")

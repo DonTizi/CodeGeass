@@ -43,7 +43,8 @@
       "Bash(grep:*)",
       "Bash(gh run list:*)",
       "Bash(mypy:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "WebFetch(domain:developers.openai.com)"
     ]
   },
   "enabledMcpjsonServers": [
