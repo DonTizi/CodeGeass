@@ -36,6 +36,9 @@ class Task:
     last_run: str | None = None  # ISO timestamp
     last_status: str | None = None
 
+    # Task organization
+    tags: list[str] = field(default_factory=list)
+
     # Notification configuration
     notifications: dict[str, Any] | None = None  # NotificationConfig as dict
 
@@ -98,6 +101,7 @@ class Task:
             plan_mode=data.get("plan_mode", False),
             plan_timeout=data.get("plan_timeout", 3600),
             plan_max_iterations=data.get("plan_max_iterations", 5),
+            tags=data.get("tags", []),
         )
 
     def to_dict(self) -> dict:
@@ -126,6 +130,8 @@ class Task:
             result["plan_mode"] = self.plan_mode
             result["plan_timeout"] = self.plan_timeout
             result["plan_max_iterations"] = self.plan_max_iterations
+        if self.tags:
+            result["tags"] = self.tags
         return result
 
     @property
