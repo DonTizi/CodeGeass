@@ -23,7 +23,7 @@ export function useExecutionWebSocket(options: UseExecutionWebSocketOptions = {}
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectCountRef = useRef(0);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { handleEvent, setWsConnected, fetchActiveExecutions } = useExecutionsStore();
 
