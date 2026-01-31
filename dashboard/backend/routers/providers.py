@@ -22,9 +22,21 @@ def _get_registry():
     return get_provider_registry()
 
 
-@router.get("", response_model=list[Provider])
+@router.get(
+    "",
+    response_model=list[Provider],
+    summary="List code execution providers",
+    description="List all registered code execution providers with their capabilities and availability status.",
+)
 async def list_providers():
-    """List all registered code execution providers."""
+    """List all registered code execution providers.
+
+    Providers are CLI tools that can execute Claude sessions (e.g., claude-code, aider).
+    Each provider has capabilities like plan mode, streaming, and autonomous execution.
+
+    Returns:
+        List of Provider objects with name, capabilities, and availability.
+    """
     registry = _get_registry()
 
     providers = []
@@ -50,9 +62,21 @@ async def list_providers():
     return providers
 
 
-@router.get("/available", response_model=list[ProviderSummary])
+@router.get(
+    "/available",
+    response_model=list[ProviderSummary],
+    summary="List available providers",
+    description="List only providers that are installed and ready to use on this system.",
+)
 async def list_available_providers():
-    """List only available (ready to use) providers."""
+    """List only available (ready to use) providers.
+
+    Filters providers to show only those with valid executables
+    found on the system.
+
+    Returns:
+        List of ProviderSummary for available providers only.
+    """
     registry = _get_registry()
 
     providers = []
@@ -70,9 +94,25 @@ async def list_available_providers():
     return providers
 
 
-@router.get("/{name}", response_model=Provider)
+@router.get(
+    "/{name}",
+    response_model=Provider,
+    summary="Get provider details",
+    description="Retrieve detailed information about a specific code execution provider.",
+    responses={404: {"description": "Provider not found"}},
+)
 async def get_provider(name: str):
-    """Get detailed information about a specific provider."""
+    """Get detailed information about a specific provider.
+
+    Args:
+        name: The provider name (e.g., 'claude-code', 'aider').
+
+    Returns:
+        Full Provider object with capabilities, availability, and executable path.
+
+    Raises:
+        HTTPException: 404 if provider not found.
+    """
     registry = _get_registry()
 
     try:
