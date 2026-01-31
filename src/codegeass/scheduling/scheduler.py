@@ -227,17 +227,51 @@ class Scheduler:
 
         return self.run_task(task, dry_run=dry_run)
 
-    def _is_cron_installed(self) -> bool:
-        """Check if scheduler cron job is installed."""
+    def _is_scheduler_running(self) -> bool:
+        """Check if scheduler is running (launchd, systemd, or cron)."""
+        import platform
         import subprocess
 
+        system = platform.system()
+        home = Path.home()
+
+        # macOS: Check launchd
+        if system == "Darwin":
+            plist_path = home / "Library" / "LaunchAgents" / "com.codegeass.scheduler.plist"
+            if plist_path.exists():
+                try:
+                    result = subprocess.run(
+                        ["launchctl", "list"],
+                        capture_output=True,
+                        text=True,
+                    )
+                    if "com.codegeass.scheduler" in result.stdout:
+                        return True
+                except Exception:
+                    pass
+
+        # Linux: Check systemd
+        elif system == "Linux":
+            try:
+                result = subprocess.run(
+                    ["systemctl", "--user", "is-active", "codegeass-scheduler.timer"],
+                    capture_output=True,
+                    text=True,
+                )
+                if result.returncode == 0:
+                    return True
+            except Exception:
+                pass
+
+        # Fallback: Check cron
         try:
             result = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
-            if result.returncode != 0:
-                return False
-            return "codegeass" in result.stdout
+            if result.returncode == 0 and "codegeass" in result.stdout:
+                return True
         except Exception:
-            return False
+            pass
+
+        return False
 
     def status(self) -> dict:
         """Get scheduler status.
@@ -261,8 +295,8 @@ class Scheduler:
             next_time = CronParser.get_next(task.schedule)
             next_runs[task.name] = next_time.isoformat()
 
-        # Check if cron is installed
-        running = self._is_cron_installed()
+        # Check if scheduler is running (launchd, systemd, or cron)
+        running = self._is_scheduler_running()
 
         return {
             "running": running,
