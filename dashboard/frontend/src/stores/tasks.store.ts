@@ -1,15 +1,16 @@
 import { create } from 'zustand';
-import type { Task, TaskCreate, TaskUpdate, TaskStats, ExecutionResult } from '@/types';
+import type { Task, TaskCreate, TaskUpdate, TaskStats, ExecutionResult, TaskFilterCriteria } from '@/types';
 import { api } from '@/lib/api';
 
 interface TasksState {
   tasks: Task[];
+  allTags: string[];
   selectedTask: Task | null;
   taskStats: Record<string, TaskStats>;
   loading: boolean;
   error: string | null;
 
-  fetchTasks: () => Promise<void>;
+  fetchTasks: (filters?: TaskFilterCriteria) => Promise<void>;
   fetchTask: (taskId: string) => Promise<void>;
   fetchTaskStats: (taskId: string) => Promise<void>;
   createTask: (data: TaskCreate) => Promise<Task>;
@@ -24,16 +25,19 @@ interface TasksState {
 
 export const useTasksStore = create<TasksState>((set) => ({
   tasks: [],
+  allTags: [],
   selectedTask: null,
   taskStats: {},
   loading: false,
   error: null,
 
-  fetchTasks: async () => {
+  fetchTasks: async (filters: TaskFilterCriteria = {}) => {
     set({ loading: true, error: null });
     try {
-      const tasks = await api.tasks.list();
-      set({ tasks, loading: false });
+      const tasks = await api.tasks.list(filters);
+      // Extract all unique tags from tasks
+      const allTags = [...new Set(tasks.flatMap((t) => t.tags || []))].sort();
+      set({ tasks, allTags, loading: false });
     } catch (e) {
       set({ error: e instanceof Error ? e.message : 'Failed to fetch tasks', loading: false });
     }

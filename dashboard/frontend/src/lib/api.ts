@@ -53,6 +53,7 @@ import type {
   TaskCreate,
   TaskUpdate,
   TaskStats,
+  TaskFilterCriteria,
   ExecutionResult,
   ExecutionStatus,
   LogStats,
@@ -75,10 +76,29 @@ import type {
 } from '@/types';
 
 /**
+ * Build query string from filter criteria, handling arrays properly
+ */
+function buildFilterQuery(filters: TaskFilterCriteria): string {
+  const params = new URLSearchParams();
+
+  if (filters.search) params.append('search', filters.search);
+  if (filters.tags && filters.tags.length > 0) {
+    filters.tags.forEach((tag) => params.append('tags', tag));
+  }
+  if (filters.status) params.append('status', filters.status);
+  if (filters.model) params.append('model', filters.model);
+  if (filters.enabled !== undefined) params.append('enabled', String(filters.enabled));
+
+  const query = params.toString();
+  return query ? `?${query}` : '';
+}
+
+/**
  * Tasks API
  */
 const tasks = {
-  list: () => fetchApi<Task[]>('/api/tasks'),
+  list: (filters: TaskFilterCriteria = {}) =>
+    fetchApi<Task[]>(`/api/tasks${buildFilterQuery(filters)}`),
 
   get: (taskId: string) => fetchApi<Task>(`/api/tasks/${taskId}`),
 
