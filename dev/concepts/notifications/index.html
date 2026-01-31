@@ -801,6 +801,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#microsoft-teams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Microsoft Teams
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -895,6 +906,17 @@
     <span class="md-ellipsis">
       
         Discord Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#microsoft-teams-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Microsoft Teams Setup
       
     </span>
   </a>
@@ -1835,6 +1857,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#microsoft-teams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Microsoft Teams
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1929,6 +1962,17 @@
     <span class="md-ellipsis">
       
         Discord Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#microsoft-teams-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Microsoft Teams Setup
       
     </span>
   </a>
@@ -2083,7 +2127,7 @@
 
 
 <h1 id="notifications">Notifications<a class="headerlink" href="#notifications" title="Permanent link">&para;</a></h1>
-<p>CodeGeass can notify you via Telegram or Discord when tasks complete, fail, or need approval.</p>
+<p>CodeGeass can notify you via Telegram, Discord, or Microsoft Teams when tasks complete, fail, or need approval.</p>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>Notifications keep you informed about:</p>
 <ul>
@@ -2098,6 +2142,7 @@
 <th>Provider</th>
 <th>Events Supported</th>
 <th>Interactive</th>
+<th>Approval Flow</th>
 </tr>
 </thead>
 <tbody>
@@ -2105,11 +2150,19 @@
 <td>Telegram</td>
 <td>All</td>
 <td>Yes (approve/reject via bot)</td>
+<td>Inline buttons</td>
 </tr>
 <tr>
 <td>Discord</td>
 <td>All</td>
 <td>No (webhook only)</td>
+<td>Dashboard link</td>
+</tr>
+<tr>
+<td>Teams</td>
+<td>All</td>
+<td>Yes (via Dashboard)</td>
+<td>Dashboard buttons</td>
 </tr>
 </tbody>
 </table>
@@ -2131,32 +2184,45 @@
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="c1"># Test the connection</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>codegeass<span class="w"> </span>notification<span class="w"> </span><span class="nb">test</span><span class="w"> </span>discord
 </code></pre></div>
+<h3 id="microsoft-teams">Microsoft Teams<a class="headerlink" href="#microsoft-teams" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Add Teams Workflows webhook</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>codegeass<span class="w"> </span>notification<span class="w"> </span>add<span class="w"> </span>teams<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>--webhook-url<span class="w"> </span><span class="s2">&quot;https://prod-XX.westus.logic.azure.com/workflows/...&quot;</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Test the connection</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>codegeass<span class="w"> </span>notification<span class="w"> </span><span class="nb">test</span><span class="w"> </span>teams
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Teams Webhooks</p>
+<p>Teams uses Power Automate Workflows webhooks (O365 Connectors were retired Dec 2025).
+Create one via: Apps tab → Workflows → "Post to a channel when a webhook request is received"</p>
+</div>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
 <h3 id="channel-configuration">Channel Configuration<a class="headerlink" href="#channel-configuration" title="Permanent link">&para;</a></h3>
 <p>Channels are defined in <code>config/notifications.yaml</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">channels</span><span class="p">:</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">telegram-main</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">telegram</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nt">events</span><span class="p">:</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">task_completed</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">task_failed</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">approval_required</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">discord-alerts</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">discord</span>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="nt">events</span><span class="p">:</span>
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">task_failed</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">channels</span><span class="p">:</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">telegram-main</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">telegram</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="nt">events</span><span class="p">:</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">task_completed</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">task_failed</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">approval_required</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">discord-alerts</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">discord</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">    </span><span class="nt">events</span><span class="p">:</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">task_failed</span>
 </code></pre></div>
 <h3 id="credentials">Credentials<a class="headerlink" href="#credentials" title="Permanent link">&para;</a></h3>
 <p>Secrets are stored in <code>~/.codegeass/credentials.yaml</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">telegram</span><span class="p">:</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">bot_token</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;123456:ABC-DEF...&quot;</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">chat_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;-1001234567890&quot;</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="nt">discord</span><span class="p">:</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="nt">webhook_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://discord.com/api/webhooks/...&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">telegram</span><span class="p">:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">bot_token</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;123456:ABC-DEF...&quot;</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">chat_id</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;-1001234567890&quot;</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nt">discord</span><span class="p">:</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="nt">webhook_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://discord.com/api/webhooks/...&quot;</span>
 </code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Security</p>
@@ -2195,18 +2261,18 @@
 </tbody>
 </table>
 <h2 id="managing-notifications">Managing Notifications<a class="headerlink" href="#managing-notifications" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># List all channels</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>codegeass<span class="w"> </span>notification<span class="w"> </span>list
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Show channel details</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>codegeass<span class="w"> </span>notification<span class="w"> </span>show<span class="w"> </span>telegram-main
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># Enable/disable a channel</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>codegeass<span class="w"> </span>notification<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>telegram-main
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>codegeass<span class="w"> </span>notification<span class="w"> </span>disable<span class="w"> </span>discord-alerts
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="c1"># Remove a channel</span>
-<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>codegeass<span class="w"> </span>notification<span class="w"> </span>remove<span class="w"> </span>telegram-main
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># List all channels</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>codegeass<span class="w"> </span>notification<span class="w"> </span>list
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Show channel details</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>codegeass<span class="w"> </span>notification<span class="w"> </span>show<span class="w"> </span>telegram-main
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># Enable/disable a channel</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>codegeass<span class="w"> </span>notification<span class="w"> </span><span class="nb">enable</span><span class="w"> </span>telegram-main
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>codegeass<span class="w"> </span>notification<span class="w"> </span>disable<span class="w"> </span>discord-alerts
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="c1"># Remove a channel</span>
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>codegeass<span class="w"> </span>notification<span class="w"> </span>remove<span class="w"> </span>telegram-main
 </code></pre></div>
 <h2 id="provider-details">Provider Details<a class="headerlink" href="#provider-details" title="Permanent link">&para;</a></h2>
 <h3 id="telegram-setup">Telegram Setup<a class="headerlink" href="#telegram-setup" title="Permanent link">&para;</a></h3>
@@ -2219,9 +2285,9 @@
 <li>Visit <code>https://api.telegram.org/bot&lt;TOKEN&gt;/getUpdates</code></li>
 <li>Find the <code>chat.id</code> in the response</li>
 </ol>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>codegeass<span class="w"> </span>notification<span class="w"> </span>add<span class="w"> </span>telegram<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span>--bot-token<span class="w"> </span><span class="s2">&quot;YOUR_BOT_TOKEN&quot;</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span>--chat-id<span class="w"> </span><span class="s2">&quot;YOUR_CHAT_ID&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>codegeass<span class="w"> </span>notification<span class="w"> </span>add<span class="w"> </span>telegram<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span>--bot-token<span class="w"> </span><span class="s2">&quot;YOUR_BOT_TOKEN&quot;</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>--chat-id<span class="w"> </span><span class="s2">&quot;YOUR_CHAT_ID&quot;</span>
 </code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">Private vs Group</p>
@@ -2236,35 +2302,61 @@
 <li><strong>Create a new webhook</strong></li>
 <li><strong>Copy the webhook URL</strong></li>
 </ol>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>codegeass<span class="w"> </span>notification<span class="w"> </span>add<span class="w"> </span>discord<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span>--webhook-url<span class="w"> </span><span class="s2">&quot;YOUR_WEBHOOK_URL&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>codegeass<span class="w"> </span>notification<span class="w"> </span>add<span class="w"> </span>discord<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span>--webhook-url<span class="w"> </span><span class="s2">&quot;YOUR_WEBHOOK_URL&quot;</span>
 </code></pre></div>
+<h3 id="microsoft-teams-setup">Microsoft Teams Setup<a class="headerlink" href="#microsoft-teams-setup" title="Permanent link">&para;</a></h3>
+<p>Teams uses Power Automate Workflows webhooks (O365 Connectors were deprecated in December 2025).</p>
+<ol>
+<li><strong>Open your Teams channel</strong></li>
+<li><strong>Click ⋯ (three dots)</strong> → <strong>Workflows</strong></li>
+<li><strong>Search for</strong> "Post to a channel when a webhook request is received"</li>
+<li><strong>Click Add</strong> and configure the workflow</li>
+<li><strong>Copy the HTTP POST URL</strong> (starts with <code>https://prod-XX.westus.logic.azure.com/workflows/...</code>)</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>codegeass<span class="w"> </span>notification<span class="w"> </span>add<span class="w"> </span>teams<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span>--webhook-url<span class="w"> </span><span class="s2">&quot;YOUR_WORKFLOW_URL&quot;</span>
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Supported URL Formats</p>
+<ul>
+<li>Power Automate: <code>https://*.logic.azure.com/workflows/...</code></li>
+<li>Power Platform: <code>https://*.api.powerplatform.com/workflows/...</code></li>
+<li>Legacy O365 (deprecated): <code>https://*.webhook.office.com/webhookb2/...</code></li>
+</ul>
+</div>
+<div class="admonition info">
+<p class="admonition-title">Plan Mode Approvals</p>
+<p>Teams doesn't support inline callback buttons, so approval actions link to the
+CodeGeass Dashboard. When you receive a plan approval notification, click the
+Approve/Discuss/Cancel buttons to open the Dashboard where you can take action.</p>
+</div>
 <h2 id="message-examples">Message Examples<a class="headerlink" href="#message-examples" title="Permanent link">&para;</a></h2>
 <h3 id="task-completed-telegram">Task Completed (Telegram)<a class="headerlink" href="#task-completed-telegram" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>✅ Task Completed: daily-review
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>Duration: 2m 34s
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>Summary: Reviewed 15 commits, found 2 potential issues
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>View logs: codegeass logs show abc123
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>✅ Task Completed: daily-review
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>Duration: 2m 34s
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>Summary: Reviewed 15 commits, found 2 potential issues
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>View logs: codegeass logs show abc123
 </code></pre></div>
 <h3 id="task-failed-discord">Task Failed (Discord)<a class="headerlink" href="#task-failed-discord" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>❌ Task Failed: weekly-report
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>Error: Claude process exited with code 1
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>Details: Permission denied accessing /protected/file
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>View logs: codegeass logs show def456
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>❌ Task Failed: weekly-report
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>Error: Claude process exited with code 1
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>Details: Permission denied accessing /protected/file
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>View logs: codegeass logs show def456
 </code></pre></div>
 <h3 id="approval-required-telegram">Approval Required (Telegram)<a class="headerlink" href="#approval-required-telegram" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>🔔 Approval Required: upgrade-deps
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>Plan Summary:
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>1. Upgrade react from 17.0.2 to 18.2.0
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>2. Update react-dom to match
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>3. Run tests to verify compatibility
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>[Approve] [Reject]
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>🔔 Approval Required: upgrade-deps
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>Plan Summary:
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>1. Upgrade react from 17.0.2 to 18.2.0
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>2. Update react-dom to match
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>3. Run tests to verify compatibility
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>[Approve] [Reject]
 </code></pre></div>
 <h2 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h2>
 <ol>
@@ -2276,14 +2368,14 @@
 </ol>
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
 <h3 id="notifications-not-sending">Notifications Not Sending<a class="headerlink" href="#notifications-not-sending" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Test the provider</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>codegeass<span class="w"> </span>notification<span class="w"> </span><span class="nb">test</span><span class="w"> </span>telegram
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Check channel is enabled</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>codegeass<span class="w"> </span>notification<span class="w"> </span>show<span class="w"> </span>telegram-main
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="c1"># Verify credentials</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>cat<span class="w"> </span>~/.codegeass/credentials.yaml
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># Test the provider</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>codegeass<span class="w"> </span>notification<span class="w"> </span><span class="nb">test</span><span class="w"> </span>telegram
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># Check channel is enabled</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>codegeass<span class="w"> </span>notification<span class="w"> </span>show<span class="w"> </span>telegram-main
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="c1"># Verify credentials</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>cat<span class="w"> </span>~/.codegeass/credentials.yaml
 </code></pre></div>
 <h3 id="telegram-bot-issues">Telegram Bot Issues<a class="headerlink" href="#telegram-bot-issues" title="Permanent link">&para;</a></h3>
 <ul>
