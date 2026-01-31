@@ -11,9 +11,15 @@ import logging
 import re
 from typing import TYPE_CHECKING, Any
 
+import httpx
+
 from codegeass.notifications.exceptions import ProviderError
 from codegeass.notifications.models import Channel
 from codegeass.notifications.providers.base import NotificationProvider, ProviderConfig
+from codegeass.notifications.providers.teams_utils import (
+    TeamsAdaptiveCardBuilder,
+    TeamsHtmlFormatter,
+)
 
 if TYPE_CHECKING:
     from codegeass.notifications.interactive import InteractiveMessage
@@ -126,24 +132,15 @@ class TeamsProvider(NotificationProvider):
         Uses httpx for HTTP POST to support both legacy O365 Connectors
         and new Power Automate Workflows webhooks.
         """
-        try:
-            import httpx
-        except ImportError as e:
-            raise ProviderError(
-                self.name,
-                "httpx package not installed. Install with: pip install httpx",
-                cause=e,
-            )
-
         webhook_url = credentials["webhook_url"]
         title = channel.config.get("title", kwargs.get("title", "CodeGeass"))
 
         try:
-            # Convert HTML to Markdown for Teams Adaptive Cards
-            clean_message = self._html_to_plain_text(message)
+            # Convert HTML to plain text for Teams Adaptive Cards
+            clean_message = TeamsHtmlFormatter.html_to_plain_text(message)
 
             # Build Adaptive Card payload (works with both legacy and new webhooks)
-            payload = self._build_adaptive_card_payload(clean_message, title)
+            payload = TeamsAdaptiveCardBuilder.build_simple_card(clean_message, title)
 
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(webhook_url, json=payload)
@@ -161,57 +158,12 @@ class TeamsProvider(NotificationProvider):
                 raise
             raise ProviderError(self.name, f"Failed to send message: {e}", cause=e)
 
-    def _build_adaptive_card_payload(self, message: str, title: str | None) -> dict[str, Any]:
-        """Build an Adaptive Card payload for Teams webhooks.
-
-        This format works with both:
-        - Legacy O365 Connectors
-        - Power Automate Workflows webhooks
-        """
-        body_elements: list[dict[str, Any]] = []
-
-        # Add title as a header if provided
-        if title:
-            body_elements.append({
-                "type": "TextBlock",
-                "text": title,
-                "weight": "Bolder",
-                "size": "Medium",
-                "wrap": True,
-            })
-
-        # Add message content
-        body_elements.append({
-            "type": "TextBlock",
-            "text": message,
-            "wrap": True,
-        })
-
-        return {
-            "type": "message",
-            "attachments": [{
-                "contentType": "application/vnd.microsoft.card.adaptive",
-                "contentUrl": None,
-                "content": {
-                    "type": "AdaptiveCard",
-                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                    "version": "1.4",
-                    "body": body_elements,
-                },
-            }],
-        }
-
     async def test_connection(
         self,
         channel: Channel,
         credentials: dict[str, str],
     ) -> tuple[bool, str]:
         """Test the Teams webhook connection."""
-        try:
-            import httpx
-        except ImportError:
-            return False, "httpx package not installed"
-
         # Validate credentials first
         valid, error = self.validate_credentials(credentials)
         if not valid:
@@ -219,8 +171,8 @@ class TeamsProvider(NotificationProvider):
 
         try:
             # Send a test message using Adaptive Card
-            payload = self._build_adaptive_card_payload(
-                "✅ Connection test successful!", "CodeGeass"
+            payload = TeamsAdaptiveCardBuilder.build_simple_card(
+                "Connection test successful!", "CodeGeass"
             )
 
             async with httpx.AsyncClient(timeout=30.0) as client:
@@ -272,173 +224,41 @@ class TeamsProvider(NotificationProvider):
         Returns:
             Dict with 'success' and 'message_id' (None for Teams webhooks)
         """
-        print("[Teams] send_interactive called")
-        logger.info("TeamsProvider.send_interactive called")
-
-        try:
-            import httpx
-        except ImportError as e:
-            print("[Teams] ERROR: httpx not installed")
-            logger.error("httpx package not installed")
-            raise ProviderError(
-                self.name,
-                "httpx package not installed. Install with: pip install httpx",
-                cause=e,
-            )
+        logger.debug("TeamsProvider.send_interactive called")
 
         webhook_url = credentials["webhook_url"]
         title = channel.config.get("title", "CodeGeass")
         dashboard_url = channel.config.get("dashboard_url", "http://localhost:5173")
 
-        # Log URL prefix for debugging (don't log full URL for security)
-        url_prefix = webhook_url[:60] + "..." if len(webhook_url) > 60 else webhook_url
-        logger.debug(f"webhook_url: {url_prefix}")
-        logger.debug(f"title: {title}, dashboard_url: {dashboard_url}")
-
         try:
             # Build Adaptive Card with action buttons as links
-            payload = self._build_interactive_card_payload(message, title, dashboard_url)
-            logger.debug(f"Payload built with {len(payload.get('attachments', []))} attachments")
+            payload = TeamsAdaptiveCardBuilder.build_interactive_card(
+                message, title, dashboard_url
+            )
 
             async with httpx.AsyncClient(timeout=30.0) as client:
-                logger.info("Sending POST request to Teams webhook...")
                 response = await client.post(webhook_url, json=payload)
-
-                # Log response details
-                logger.info(f"Teams response: status={response.status_code}")
-                response_text = response.text[:500] if response.text else "(empty)"
-                logger.debug(f"Teams response body: {response_text}")
-
+                logger.debug(f"Teams response: status={response.status_code}")
                 response.raise_for_status()
 
-            logger.info("Teams send_interactive succeeded")
+            logger.debug("Teams send_interactive succeeded")
             return {
                 "success": True,
                 "message_id": None,  # Teams webhooks don't return message IDs
                 "chat_id": None,
             }
+        except httpx.HTTPStatusError as e:
+            logger.error(f"Teams send_interactive failed: {e.response.status_code}")
+            raise ProviderError(
+                self.name,
+                f"Teams API error: {e.response.status_code} - {e.response.text}",
+                cause=e,
+            )
         except Exception as e:
             logger.error(f"Teams send_interactive failed: {e}", exc_info=True)
             if isinstance(e, ProviderError):
                 raise
             raise ProviderError(self.name, f"Failed to send interactive message: {e}", cause=e)
-
-    def _build_interactive_card_payload(
-        self,
-        message: "InteractiveMessage",
-        title: str | None,
-        dashboard_url: str,
-    ) -> dict[str, Any]:
-        """Build an Adaptive Card with interactive buttons as URL links.
-
-        Converts callback buttons to Action.OpenUrl pointing to the Dashboard.
-        """
-        body_elements: list[dict[str, Any]] = []
-
-        # Add title
-        if title:
-            body_elements.append({
-                "type": "TextBlock",
-                "text": title,
-                "weight": "Bolder",
-                "size": "Medium",
-                "wrap": True,
-            })
-
-        # Add message text (convert HTML to plain text for Adaptive Cards)
-        clean_text = self._html_to_plain_text(message.text)
-        body_elements.append({
-            "type": "TextBlock",
-            "text": clean_text,
-            "wrap": True,
-        })
-
-        # Convert buttons to actions
-        actions: list[dict[str, Any]] = []
-        for row in message.button_rows:
-            for button in row.buttons:
-                # Parse callback_data to build dashboard URL
-                # Format: "plan:approve:abc123" -> /approvals/abc123?action=approve
-                action_url = self._callback_to_dashboard_url(
-                    button.callback_data, dashboard_url
-                )
-
-                # Map button style to Adaptive Card style
-                style = "positive" if button.style.value == "success" else (
-                    "destructive" if button.style.value == "danger" else "default"
-                )
-
-                actions.append({
-                    "type": "Action.OpenUrl",
-                    "title": button.text,
-                    "url": action_url,
-                    "style": style,
-                })
-
-        return {
-            "type": "message",
-            "attachments": [{
-                "contentType": "application/vnd.microsoft.card.adaptive",
-                "contentUrl": None,
-                "content": {
-                    "type": "AdaptiveCard",
-                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                    "version": "1.4",
-                    "body": body_elements,
-                    "actions": actions,
-                },
-            }],
-        }
-
-    def _callback_to_dashboard_url(self, callback_data: str, dashboard_url: str) -> str:
-        """Convert callback_data to a Dashboard URL.
-
-        Args:
-            callback_data: Format "plan:action:id" (e.g., "plan:approve:abc123")
-            dashboard_url: Base dashboard URL (e.g., "http://localhost:5173")
-
-        Returns:
-            Full URL to dashboard approval page
-        """
-        parts = callback_data.split(":", 2)
-        if len(parts) >= 3:
-            prefix, action, approval_id = parts
-            if prefix == "plan":
-                return f"{dashboard_url}/approvals/{approval_id}?action={action}"
-
-        # Fallback: just link to approvals page
-        return f"{dashboard_url}/approvals"
-
-    def _html_to_plain_text(self, html: str) -> str:
-        """Convert HTML to plain text for Adaptive Cards.
-
-        Adaptive Cards TextBlock doesn't support HTML or Markdown by default,
-        so we strip all formatting tags and keep just the text content.
-        """
-        import re
-
-        text = html
-
-        # Convert <br> to newlines first
-        text = re.sub(r"<br\s*/?>", "\n", text)
-
-        # Convert <pre> and <code> blocks - preserve content with newlines
-        text = re.sub(r"<pre>(.*?)</pre>", r"\n\1\n", text, flags=re.DOTALL)
-        text = re.sub(r"<code>(.*?)</code>", r"\1", text, flags=re.DOTALL)
-
-        # Remove bold/italic tags but keep content
-        text = re.sub(r"<b>(.*?)</b>", r"\1", text, flags=re.DOTALL)
-        text = re.sub(r"<strong>(.*?)</strong>", r"\1", text, flags=re.DOTALL)
-        text = re.sub(r"<i>(.*?)</i>", r"\1", text, flags=re.DOTALL)
-        text = re.sub(r"<em>(.*?)</em>", r"\1", text, flags=re.DOTALL)
-
-        # Remove any remaining HTML tags
-        text = re.sub(r"<[^>]+>", "", text)
-
-        # Clean up multiple newlines
-        text = re.sub(r"\n{3,}", "\n\n", text)
-
-        return text.strip()
 
     async def edit_interactive(
         self,

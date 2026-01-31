@@ -5,10 +5,8 @@ from typing import TYPE_CHECKING
 
 from codegeass.execution.output_parser import parse_stream_json
 from codegeass.execution.tracker import get_execution_tracker
-from codegeass.notifications.interactive import (
-    InteractiveMessage,
-    create_plan_approval_message,
-)
+from codegeass.notifications.interactive import create_plan_approval_message
+from codegeass.notifications.interactive_sender import send_interactive_to_channel
 from codegeass.notifications.models import NotificationConfig, NotificationEvent
 from codegeass.notifications.service import NotificationService
 
@@ -50,11 +48,11 @@ class NotificationHandler:
         Args:
             task: The task being started
         """
-        print(f"[Notifications] Task starting: {task.name}")
+        logger.debug(f"Task starting: {task.name}")
 
         # Check if task has notifications configured
         if not task.notifications:
-            print(f"[Notifications] No notifications configured for {task.name}")
+            logger.debug(f"No notifications configured for {task.name}")
             return
 
         try:
@@ -63,9 +61,8 @@ class NotificationHandler:
                 task=task,
                 result=None,
             )
-            print(f"[Notifications] Start notification result: {result}")
+            logger.debug(f"Start notification result: {result}")
         except Exception as e:
-            print(f"[Notifications] Failed to send start notification: {e}")
             logger.error(f"Failed to send start notification: {e}")
 
     async def on_task_complete(self, task: "Task", result: "ExecutionResult") -> None:
@@ -75,11 +72,11 @@ class NotificationHandler:
             task: The task that completed
             result: The execution result
         """
-        print(f"[Notifications] Task completed: {task.name}, status={result.status}")
+        logger.debug(f"Task completed: {task.name}, status={result.status}")
 
         # Check if task has notifications configured
         if not task.notifications:
-            print(f"[Notifications] No notifications configured for {task.name}")
+            logger.debug(f"No notifications configured for {task.name}")
             return
 
         # Determine specific event based on status
@@ -95,9 +92,8 @@ class NotificationHandler:
                 task=task,
                 result=result,
             )
-            print(f"[Notifications] Completion notification result: {notify_result}")
+            logger.debug(f"Completion notification result: {notify_result}")
         except Exception as e:
-            print(f"[Notifications] Failed to send completion notification: {e}")
             logger.error(f"Failed to send completion notification: {e}")
 
     async def on_plan_approval(self, task: "Task", result: "ExecutionResult") -> None:
@@ -113,11 +109,10 @@ class NotificationHandler:
             task: The task that generated the plan
             result: The execution result containing the plan
         """
-        print(f"[Notifications] Plan approval needed: {task.name}")
+        logger.info(f"Plan approval needed: {task.name}")
 
         # Check if task has notifications configured
         if not task.notifications:
-            print(f"[Notifications] No notifications configured for {task.name}")
             logger.warning(
                 f"Plan mode task {task.name} has no notifications - cannot send approval request"
             )
@@ -125,7 +120,6 @@ class NotificationHandler:
 
         # Check if we have the required repositories
         if not self._approval_repo or not self._channel_repo:
-            print("[Notifications] Approval/channel repos not configured")
             logger.error("Approval or channel repository not configured for plan approval")
             return
 
@@ -136,7 +130,6 @@ class NotificationHandler:
             plan_text = parsed.text
 
             if not session_id:
-                print("[Notifications] Could not extract session_id from output")
                 logger.error("Could not extract session_id from plan mode output")
                 # Fall back to task completion notification
                 await self.on_task_complete(task, result)
@@ -149,7 +142,7 @@ class NotificationHandler:
             worktree_path = None
             if result.metadata and "worktree_path" in result.metadata:
                 worktree_path = result.metadata["worktree_path"]
-                print(f"[Notifications] Using worktree for isolation: {worktree_path}")
+                logger.debug(f"Using worktree for isolation: {worktree_path}")
 
             # Get notification channels to store in approval
             config = NotificationConfig.from_dict(task.notifications)
@@ -168,7 +161,7 @@ class NotificationHandler:
                 notification_channels=channel_ids,  # Store channel IDs for discuss flow
             )
 
-            print(f"[Notifications] Created approval: {approval.id}")
+            logger.info(f"Created approval: {approval.id}")
 
             # Save approval
             self._approval_repo.save(approval)
@@ -184,17 +177,18 @@ class NotificationHandler:
 
             # Send to all configured channels
             if not channel_ids:
-                print("[Notifications] No channels in notification config")
+                logger.warning("No channels in notification config")
                 return
 
             for channel_id in channel_ids:
-                print(f"[Notifications] Sending approval to channel: {channel_id}")
+                logger.debug(f"Sending approval to channel: {channel_id}")
                 try:
-                    msg_result = await self._send_interactive_to_channel(
+                    msg_result = await send_interactive_to_channel(
+                        channel_repo=self._channel_repo,
                         channel_id=channel_id,
                         message=message,
                     )
-                    print(f"[Notifications] send_interactive_to_channel result: {msg_result}")
+                    logger.debug(f"send_interactive_to_channel result: {msg_result}")
 
                     if msg_result.get("success"):
                         # Store message reference for later editing (only if we got a message_id)
@@ -207,24 +201,24 @@ class NotificationHandler:
                                 provider=msg_result.get("provider", "telegram"),
                             )
                             approval.add_message_ref(msg_ref)
-                            print(f"[Notifications] Sent approval to {channel_id}: msg={msg_id}")
+                            logger.info(f"Sent approval to {channel_id}: msg={msg_id}")
                         else:
                             # Provider doesn't support message editing (e.g., Teams)
-                            print(f"[Notifications] Sent approval to {channel_id} (no message_id returned)")
+                            logger.info(f"Sent approval to {channel_id} (no message_id returned)")
                     else:
-                        print(f"[Notifications] WARNING: send_interactive returned success=False for {channel_id}")
-                        print(f"[Notifications] Error: {msg_result.get('error', 'unknown')}")
+                        logger.warning(
+                            f"send_interactive returned success=False for {channel_id}: "
+                            f"{msg_result.get('error', 'unknown')}"
+                        )
 
                 except Exception as e:
-                    print(f"[Notifications] EXCEPTION sending to {channel_id}: {e}")
-                    logger.error(f"Failed to send approval request to {channel_id}: {e}")
-                    import traceback
-                    traceback.print_exc()
+                    logger.error(
+                        f"Failed to send approval request to {channel_id}: {e}", exc_info=True
+                    )
 
             # Update approval with message refs
             self._approval_repo.save(approval)
-            ref_count = len(approval.channel_messages)
-            print(f"[Notifications] Approval {approval.id} saved with {ref_count} refs")
+            logger.info(f"Approval {approval.id} saved with {len(approval.channel_messages)} refs")
 
             # Set execution to waiting_approval state
             # This keeps it visible in the dashboard with "Waiting for Approval" status
@@ -236,70 +230,12 @@ class NotificationHandler:
                     approval_id=approval.id,
                     plan_text=plan_text[:500] if plan_text else None,
                 )
-                print(f"[Notifications] Execution {execution_id} set to waiting_approval")
+                logger.debug(f"Execution {execution_id} set to waiting_approval")
             else:
-                print("[Notifications] No execution_id - cannot set waiting_approval")
+                logger.warning("No execution_id - cannot set waiting_approval")
 
         except Exception as e:
-            print(f"[Notifications] Failed to create plan approval: {e}")
-            logger.error(f"Failed to create plan approval: {e}")
-            import traceback
-
-            traceback.print_exc()
-
-    async def _send_interactive_to_channel(
-        self,
-        channel_id: str,
-        message: InteractiveMessage,
-    ) -> dict:
-        """Send interactive message to a specific channel.
-
-        Args:
-            channel_id: The channel ID
-            message: The interactive message
-
-        Returns:
-            Result dict with 'success', 'message_id', 'chat_id', 'provider'
-        """
-        from codegeass.notifications.registry import get_provider_registry
-
-        print(f"[Notifications] _send_interactive_to_channel called for {channel_id}")
-        logger.info(f"Sending interactive message to channel {channel_id}")
-
-        try:
-            # Get channel and credentials
-            channel, credentials = self._channel_repo.get_channel_with_credentials(channel_id)
-            print(f"[Notifications] Got channel: provider={channel.provider}, enabled={channel.enabled}")
-            logger.debug(
-                f"Channel: provider={channel.provider}, enabled={channel.enabled}, "
-                f"credentials present={bool(credentials)}"
-            )
-
-            if not channel.enabled:
-                logger.warning(f"Channel {channel_id} is disabled, skipping")
-                return {"success": False, "error": "Channel disabled"}
-
-            # Get provider
-            registry = get_provider_registry()
-            provider = registry.get(channel.provider)
-            logger.debug(f"Provider: {provider.name}, has send_interactive={hasattr(provider, 'send_interactive')}")
-
-            # Check if provider supports interactive messages
-            if not hasattr(provider, "send_interactive"):
-                logger.warning(f"Provider {channel.provider} does not support interactive messages")
-                return {"success": False, "error": "Provider does not support interactive messages"}
-
-            # Send the message
-            logger.info(f"Calling {provider.name}.send_interactive()")
-            result = await provider.send_interactive(channel, credentials, message)
-            result["provider"] = channel.provider
-            logger.info(f"send_interactive result: {result}")
-
-            return result
-
-        except Exception as e:
-            logger.error(f"Failed to send interactive message to {channel_id}: {e}", exc_info=True)
-            return {"success": False, "error": str(e)}
+            logger.error(f"Failed to create plan approval: {e}", exc_info=True)
 
     def register_with_scheduler(self, scheduler: "Scheduler") -> None:
         """Register this handler's callbacks with a Scheduler.
@@ -312,7 +248,7 @@ class NotificationHandler:
             on_complete=self.on_task_complete,
             on_plan_approval=self.on_plan_approval,
         )
-        print("[Notifications] Handler registered with scheduler (with plan approval support)")
+        logger.debug("Handler registered with scheduler (with plan approval support)")
 
 
 def create_notification_handler(service: NotificationService) -> NotificationHandler:

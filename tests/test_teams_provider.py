@@ -4,6 +4,11 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from codegeass.notifications.providers.teams import TeamsProvider
+from codegeass.notifications.providers.teams_utils import (
+    TeamsAdaptiveCardBuilder,
+    TeamsHtmlFormatter,
+    callback_to_dashboard_url,
+)
 from codegeass.notifications.models import Channel
 from codegeass.notifications.exceptions import ProviderError
 
@@ -161,10 +166,10 @@ class TestTeamsProvider:
         assert formatted == message
         assert "truncated" not in formatted
 
-    # Adaptive Card payload tests
+    # Adaptive Card payload tests (using TeamsAdaptiveCardBuilder utility)
     def test_build_adaptive_card_payload_with_title(self, provider):
         """Test Adaptive Card payload generation with title."""
-        payload = provider._build_adaptive_card_payload("Test message", "Test Title")
+        payload = TeamsAdaptiveCardBuilder.build_simple_card("Test message", "Test Title")
 
         assert payload["type"] == "message"
         assert len(payload["attachments"]) == 1
@@ -187,7 +192,7 @@ class TestTeamsProvider:
 
     def test_build_adaptive_card_payload_without_title(self, provider):
         """Test Adaptive Card payload generation without title."""
-        payload = provider._build_adaptive_card_payload("Test message", None)
+        payload = TeamsAdaptiveCardBuilder.build_simple_card("Test message", None)
 
         content = payload["attachments"][0]["content"]
         assert len(content["body"]) == 1  # Only message, no title
@@ -249,12 +254,18 @@ class TestTeamsProvider:
 
     @pytest.mark.asyncio
     async def test_send_import_error(self, provider, channel, valid_credentials_logic_azure):
-        """Test that ProviderError is raised when httpx is not installed."""
-        with patch.dict("sys.modules", {"httpx": None}):
+        """Test that ProviderError is raised when httpx request fails."""
+        # Since httpx is imported at module level, we test connection error instead
+        mock_client = AsyncMock()
+        mock_client.post = AsyncMock(side_effect=Exception("Connection failed"))
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
+
+        with patch("codegeass.notifications.providers.teams.httpx.AsyncClient", return_value=mock_client):
             with pytest.raises(ProviderError) as exc_info:
                 await provider.send(channel, valid_credentials_logic_azure, "Test message")
 
-            assert "httpx" in str(exc_info.value)
+            assert "Failed to send message" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_send_http_error(self, provider, channel, valid_credentials_logic_azure):
@@ -418,28 +429,28 @@ class TestTeamsInteractive:
 
     def test_callback_to_dashboard_url_approve(self, provider):
         """Test converting approve callback to dashboard URL."""
-        url = provider._callback_to_dashboard_url(
+        url = callback_to_dashboard_url(
             "plan:approve:abc123", "http://localhost:5173"
         )
         assert url == "http://localhost:5173/approvals/abc123?action=approve"
 
     def test_callback_to_dashboard_url_discuss(self, provider):
         """Test converting discuss callback to dashboard URL."""
-        url = provider._callback_to_dashboard_url(
+        url = callback_to_dashboard_url(
             "plan:discuss:xyz789", "http://mydashboard.local:8080"
         )
         assert url == "http://mydashboard.local:8080/approvals/xyz789?action=discuss"
 
     def test_callback_to_dashboard_url_cancel(self, provider):
         """Test converting cancel callback to dashboard URL."""
-        url = provider._callback_to_dashboard_url(
+        url = callback_to_dashboard_url(
             "plan:cancel:test123", "http://localhost:5173"
         )
         assert url == "http://localhost:5173/approvals/test123?action=cancel"
 
     def test_callback_to_dashboard_url_fallback(self, provider):
         """Test fallback for unknown callback format."""
-        url = provider._callback_to_dashboard_url(
+        url = callback_to_dashboard_url(
             "unknown:data", "http://localhost:5173"
         )
         assert url == "http://localhost:5173/approvals"
@@ -447,7 +458,7 @@ class TestTeamsInteractive:
     def test_html_to_plain_text(self, provider):
         """Test HTML to plain text conversion (strips formatting tags)."""
         html = "<b>Bold</b> and <i>italic</i> with <code>code</code>"
-        result = provider._html_to_plain_text(html)
+        result = TeamsHtmlFormatter.html_to_plain_text(html)
         # Tags should be stripped, only content remains
         assert "Bold" in result
         assert "italic" in result
@@ -460,7 +471,7 @@ class TestTeamsInteractive:
 
     def test_build_interactive_card_payload(self, provider, interactive_message):
         """Test building interactive Adaptive Card payload."""
-        payload = provider._build_interactive_card_payload(
+        payload = TeamsAdaptiveCardBuilder.build_interactive_card(
             interactive_message, "CodeGeass", "http://localhost:5173"
         )
 
