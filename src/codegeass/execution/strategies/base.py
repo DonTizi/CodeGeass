@@ -52,6 +52,7 @@ class BaseStrategy(ABC):
             result = subprocess.run(
                 command,
                 cwd=context.working_dir,
+                stdin=subprocess.DEVNULL,
                 capture_output=True,
                 text=True,
                 timeout=context.task.timeout or self.timeout,
@@ -99,6 +100,7 @@ class BaseStrategy(ABC):
             process = subprocess.Popen(
                 command,
                 cwd=context.working_dir,
+                stdin=subprocess.DEVNULL,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
@@ -152,25 +154,40 @@ class BaseStrategy(ABC):
         tracker: "ExecutionTracker",
         execution_id: str,
     ) -> None:
-        """Read stdout from process and emit events."""
-        if process.stdout:
-            while True:
-                line = process.stdout.readline()
-                if not line:
-                    break
-                line = line.rstrip("\n")
-                output_lines.append(line)
-                tracker.append_output(execution_id, line)
-                self._detect_phase(tracker, execution_id, line)
+        """Read stdout from process and emit events (non-blocking)."""
+        import select
+
+        if not process.stdout:
+            return
+
+        # Use select to check if data is available (non-blocking)
+        while True:
+            ready, _, _ = select.select([process.stdout], [], [], 0.1)
+            if not ready:
+                break
+            line = process.stdout.readline()
+            if not line:
+                break
+            line = line.rstrip("\n")
+            output_lines.append(line)
+            tracker.append_output(execution_id, line)
+            self._detect_phase(tracker, execution_id, line)
 
     def _read_stderr(self, process: subprocess.Popen, stderr_lines: list[str]) -> None:
-        """Read stderr from process."""
-        if process.stderr:
-            while True:
-                line = process.stderr.readline()
-                if not line:
-                    break
-                stderr_lines.append(line.rstrip("\n"))
+        """Read stderr from process (non-blocking)."""
+        import select
+
+        if not process.stderr:
+            return
+
+        while True:
+            ready, _, _ = select.select([process.stderr], [], [], 0.1)
+            if not ready:
+                break
+            line = process.stderr.readline()
+            if not line:
+                break
+            stderr_lines.append(line.rstrip("\n"))
 
     def _detect_phase(
         self, tracker: "ExecutionTracker", execution_id: str, line: str

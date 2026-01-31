@@ -1,10 +1,11 @@
-"""Project init and control commands (enable, disable, set-default, update)."""
+"""Project control commands (enable, disable, set-default, update).
 
-from pathlib import Path
+Note: The 'init' command has been merged into 'codegeass init'.
+Use 'codegeass init [PATH]' to initialize and register a project.
+"""
 
 import click
 from rich.console import Console
-from rich.panel import Panel
 
 from codegeass.cli.commands.project.utils import get_project_repo
 from codegeass.cli.main import Context, pass_context
@@ -27,47 +28,6 @@ def set_default_project(ctx: Context, name: str) -> None:
 
     repo.set_default_project(p.id)
     console.print(f"[green]Default project set: {p.name}[/green]")
-
-
-@click.command("init")
-@click.argument("path", type=click.Path(path_type=Path), default=".")
-@click.option("--force", "-f", is_flag=True, help="Overwrite existing files")
-@pass_context
-def init_project(ctx: Context, path: Path, force: bool) -> None:
-    """Initialize CodeGeass project structure."""
-    path = path.resolve()
-
-    if not path.exists():
-        path.mkdir(parents=True, exist_ok=True)
-
-    config_dir = path / "config"
-    data_dir = path / "data"
-    skills_dir = path / ".claude" / "skills"
-
-    dirs_to_create = [
-        config_dir,
-        data_dir / "logs",
-        data_dir / "sessions",
-        skills_dir,
-    ]
-
-    for dir_path in dirs_to_create:
-        dir_path.mkdir(parents=True, exist_ok=True)
-        console.print(f"Created: {dir_path}")
-
-    _create_settings_file(config_dir / "settings.yaml", force)
-    _create_schedules_file(config_dir / "schedules.yaml", force)
-
-    console.print(
-        Panel.fit(
-            f"[green]Project initialized at: {path}[/green]\n\n"
-            "Next steps:\n"
-            f"1. Register: codegeass project add {path}\n"
-            "2. Create skills in .claude/skills/\n"
-            "3. Add tasks with: codegeass task create",
-            title="Initialized",
-        )
-    )
 
 
 @click.command("enable")
@@ -156,41 +116,3 @@ def update_project(
 
     repo.save(p)
     console.print(f"[green]Project updated: {p.name}[/green]")
-
-
-def _create_settings_file(settings_file: Path, force: bool) -> None:
-    """Create default settings file."""
-    if settings_file.exists() and not force:
-        return
-
-    default_settings = """# CodeGeass Settings
-claude:
-  default_model: sonnet
-  default_timeout: 300
-  unset_api_key: true
-
-paths:
-  skills: .claude/skills/
-  logs: data/logs/
-  sessions: data/sessions/
-
-scheduler:
-  check_interval: 60
-  max_concurrent: 1
-"""
-    settings_file.write_text(default_settings)
-    console.print(f"Created: {settings_file}")
-
-
-def _create_schedules_file(schedules_file: Path, force: bool) -> None:
-    """Create default schedules file."""
-    if schedules_file.exists() and not force:
-        return
-
-    default_schedules = """# CodeGeass Scheduled Tasks
-# Add your tasks here
-
-tasks: []
-"""
-    schedules_file.write_text(default_schedules)
-    console.print(f"Created: {schedules_file}")
