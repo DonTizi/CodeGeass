@@ -1,12 +1,12 @@
 import { Link } from 'react-router-dom';
-import { Play, MoreVertical, Power, PowerOff, Trash2, Clock, Wand2, FolderGit2, Square } from 'lucide-react';
+import { Play, MoreVertical, Power, PowerOff, Trash2, Clock, Wand2, FolderGit2, Square, Tag } from 'lucide-react';
 import type { TaskBase } from '@/types';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Switch } from '@/components/ui/Switch';
 import { cn, formatRelativeTime, getStatusBgColor, getStatusIcon } from '@/lib/utils';
-import { useTasksStore, useExecutionsStore } from '@/stores';
+import { useTasksStore, useExecutionsStore, useFilterStore } from '@/stores';
 import { toast } from '@/components/ui/Toaster';
 import {
   DropdownMenu,
@@ -25,6 +25,7 @@ interface TaskCardProps {
 
 export function TaskCard({ task, onDelete, projectName }: TaskCardProps) {
   const { enableTask, disableTask, runTask, stopTask } = useTasksStore();
+  const { addTag } = useFilterStore();
   const activeExecution = useExecutionsStore((state) => state.getByTaskId(task.id));
   const isRunning = !!activeExecution && !activeExecution.completed;
 
@@ -159,6 +160,23 @@ export function TaskCard({ task, onDelete, projectName }: TaskCardProps) {
             <div className="flex items-center gap-2 text-muted-foreground">
               <FolderGit2 className="h-4 w-4" />
               <span>{projectName}</span>
+            </div>
+          )}
+
+          {/* Tags */}
+          {task.tags && task.tags.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <Tag className="h-4 w-4 text-muted-foreground" />
+              {task.tags.map((tag) => (
+                <Badge
+                  key={tag}
+                  variant="outline"
+                  className="text-xs cursor-pointer hover:bg-accent"
+                  onClick={() => addTag(tag)}
+                >
+                  {tag}
+                </Badge>
+              ))}
             </div>
           )}
 

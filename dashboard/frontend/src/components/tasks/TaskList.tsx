@@ -1,8 +1,11 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Plus, RefreshCw } from 'lucide-react';
-import { useTasksStore, useProjectsStore } from '@/stores';
+import { useTasksStore, useProjectsStore, useFilterStore } from '@/stores';
 import { TaskCard } from './TaskCard';
 import { TaskForm } from './TaskForm';
+import { SearchBar } from './SearchBar';
+import { FilterPanel } from './FilterPanel';
+import { FilterChips } from './FilterChips';
 import { Button } from '@/components/ui/Button';
 import { toast } from '@/components/ui/Toaster';
 import type { TaskCreate, TaskWithProject } from '@/types';
@@ -21,6 +24,7 @@ import {
 export function TaskList() {
   const { tasks, loading, error, fetchTasks, createTask, deleteTask } = useTasksStore();
   const { projects, selectedProjectId, fetchProjects } = useProjectsStore();
+  const { getFilterCriteria, hasActiveFilters } = useFilterStore();
   const [formOpen, setFormOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [multiProjectTasks, setMultiProjectTasks] = useState<TaskWithProject[]>([]);
@@ -35,20 +39,28 @@ export function TaskList() {
   const hasMultipleProjects = projects.length > 1;
   const showAllProjects = selectedProjectId === null && hasMultipleProjects;
 
-  // Fetch tasks based on mode
-  useEffect(() => {
+  // Memoize filter criteria
+  const filterCriteria = getFilterCriteria();
+  const filterCriteriaStr = JSON.stringify(filterCriteria);
+
+  // Fetch tasks based on mode and filters
+  const refreshTasks = useCallback(() => {
+    const criteria = JSON.parse(filterCriteriaStr);
     if (showAllProjects) {
-      // Multi-project mode: fetch aggregated tasks
       setLoadingMultiProject(true);
       api.projects.getAllTasks(false, false)
         .then(setMultiProjectTasks)
         .catch(console.error)
         .finally(() => setLoadingMultiProject(false));
     } else {
-      // Single project mode: use regular task fetch
-      fetchTasks();
+      fetchTasks(criteria);
     }
-  }, [fetchTasks, showAllProjects, selectedProjectId]);
+  }, [fetchTasks, showAllProjects, filterCriteriaStr]);
+
+  // Fetch tasks on mount and when filters change
+  useEffect(() => {
+    refreshTasks();
+  }, [refreshTasks, selectedProjectId]);
 
   // Get the display tasks
   const displayTasks = useMemo(() => {
@@ -104,20 +116,15 @@ export function TaskList() {
 
   return (
     <div className="space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <p className="text-muted-foreground">
-          {displayTasks.length} task{displayTasks.length !== 1 ? 's' : ''} configured
-          {showAllProjects && ' across all projects'}
-        </p>
-        <div className="flex items-center gap-2">
+      {/* Search and Filter Bar */}
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-3">
+          <SearchBar />
+          <FilterPanel />
           <Button
             variant="outline"
             size="sm"
-            onClick={() => showAllProjects
-              ? api.projects.getAllTasks(false, false).then(setMultiProjectTasks)
-              : fetchTasks()
-            }
+            onClick={refreshTasks}
             disabled={isLoading}
           >
             <RefreshCw className={`h-4 w-4 mr-1 ${isLoading ? 'animate-spin' : ''}`} />
@@ -130,15 +137,29 @@ export function TaskList() {
             </Button>
           )}
         </div>
+        <FilterChips />
+      </div>
+
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <p className="text-muted-foreground">
+          {displayTasks.length} task{displayTasks.length !== 1 ? 's' : ''}
+          {hasActiveFilters() ? ' matching filters' : ' configured'}
+          {showAllProjects && ' across all projects'}
+        </p>
       </div>
 
       {/* Task Grid */}
       {displayTasks.length === 0 ? (
         <div className="text-center py-12 bg-muted/50 rounded-lg">
           <p className="text-muted-foreground mb-4">
-            {showAllProjects ? 'No tasks found across projects' : 'No tasks configured yet'}
+            {hasActiveFilters()
+              ? 'No tasks match the current filters'
+              : showAllProjects
+                ? 'No tasks found across projects'
+                : 'No tasks configured yet'}
           </p>
-          {!showAllProjects && (
+          {!showAllProjects && !hasActiveFilters() && (
             <Button onClick={() => setFormOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Create your first task
