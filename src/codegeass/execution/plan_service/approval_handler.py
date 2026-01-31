@@ -63,7 +63,7 @@ class ApprovalHandler:
             result = await self._execute_approved_plan(
                 approval, execution_dir, execution_id, tracker
             )
-            self._finalize_approval(tracker, execution_id, approval, result)
+            await self._finalize_approval(tracker, execution_id, approval, result)
             self._cleanup_worktree(approval)
             return result
 
@@ -106,7 +106,7 @@ class ApprovalHandler:
 
         return strategy.execute(context)
 
-    def _finalize_approval(
+    async def _finalize_approval(
         self,
         tracker: ExecutionTracker,
         execution_id: str,
@@ -122,7 +122,7 @@ class ApprovalHandler:
         )
 
         if result.is_success:
-            self._handle_success(approval, result)
+            await self._handle_success(approval, result)
         else:
             approval.mark_failed(result.error or "Unknown error")
 

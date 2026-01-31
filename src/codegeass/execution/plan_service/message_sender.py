@@ -39,7 +39,7 @@ class ApprovalMessageSender:
             logger.warning(f"Provider {channel.provider} does not support interactive messages")
             return {"success": False, "error": "Provider does not support interactive messages"}
 
-        result = await provider.send_interactive(channel, credentials, message)
+        result: dict[str, Any] = await provider.send_interactive(channel, credentials, message)
         result["provider"] = channel.provider
 
         return result

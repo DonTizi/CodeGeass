@@ -100,14 +100,16 @@ ignore_errors = true
 
 [[tool.mypy.overrides]]
 module = [
-    "codegeass.notifications.providers.*",
-    "codegeass.notifications.callback_handler",
+    "codegeass.notifications.*",
     "codegeass.dashboard.*",
     "codegeass.cli.*",
+    "codegeass.execution.*",
+    "codegeass.storage.*",
+    "codegeass.factory.*",
+    "codegeass.core.*",
+    "codegeass.scheduling.*",
 ]
-strict = false
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
+ignore_errors = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

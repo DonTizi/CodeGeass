@@ -6,6 +6,7 @@ import signal
 import threading
 import time
 import uuid
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal
@@ -50,7 +51,7 @@ class ExecutionTracker:
         self._active = self._persistence.load()
         self._initialized = True
 
-    def on_event(self, callback: EventCallback) -> callable:
+    def on_event(self, callback: EventCallback) -> Callable[[], None]:
         """Register an event callback."""
         return self._emitter.register(callback)
 

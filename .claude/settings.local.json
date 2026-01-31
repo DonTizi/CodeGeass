@@ -9,7 +9,46 @@
       "Bash(export NVM_DIR=\"$HOME/.nvm\")",
       "Bash([ -s \"$NVM_DIR/nvm.sh\" ])",
       "Bash(. \"$NVM_DIR/nvm.sh\")",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(timeout 8 uvicorn:*)",
+      "Bash(lsof:*)",
+      "Bash(curl:*)",
+      "Bash(ss:*)",
+      "Bash(git add:*)",
+      "Bash(git rm:*)",
+      "Bash(codegeass task:*)",
+      "WebSearch",
+      "Bash(gh repo view:*)",
+      "WebFetch(domain:refactoring.guru)",
+      "WebFetch(domain:refactoring.com)",
+      "Bash(cat:*)",
+      "Bash(tree:*)",
+      "WebFetch(domain:docs.claude.com)",
+      "WebFetch(domain:devblogs.microsoft.com)",
+      "WebFetch(domain:office365itpros.com)",
+      "Bash(ruff check:*)",
+      "Bash(git push:*)",
+      "Bash(ls:*)",
+      "Bash(python -m pytest:*)",
+      "Skill(refactor)",
+      "Bash(PYTHONPATH=src python3:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(git fetch:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(pytest:*)",
+      "Bash(gh run view:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nfix\\(tests\\): patch get_claude_executable at correct module paths\n\nFix CI test failures by patching get_claude_executable in each strategy\nmodule where it''s imported, not just at the package level.\n\nAlso fix lint errors:\n- Remove extraneous f-string prefixes\n- Import Callable from collections.abc\nEOF\n\\)\")",
+      "Bash(grep:*)",
+      "Bash(gh run list:*)",
+      "Bash(mypy:*)",
+      "Bash(git commit:*)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "shadcn",
+    "magicui",
+    "google-sheets"
+  ]
 }
