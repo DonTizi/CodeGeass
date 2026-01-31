@@ -68,6 +68,7 @@ export interface TaskBase {
   last_status: TaskStatus | string | null;
   next_run: string | null;
   schedule_description: string | null;
+  tags: string[];
 }
 
 export interface TaskWithProject extends TaskBase {

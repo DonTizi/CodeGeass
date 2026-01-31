@@ -25,6 +25,8 @@ export interface Task {
   last_status: TaskStatus | null;
   next_run: string | null;
   schedule_description: string | null;
+  // Task organization
+  tags: string[];
   // Code execution provider
   code_source: string;
   // Plan mode configuration
@@ -42,6 +44,7 @@ export interface TaskSummary {
   last_run: string | null;
   last_status: TaskStatus | null;
   next_run: string | null;
+  tags: string[];
 }
 
 export interface TaskCreate {
@@ -58,6 +61,8 @@ export interface TaskCreate {
   enabled?: boolean;
   variables?: Record<string, unknown>;
   notifications?: TaskNotificationConfig | null;
+  // Task organization
+  tags?: string[];
   // Code execution provider
   code_source?: string;
   // Plan mode configuration
@@ -80,12 +85,23 @@ export interface TaskUpdate {
   enabled?: boolean;
   variables?: Record<string, unknown>;
   notifications?: TaskNotificationConfig | null;
+  // Task organization
+  tags?: string[];
   // Code execution provider
   code_source?: string;
   // Plan mode configuration
   plan_mode?: boolean;
   plan_timeout?: number;
   plan_max_iterations?: number;
+}
+
+// Filter criteria for tasks
+export interface TaskFilterCriteria {
+  search?: string;
+  tags?: string[];
+  status?: 'success' | 'failed' | 'never_run';
+  model?: 'sonnet' | 'haiku' | 'opus';
+  enabled?: boolean;
 }
 
 export interface TaskStats {
