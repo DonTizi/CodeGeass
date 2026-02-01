@@ -18,15 +18,40 @@ _executor = ThreadPoolExecutor(max_workers=4)
     "",
     response_model=list[Task],
     summary="List all tasks",
-    description="Retrieve all scheduled tasks. Use summary_only=true for lightweight listing.",
+    description="Retrieve all scheduled tasks with optional filtering. Use summary_only=true for lightweight listing.",
 )
 async def list_tasks(
     summary_only: bool = Query(False, description="Return only summary fields"),
+    search: str | None = Query(None, description="Search in name, prompt, skill, tags"),
+    tags: list[str] | None = Query(None, description="Filter by tags (any match)"),
+    status: str | None = Query(
+        None,
+        description="Filter by last status (success, failed, never_run)",
+        pattern="^(success|failed|never_run)$",
+    ),
+    model: str | None = Query(
+        None,
+        description="Filter by model (sonnet, haiku, opus)",
+        pattern="^(sonnet|haiku|opus)$",
+    ),
+    enabled: bool | None = Query(None, description="Filter by enabled state"),
 ):
-    """List all scheduled tasks.
+    """List all scheduled tasks with optional filtering.
+
+    Filters are combined with AND logic. For tags, any matching tag satisfies the filter.
+
+    Examples:
+        /api/tasks?search=backup
+        /api/tasks?tags=production&enabled=true
+        /api/tasks?model=sonnet&status=success
 
     Args:
         summary_only: If True, returns only essential fields (id, name, enabled, schedule).
+        search: Full-text search across name, prompt, skill, tags.
+        tags: Filter by any of these tags.
+        status: Filter by last execution status.
+        model: Filter by model name.
+        enabled: Filter by enabled/disabled state.
 
     Returns:
         List of Task objects with full or summary details.
@@ -34,7 +59,13 @@ async def list_tasks(
     service = get_task_service()
     if summary_only:
         return service.list_task_summaries()
-    return service.list_tasks()
+    return service.list_tasks(
+        search=search,
+        tags=tags,
+        status=status,
+        model=model,
+        enabled=enabled,
+    )
 
 
 @router.get(

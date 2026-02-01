@@ -3,11 +3,12 @@
 from pathlib import Path
 
 from codegeass.core.entities import Task as CoreTask
+from codegeass.factory.filter_service import FilterService, TaskFilter
 from codegeass.scheduling.cron_parser import CronParser
 from codegeass.storage.log_repository import LogRepository
 from codegeass.storage.task_repository import TaskRepository
 
-from ..models import Task, TaskCreate, TaskNotificationConfig, TaskStats, TaskSummary, TaskUpdate
+from models import Task, TaskCreate, TaskNotificationConfig, TaskStats, TaskSummary, TaskUpdate
 
 
 class TaskService:
@@ -95,10 +96,40 @@ class TaskService:
             plan_max_iterations=task_create.plan_max_iterations,
         )
 
-    def list_tasks(self) -> list[Task]:
-        """Get all tasks."""
-        tasks = self.task_repo.find_all()
-        return [self._core_to_api(t) for t in tasks]
+    def list_tasks(
+        self,
+        search: str | None = None,
+        tags: list[str] | None = None,
+        status: str | None = None,
+        model: str | None = None,
+        enabled: bool | None = None,
+    ) -> list[Task]:
+        """Get all tasks with optional filtering.
+
+        Uses CLI's FilterService for filtering - no duplicate logic.
+
+        Args:
+            search: Full-text search across name, prompt, skill, tags
+            tags: Filter by any of these tags
+            status: Filter by last execution status
+            model: Filter by model name
+            enabled: Filter by enabled state
+        """
+        core_tasks = self.task_repo.find_all()
+
+        # Build filter criteria and use CLI's FilterService
+        filter_criteria = TaskFilter(
+            search=search,
+            tags=tags or [],
+            status=status,
+            enabled=enabled,
+            model=model,
+        )
+
+        filter_service = FilterService()
+        filtered_tasks = filter_service.filter_tasks(core_tasks, filter_criteria)
+
+        return [self._core_to_api(t) for t in filtered_tasks]
 
     def list_task_summaries(self) -> list[TaskSummary]:
         """Get task summaries (lighter weight)."""
