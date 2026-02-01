@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.12] - 2026-02-01
+
+### Added
+
+- **Tags Field in TaskForm UI**: Add tags when creating/editing tasks in Dashboard (#21)
+  - Dropdown with text input for new tags
+  - Auto-normalization (lowercase, spaces→hyphens)
+  - Validation (a-z, 0-9, hyphens only, max 30 chars)
+  - Quick-select from existing tags used in other tasks
+  - Tags displayed as removable badges
+  - Tags synced with backend on save
+
+### Fixed
+
+- **Backend Tags Support**: Dashboard development backend now properly handles tags
+  - Added `tags` field to Task, TaskSummary, TaskCreate, TaskUpdate models
+  - Tags passed through in task create/update service methods
+  - Tags included in task list and summary responses
+
 ## [0.2.11] - 2026-01-31
 
 ### Added

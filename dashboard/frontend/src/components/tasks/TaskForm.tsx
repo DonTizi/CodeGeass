@@ -31,8 +31,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu';
 import { api } from '@/lib/api';
-import { useSkillsStore, useNotificationsStore, useProjectsStore } from '@/stores';
-import { Bell, X, ChevronDown, Shield, MessageSquare, FolderOpen, AlertTriangle } from 'lucide-react';
+import { useSkillsStore, useNotificationsStore, useProjectsStore, useTasksStore } from '@/stores';
+import { Bell, X, ChevronDown, Shield, MessageSquare, FolderOpen, AlertTriangle, Tag, Plus } from 'lucide-react';
 
 // Provider icons/colors for visual distinction
 const PROVIDER_CONFIG: Record<string, { color: string; label: string }> = {
@@ -88,11 +88,22 @@ function isChannelSelected(selectedChannels: string[], channel: Channel): boolea
   return selectedChannels.some((id) => id === channel.id || id === channel.name);
 }
 
+// Helper to validate and normalize tags
+function validateTag(tag: string, existingTags: string[]): string | null {
+  const normalized = tag.trim().toLowerCase().replace(/\s+/g, '-');
+  if (normalized.length === 0) return null;
+  if (normalized.length > 30) return null;
+  if (!/^[a-z0-9-]+$/.test(normalized)) return null;
+  if (existingTags.includes(normalized)) return null;
+  return normalized;
+}
+
 export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: TaskFormProps) {
   const navigate = useNavigate();
   const { skills, fetchSkills } = useSkillsStore();
   const { channels, fetchChannels } = useNotificationsStore();
   const { projects, fetchProjects } = useProjectsStore();
+  const { allTags } = useTasksStore();
   const [loading, setLoading] = useState(false);
   const [cronValid, setCronValid] = useState<boolean | null>(null);
   const [cronDescription, setCronDescription] = useState<string>('');
@@ -127,6 +138,12 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
   const [includeOutput, setIncludeOutput] = useState<boolean>(
     initialData?.notifications?.include_output || false
   );
+
+  // Tag UI state
+  const [selectedTags, setSelectedTags] = useState<string[]>(
+    initialData?.tags || []
+  );
+  const [newTagInput, setNewTagInput] = useState('');
 
   // Fetch providers
   const fetchProviders = async () => {
@@ -186,6 +203,11 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
     }
   }, [selectedChannels, selectedEvents, includeOutput]);
 
+  // Sync tags to formData
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, tags: selectedTags }));
+  }, [selectedTags]);
+
   useEffect(() => {
     if (initialData) {
       setFormData((prev) => ({ ...prev, ...initialData }));
@@ -193,6 +215,8 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
       setSelectedChannels(initialData.notifications?.channels || []);
       setSelectedEvents(initialData.notifications?.events || ['task_failure']);
       setIncludeOutput(initialData.notifications?.include_output || false);
+      // Also update tags state
+      setSelectedTags(initialData.tags || []);
     }
   }, [initialData]);
 
@@ -460,6 +484,117 @@ export function TaskForm({ open, onOpenChange, onSubmit, initialData, isEdit }: 
               <p className="text-xs text-muted-foreground">
                 These arguments will replace <code className="bg-muted px-1 rounded">$ARGUMENTS</code> in the skill content.
               </p>
+            )}
+          </div>
+
+          {/* Tags Section */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Tag className="h-4 w-4 text-muted-foreground" />
+              <Label className="text-base font-medium">Tags</Label>
+              <span className="text-xs text-muted-foreground">(optional)</span>
+            </div>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full justify-between" type="button">
+                  <span className="text-muted-foreground">
+                    {selectedTags.length === 0
+                      ? 'Add tags...'
+                      : `${selectedTags.length} tag${selectedTags.length > 1 ? 's' : ''} selected`}
+                  </span>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-72">
+                {/* New Tag Input */}
+                <div className="p-2">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Type new tag..."
+                      value={newTagInput}
+                      onChange={(e) => setNewTagInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          const validated = validateTag(newTagInput, selectedTags);
+                          if (validated) {
+                            setSelectedTags((prev) => [...prev, validated]);
+                            setNewTagInput('');
+                          }
+                        }
+                      }}
+                      className="h-8 text-sm"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => {
+                        const validated = validateTag(newTagInput, selectedTags);
+                        if (validated) {
+                          setSelectedTags((prev) => [...prev, validated]);
+                          setNewTagInput('');
+                        }
+                      }}
+                      disabled={!validateTag(newTagInput, selectedTags)}
+                      className="h-8 px-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Lowercase, numbers, hyphens only
+                  </p>
+                </div>
+
+                {/* Existing Tags from other tasks */}
+                {allTags.length > 0 && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>Existing tags</DropdownMenuLabel>
+                    {allTags
+                      .filter((tag) => !selectedTags.includes(tag))
+                      .slice(0, 10)
+                      .map((tag) => (
+                        <DropdownMenuCheckboxItem
+                          key={tag}
+                          checked={false}
+                          onCheckedChange={() => setSelectedTags((prev) => [...prev, tag])}
+                        >
+                          {tag}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                    {allTags.filter((tag) => !selectedTags.includes(tag)).length === 0 && (
+                      <p className="px-2 py-1.5 text-sm text-muted-foreground">
+                        All existing tags selected
+                      </p>
+                    )}
+                  </>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Selected Tags Display */}
+            {selectedTags.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {selectedTags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="outline"
+                    className="pl-2 pr-1 py-1 flex items-center gap-1"
+                  >
+                    <span>{tag}</span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedTags((prev) => prev.filter((t) => t !== tag))}
+                      className="ml-1 rounded-full hover:bg-muted p-0.5"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
             )}
           </div>
 
