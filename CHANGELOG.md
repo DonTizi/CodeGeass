@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.11] - 2026-01-31
+
+### Added
+
+- **Task Search & Filter API**: Filter tasks via Dashboard API (#21)
+  - `?search=` - Full-text search across name, prompt, skill, tags
+  - `?tags=` - Filter by tags (any match)
+  - `?status=` - Filter by last execution status (success, failed, never_run)
+  - `?model=` - Filter by model (sonnet, haiku, opus)
+  - `?enabled=` - Filter by enabled state
+  - Combined filters with AND logic
+
+- **Tag Management CLI**: Manage task tags from command line
+  - `codegeass task tag list` - List all tags with counts
+  - `codegeass task tag show <tag>` - Show tasks with specific tag
+  - `codegeass task tag add <task> <tags...>` - Add tags to task
+  - `codegeass task tag remove <task> <tags...>` - Remove tags from task
+  - `codegeass task create --tag <tag>` - Create task with tags
+
+- **Filter UI Components**: Dashboard filtering interface
+  - SearchBar with debounced input
+  - FilterPanel with dropdowns for status, model, enabled
+  - FilterChips showing active filters with remove buttons
+  - Zustand filter store for state management
+
+- **Specification Pattern**: Composable filter architecture
+  - `Specification` base class for composable predicates
+  - `TaskFilter` dataclass for structured filter parameters
+  - `FilterService` for applying filters to task collections
+  - Unit tests for filter service and specifications
+
+- **Pre-Merge Testing Skill**: `/codegeass-testing` skill for PR validation
+  - Tests PR changes FIRST (analyzes git diff)
+  - Runs regression tests on all CLI commands
+  - Tests all Dashboard API endpoints
+  - Generates JSON test report
+
 ## [0.2.10] - 2026-01-31
 
 ### Added
@@ -357,7 +394,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ANTHROPIC_API_KEY deliberately unset in CRON to use Pro/Max subscription
 - No API tokens in configuration files
 
-[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.10...HEAD
+[Unreleased]: https://github.com/DonTizi/CodeGeass/compare/v0.2.11...HEAD
+[0.2.11]: https://github.com/DonTizi/CodeGeass/compare/v0.2.10...v0.2.11
 [0.2.10]: https://github.com/DonTizi/CodeGeass/compare/v0.2.9...v0.2.10
 [0.2.9]: https://github.com/DonTizi/CodeGeass/compare/v0.2.8...v0.2.9
 [0.2.8]: https://github.com/DonTizi/CodeGeass/compare/v0.2.7...v0.2.8
