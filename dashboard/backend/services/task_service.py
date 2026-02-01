@@ -57,6 +57,7 @@ class TaskService:
             notifications=notifications,
             last_run=task.last_run,
             last_status=task.last_status,
+            tags=task.tags or [],
             plan_mode=task.plan_mode,
             plan_timeout=task.plan_timeout,
             plan_max_iterations=task.plan_max_iterations,
@@ -94,6 +95,7 @@ class TaskService:
             plan_mode=task_create.plan_mode,
             plan_timeout=task_create.plan_timeout,
             plan_max_iterations=task_create.plan_max_iterations,
+            tags=task_create.tags,
         )
 
     def list_tasks(
@@ -152,6 +154,7 @@ class TaskService:
                 last_run=task.last_run,
                 last_status=task.last_status,
                 next_run=next_run,
+                tags=task.tags or [],
             ))
         return summaries
 
