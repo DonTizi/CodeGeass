@@ -228,48 +228,15 @@ class Scheduler:
         return self.run_task(task, dry_run=dry_run)
 
     def _is_scheduler_running(self) -> bool:
-        """Check if scheduler is running (launchd, systemd, or cron)."""
-        import platform
-        import subprocess
+        """Check if scheduler is running (launchd, systemd, cron, or Windows Task Scheduler)."""
+        from codegeass.scheduling.registry import get_scheduler_registry
 
-        system = platform.system()
-        home = Path.home()
+        registry = get_scheduler_registry()
 
-        # macOS: Check launchd
-        if system == "Darwin":
-            plist_path = home / "Library" / "LaunchAgents" / "com.codegeass.scheduler.plist"
-            if plist_path.exists():
-                try:
-                    result = subprocess.run(
-                        ["launchctl", "list"],
-                        capture_output=True,
-                        text=True,
-                    )
-                    if "com.codegeass.scheduler" in result.stdout:
-                        return True
-                except Exception:
-                    pass
-
-        # Linux: Check systemd
-        elif system == "Linux":
-            try:
-                result = subprocess.run(
-                    ["systemctl", "--user", "is-active", "codegeass-scheduler.timer"],
-                    capture_output=True,
-                    text=True,
-                )
-                if result.returncode == 0:
-                    return True
-            except Exception:
-                pass
-
-        # Fallback: Check cron
-        try:
-            result = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
-            if result.returncode == 0 and "codegeass" in result.stdout:
+        for provider in registry.get_available_providers():
+            status = provider.status()
+            if status.installed and status.running:
                 return True
-        except Exception:
-            pass
 
         return False
 

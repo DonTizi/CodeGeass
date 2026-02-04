@@ -6,6 +6,7 @@ from codegeass.execution.plan_service import (
     get_plan_approval_service,
     reset_plan_approval_service,
 )
+from codegeass.execution.platform import get_io_handler, get_process_handler
 from codegeass.execution.session import SessionManager
 from codegeass.execution.strategies import (
     AutonomousStrategy,
@@ -46,4 +47,7 @@ __all__ = [
     "PlanApprovalService",
     "get_plan_approval_service",
     "reset_plan_approval_service",
+    # Platform handlers
+    "get_io_handler",
+    "get_process_handler",
 ]

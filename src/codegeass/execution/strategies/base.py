@@ -155,18 +155,19 @@ class BaseStrategy(ABC):
         execution_id: str,
     ) -> None:
         """Read stdout from process and emit events (non-blocking)."""
-        import select
+        from codegeass.execution.platform import get_io_handler
 
         if not process.stdout:
             return
 
-        # Use select to check if data is available (non-blocking)
+        io_handler = get_io_handler()
+
+        # Use platform-specific handler for non-blocking reads
         while True:
-            ready, _, _ = select.select([process.stdout], [], [], 0.1)
-            if not ready:
+            line = io_handler.read_nonblocking(process.stdout, 0.1)
+            if line is None:
                 break
-            line = process.stdout.readline()
-            if not line:
+            if not line:  # Empty string means EOF
                 break
             line = line.rstrip("\n")
             output_lines.append(line)
@@ -175,17 +176,18 @@ class BaseStrategy(ABC):
 
     def _read_stderr(self, process: subprocess.Popen, stderr_lines: list[str]) -> None:
         """Read stderr from process (non-blocking)."""
-        import select
+        from codegeass.execution.platform import get_io_handler
 
         if not process.stderr:
             return
 
+        io_handler = get_io_handler()
+
         while True:
-            ready, _, _ = select.select([process.stderr], [], [], 0.1)
-            if not ready:
+            line = io_handler.read_nonblocking(process.stderr, 0.1)
+            if line is None:
                 break
-            line = process.stderr.readline()
-            if not line:
+            if not line:  # Empty string means EOF
                 break
             stderr_lines.append(line.rstrip("\n"))
 
