@@ -1,0 +1,49 @@
+# Auto-Format Hooks
+# Automatically format files after edits
+
+description: "Auto-format code after file modifications (Prettier, Black)"
+
+hooks:
+  PostToolUse:
+    - matcher: "Write|Edit"
+      hooks:
+        - type: command
+          command: |
+            #!/bin/bash
+            # Auto-format the edited file
+            INPUT=$(cat)
+            FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path // .tool_input.path // empty')
+
+            if [ -z "$FILE" ] || [ ! -f "$FILE" ]; then
+              exit 0
+            fi
+
+            EXT="${FILE##*.}"
+
+            case "$EXT" in
+              js|jsx|ts|tsx|json|md|css|scss|html|yaml|yml)
+                if command -v prettier &> /dev/null; then
+                  prettier --write "$FILE" 2>/dev/null || true
+                fi
+                ;;
+              py)
+                if command -v black &> /dev/null; then
+                  black "$FILE" 2>/dev/null || true
+                elif command -v ruff &> /dev/null; then
+                  ruff format "$FILE" 2>/dev/null || true
+                fi
+                ;;
+              go)
+                if command -v gofmt &> /dev/null; then
+                  gofmt -w "$FILE" 2>/dev/null || true
+                fi
+                ;;
+              rs)
+                if command -v rustfmt &> /dev/null; then
+                  rustfmt "$FILE" 2>/dev/null || true
+                fi
+                ;;
+            esac
+
+            exit 0
+          timeout: 30

@@ -1,0 +1,61 @@
+# TDD Hooks
+# Run related tests after code changes
+
+description: "Run tests after code modifications (pytest, jest)"
+
+hooks:
+  PostToolUse:
+    - matcher: "Write|Edit"
+      hooks:
+        - type: command
+          command: |
+            #!/bin/bash
+            # Run tests related to the modified file
+            INPUT=$(cat)
+            FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path // .tool_input.path // empty')
+
+            if [ -z "$FILE" ] || [ ! -f "$FILE" ]; then
+              exit 0
+            fi
+
+            EXT="${FILE##*.}"
+            DIR=$(dirname "$FILE")
+            BASE=$(basename "$FILE" ".$EXT")
+
+            case "$EXT" in
+              py)
+                # Try to find and run related test file
+                TEST_FILE=""
+                if [ -f "${DIR}/test_${BASE}.py" ]; then
+                  TEST_FILE="${DIR}/test_${BASE}.py"
+                elif [ -f "${DIR}/tests/test_${BASE}.py" ]; then
+                  TEST_FILE="${DIR}/tests/test_${BASE}.py"
+                elif [ -f "tests/test_${BASE}.py" ]; then
+                  TEST_FILE="tests/test_${BASE}.py"
+                fi
+
+                if [ -n "$TEST_FILE" ] && command -v pytest &> /dev/null; then
+                  pytest "$TEST_FILE" -v --tb=short 2>&1 | head -50
+                fi
+                ;;
+              js|jsx|ts|tsx)
+                # Try to find and run related test file
+                TEST_FILE=""
+                if [ -f "${DIR}/${BASE}.test.${EXT}" ]; then
+                  TEST_FILE="${DIR}/${BASE}.test.${EXT}"
+                elif [ -f "${DIR}/__tests__/${BASE}.test.${EXT}" ]; then
+                  TEST_FILE="${DIR}/__tests__/${BASE}.test.${EXT}"
+                fi
+
+                if [ -n "$TEST_FILE" ]; then
+                  if command -v jest &> /dev/null; then
+                    jest "$TEST_FILE" --no-coverage 2>&1 | head -50
+                  elif command -v npm &> /dev/null; then
+                    npm test -- --testPathPattern="$TEST_FILE" 2>&1 | head -50
+                  fi
+                fi
+                ;;
+            esac
+
+            exit 0
+          timeout: 120

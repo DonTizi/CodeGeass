@@ -26,6 +26,7 @@ from codegeass.storage.log_repository import LogRepository
 
 if TYPE_CHECKING:
     from codegeass.execution.tracker import ExecutionTracker
+    from codegeass.hooks.repository import HookRepository
 
 logger = logging.getLogger(__name__)
 
@@ -48,11 +49,13 @@ class ClaudeExecutor:
         session_manager: SessionManager,
         log_repository: LogRepository,
         tracker: "ExecutionTracker | None" = None,
+        hook_repo: "HookRepository | None" = None,
     ):
         self._skill_registry = skill_registry
         self._session_manager = session_manager
         self._log_repository = log_repository
         self._tracker = tracker
+        self._hook_repo = hook_repo
         self._provider_registry = get_provider_registry()
         self._strategy_selector = StrategySelector(self._provider_registry)
 
@@ -114,10 +117,19 @@ class ClaudeExecutor:
         exec_session = self._create_resume_session(task, session_id, feedback, worktree_path)
 
         try:
-            context = build_resume_context(task, session_id, feedback or "", worktree_path)
+            context = build_resume_context(
+                task, session_id, feedback or "", worktree_path, self._hook_repo
+            )
             strategy = self._select_resume_strategy(feedback)
 
             result = strategy.execute(context)
+
+            # Clean up temp hook settings file
+            if context.hook_settings_path and context.hook_settings_path.exists():
+                try:
+                    context.hook_settings_path.unlink()
+                except Exception:
+                    pass
 
             task.update_last_run(result.status.value)
             self._complete_session(exec_session.id, result)
@@ -132,7 +144,7 @@ class ClaudeExecutor:
     def get_command(self, task: Task) -> list[str]:
         """Get the command that would be executed for a task (for debugging)."""
         env = ExecutionEnvironment(working_dir=task.working_dir)
-        context = build_context(task, env, self._skill_registry)
+        context = build_context(task, env, self._skill_registry, hook_repo=self._hook_repo)
         strategy = self._strategy_selector.select(task)
         return strategy.build_command(context)
 
@@ -185,7 +197,8 @@ class ClaudeExecutor:
     ) -> ExecutionResult:
         """Execute the task and return result."""
         context = build_context(
-            task, env, self._skill_registry, session_id, execution_id, self._tracker
+            task, env, self._skill_registry, session_id, execution_id, self._tracker,
+            self._hook_repo,
         )
         strategy = self._strategy_selector.select(task, force_plan_mode)
 
@@ -200,7 +213,16 @@ class ClaudeExecutor:
                 finished_at=datetime.now(),
             )
 
-        return strategy.execute(context)
+        result = strategy.execute(context)
+
+        # Clean up temp hook settings file
+        if context.hook_settings_path and context.hook_settings_path.exists():
+            try:
+                context.hook_settings_path.unlink()
+            except Exception:
+                pass
+
+        return result
 
     def _enrich_plan_mode_result(
         self,

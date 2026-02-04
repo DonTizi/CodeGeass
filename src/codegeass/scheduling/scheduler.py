@@ -18,6 +18,7 @@ from codegeass.storage.task_repository import TaskRepository
 
 if TYPE_CHECKING:
     from codegeass.execution.tracker import ExecutionTracker
+    from codegeass.hooks.repository import HookRepository
 
 # Type for callbacks that can be sync or async
 StartCallback = Callable[[Task], None | Awaitable[None]]
@@ -43,6 +44,7 @@ class Scheduler:
         log_repository: LogRepository,
         max_concurrent: int = 1,
         tracker: "ExecutionTracker | None" = None,
+        hook_repo: "HookRepository | None" = None,
     ):
         """Initialize scheduler with dependencies.
 
@@ -53,6 +55,7 @@ class Scheduler:
             log_repository: Repository for storing execution logs
             max_concurrent: Maximum concurrent executions (default 1)
             tracker: Optional execution tracker for real-time monitoring
+            hook_repo: Optional hook repository for tag-based hooks
         """
         self._task_repo = task_repository
         self._skill_registry = skill_registry
@@ -60,12 +63,13 @@ class Scheduler:
         self._log_repo = log_repository
         self._max_concurrent = max_concurrent
 
-        # Create executor with optional tracker
+        # Create executor with optional tracker and hook_repo
         self._executor = ClaudeExecutor(
             skill_registry=skill_registry,
             session_manager=session_manager,
             log_repository=log_repository,
             tracker=tracker,
+            hook_repo=hook_repo,
         )
 
         # Callbacks (can be sync or async)

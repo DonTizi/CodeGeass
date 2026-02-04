@@ -120,6 +120,9 @@ class PlanModeStrategy(BaseStrategy):
         if allowed_tools:
             cmd.extend(["--allowedTools", ",".join(allowed_tools)])
 
+        # Add hook settings if configured
+        self._add_hook_settings(cmd, context)
+
         return cmd
 
 
@@ -174,6 +177,9 @@ class ResumeWithApprovalStrategy(BaseStrategy):
         cmd.append("--dangerously-skip-permissions")
         cmd.extend(["--output-format", "stream-json", "--verbose"])
         cmd.append("--include-partial-messages")
+
+        # Add hook settings if configured
+        self._add_hook_settings(cmd, context)
 
         return cmd
 
@@ -235,5 +241,8 @@ class ResumeWithFeedbackStrategy(BaseStrategy):
         cmd.extend(["--permission-mode", "plan"])
         cmd.extend(["--output-format", "stream-json", "--verbose"])
         cmd.append("--include-partial-messages")
+
+        # Add hook settings if configured
+        self._add_hook_settings(cmd, context)
 
         return cmd

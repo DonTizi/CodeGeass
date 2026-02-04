@@ -1,0 +1,37 @@
+# Lint Hooks
+# Run linters after file edits to catch issues early
+
+description: "Run linters after file modifications (ESLint, Ruff)"
+
+hooks:
+  PostToolUse:
+    - matcher: "Write|Edit"
+      hooks:
+        - type: command
+          command: |
+            #!/bin/bash
+            # Run linter on the edited file
+            INPUT=$(cat)
+            FILE=$(echo "$INPUT" | jq -r '.tool_input.file_path // .tool_input.path // empty')
+
+            if [ -z "$FILE" ] || [ ! -f "$FILE" ]; then
+              exit 0
+            fi
+
+            EXT="${FILE##*.}"
+
+            case "$EXT" in
+              js|jsx|ts|tsx)
+                if command -v eslint &> /dev/null; then
+                  eslint --fix "$FILE" 2>/dev/null || true
+                fi
+                ;;
+              py)
+                if command -v ruff &> /dev/null; then
+                  ruff check --fix "$FILE" 2>/dev/null || true
+                fi
+                ;;
+            esac
+
+            exit 0
+          timeout: 30

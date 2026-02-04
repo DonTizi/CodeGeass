@@ -1,0 +1,36 @@
+# Audit Hooks
+# Log all bash commands to an audit file
+
+description: "Log all Bash commands to an audit file for compliance"
+
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: |
+            #!/bin/bash
+            # Log command to audit file
+            INPUT=$(cat)
+            COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
+            AUDIT_FILE="${CODEGEASS_AUDIT_FILE:-/tmp/codegeass-audit.log}"
+
+            echo "[$(date -Iseconds)] BASH: $COMMAND" >> "$AUDIT_FILE"
+
+            exit 0
+          timeout: 2
+  PostToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: |
+            #!/bin/bash
+            # Log command result to audit file
+            INPUT=$(cat)
+            EXIT_CODE=$(echo "$INPUT" | jq -r '.tool_result.exit_code // "unknown"')
+            AUDIT_FILE="${CODEGEASS_AUDIT_FILE:-/tmp/codegeass-audit.log}"
+
+            echo "[$(date -Iseconds)] RESULT: exit_code=$EXIT_CODE" >> "$AUDIT_FILE"
+
+            exit 0
+          timeout: 2

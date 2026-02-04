@@ -56,4 +56,7 @@ class AutonomousStrategy(BaseStrategy):
         if context.task.allowed_tools:
             cmd.extend(["--allowedTools", ",".join(context.task.allowed_tools)])
 
+        # Add hook settings if configured
+        self._add_hook_settings(cmd, context)
+
         return cmd

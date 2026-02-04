@@ -73,6 +73,11 @@ import type {
   SkillWithSource,
   ActiveExecution,
   Provider,
+  Hook,
+  HookSummary,
+  HookCreate,
+  HookPreview,
+  HookValidation,
 } from '@/types';
 
 /**
@@ -389,6 +394,46 @@ const health = {
 };
 
 /**
+ * Hooks API
+ */
+const hooks = {
+  list: () => fetchApi<HookSummary[]>('/api/hooks'),
+
+  get: (tag: string) => fetchApi<Hook>(`/api/hooks/${tag}`),
+
+  create: (data: HookCreate) =>
+    fetchApi<Hook>('/api/hooks', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  update: (tag: string, data: { description?: string; hooks?: Record<string, unknown[]> }) =>
+    fetchApi<Hook>(`/api/hooks/${tag}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  delete: (tag: string) =>
+    fetchApi<void>(`/api/hooks/${tag}`, { method: 'DELETE' }),
+
+  validate: (tag: string) =>
+    fetchApi<HookValidation>(`/api/hooks/${tag}/validate`),
+
+  preview: (tags: string[]) =>
+    fetchApi<HookPreview>('/api/hooks/preview', {
+      method: 'POST',
+      body: JSON.stringify({ tags }),
+    }),
+
+  initTemplates: (overwrite = false) =>
+    fetchApi<string[]>(`/api/hooks/init${buildQuery({ overwrite })}`, {
+      method: 'POST',
+    }),
+
+  listTemplates: () => fetchApi<string[]>('/api/hooks/templates'),
+};
+
+/**
  * Unified API client
  */
 export const api = {
@@ -403,6 +448,7 @@ export const api = {
   filesystem,
   cron,
   health,
+  hooks,
 };
 
 export default api;

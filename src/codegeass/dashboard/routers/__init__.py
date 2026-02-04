@@ -3,6 +3,7 @@
 from .approvals import router as approvals_router
 from .executions import router as executions_router
 from .filesystem import router as filesystem_router
+from .hooks import router as hooks_router
 from .logs import router as logs_router
 from .notifications import router as notifications_router
 from .projects import router as projects_router
@@ -22,4 +23,5 @@ __all__ = [
     "projects_router",
     "providers_router",
     "filesystem_router",
+    "hooks_router",
 ]

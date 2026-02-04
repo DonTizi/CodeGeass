@@ -16,6 +16,14 @@ from .execution import (
     LogFilter,
     LogStats,
 )
+from .hook import (
+    Hook,
+    HookCreate,
+    HookPreview,
+    HookSummary,
+    HookUpdate,
+    HookValidation,
+)
 from .notification import (
     Channel,
     ChannelCreate,
@@ -91,4 +99,11 @@ __all__ = [
     "ProjectSummary",
     "TaskWithProject",
     "SkillWithSource",
+    # Hook
+    "Hook",
+    "HookCreate",
+    "HookUpdate",
+    "HookSummary",
+    "HookPreview",
+    "HookValidation",
 ]

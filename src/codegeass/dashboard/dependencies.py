@@ -18,6 +18,7 @@ from .services import (
     SkillService,
     TaskService,
 )
+from .services.hook_service import HookService
 
 # Singleton instances
 _task_repo: TaskRepository | None = None
@@ -31,6 +32,8 @@ _core_notification_service = None  # Core NotificationService for task execution
 _notification_service = None  # Dashboard NotificationService wrapper for API
 _approval_service = None  # ApprovalService for plan mode
 _execution_tracker = None  # ExecutionTracker for real-time monitoring
+_hook_repo = None  # HookRepository for tag-based hooks
+_hook_service = None  # HookService wrapper for API
 
 
 def get_task_repo() -> TaskRepository:
@@ -78,6 +81,21 @@ def get_execution_tracker():
     return _execution_tracker
 
 
+def get_hook_repo():
+    """Get or create HookRepository singleton."""
+    global _hook_repo
+    if _hook_repo is None:
+        from pathlib import Path
+
+        from codegeass.hooks.repository import HookRepository
+
+        _hook_repo = HookRepository(
+            project_hooks_dir=settings.project_dir / ".codegeass" / "hooks",
+            global_hooks_dir=Path.home() / ".codegeass" / "hooks",
+        )
+    return _hook_repo
+
+
 def get_scheduler() -> Scheduler:
     """Get or create Scheduler singleton."""
     global _scheduler
@@ -89,6 +107,7 @@ def get_scheduler() -> Scheduler:
             log_repository=get_log_repo(),
             max_concurrent=1,
             tracker=get_execution_tracker(),
+            hook_repo=get_hook_repo(),
         )
         # Register notification handler
         _setup_notification_handler(_scheduler)
@@ -193,3 +212,11 @@ def get_approval_service() -> ApprovalService:
             channel_repo=get_channel_repo(),
         )
     return _approval_service
+
+
+def get_hook_service() -> HookService:
+    """Get or create HookService singleton."""
+    global _hook_service
+    if _hook_service is None:
+        _hook_service = HookService(get_hook_repo())
+    return _hook_service

@@ -4,6 +4,7 @@ import { Dashboard } from '@/pages/Dashboard'
 import { Tasks } from '@/pages/Tasks'
 import { TaskDetail } from '@/pages/TaskDetail'
 import { Skills } from '@/pages/Skills'
+import { Hooks } from '@/pages/Hooks'
 import { Logs } from '@/pages/Logs'
 import { Settings } from '@/pages/Settings'
 import { Projects } from '@/pages/Projects'
@@ -25,6 +26,7 @@ function App() {
           <Route path="tasks/:taskId" element={<TaskDetail />} />
           <Route path="approvals/:approvalId" element={<ApprovalDetail />} />
           <Route path="skills" element={<Skills />} />
+          <Route path="hooks" element={<Hooks />} />
           <Route path="logs" element={<Logs />} />
           <Route path="projects" element={<Projects />} />
           <Route path="settings" element={<Settings />} />
