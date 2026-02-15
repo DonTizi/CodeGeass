@@ -3,11 +3,11 @@
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Self
 
 
-class ApprovalStatus(str, Enum):
+class ApprovalStatus(StrEnum):
     """Status of a pending plan approval."""
 
     PENDING = "pending"

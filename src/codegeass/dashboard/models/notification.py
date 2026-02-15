@@ -1,12 +1,12 @@
 """Pydantic models for notification API."""
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class NotificationEvent(str, Enum):
+class NotificationEvent(StrEnum):
     """Types of events that can trigger notifications."""
 
     TASK_START = "task_start"

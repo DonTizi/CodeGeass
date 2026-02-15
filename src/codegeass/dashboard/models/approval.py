@@ -1,12 +1,12 @@
 """Pydantic models for plan approval API."""
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class ApprovalStatus(str, Enum):
+class ApprovalStatus(StrEnum):
     """Status of a pending plan approval."""
 
     PENDING = "pending"

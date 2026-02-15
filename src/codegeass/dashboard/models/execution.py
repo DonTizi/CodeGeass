@@ -1,12 +1,12 @@
 """Execution and log models for API."""
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
 
 
-class ExecutionStatus(str, Enum):
+class ExecutionStatus(StrEnum):
     """Execution status."""
     SUCCESS = "success"
     FAILURE = "failure"

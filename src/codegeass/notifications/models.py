@@ -13,11 +13,11 @@ Credentials are stored separately in ~/.codegeass/credentials.yaml.
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Self
 
 
-class NotificationEvent(str, Enum):
+class NotificationEvent(StrEnum):
     """Types of events that can trigger notifications.
 
     Events can be subscribed to on a per-task basis via NotificationConfig.
