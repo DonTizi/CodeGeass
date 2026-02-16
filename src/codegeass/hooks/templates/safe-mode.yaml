@@ -1,0 +1,36 @@
+# Safe Mode Hooks
+# Block dangerous file system operations
+
+description: "Block dangerous file operations like rm -rf, chmod 777, force push"
+
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: |
+            #!/bin/bash
+            # Block dangerous bash commands
+            INPUT=$(cat)
+            COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
+
+            # Block rm -rf with root or home
+            if echo "$COMMAND" | grep -qE 'rm\s+-rf\s+(\/|~|\$HOME)'; then
+              echo "BLOCKED: rm -rf on root or home directory" >&2
+              exit 2
+            fi
+
+            # Block chmod 777
+            if echo "$COMMAND" | grep -qE 'chmod\s+777'; then
+              echo "BLOCKED: chmod 777 is insecure" >&2
+              exit 2
+            fi
+
+            # Block force push
+            if echo "$COMMAND" | grep -qE 'git\s+push.*(-f|--force)'; then
+              echo "BLOCKED: Force push is dangerous" >&2
+              exit 2
+            fi
+
+            exit 0
+          timeout: 5

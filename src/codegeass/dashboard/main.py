@@ -23,6 +23,7 @@ from .routers import (
     approvals_router,
     executions_router,
     filesystem_router,
+    hooks_router,
     logs_router,
     notifications_router,
     projects_router,
@@ -166,6 +167,7 @@ app.include_router(executions_router)
 app.include_router(projects_router)
 app.include_router(providers_router)
 app.include_router(filesystem_router)
+app.include_router(hooks_router)
 
 
 # Health check

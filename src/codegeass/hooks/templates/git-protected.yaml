@@ -1,0 +1,52 @@
+# Git Protected Hooks
+# Block direct commits to main/master branch
+
+description: "Prevent direct commits to main/master branch"
+
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: |
+            #!/bin/bash
+            # Check if this is a git commit command
+            INPUT=$(cat)
+            COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
+
+            if ! echo "$COMMAND" | grep -qE 'git\s+commit'; then
+              exit 0
+            fi
+
+            # Check current branch
+            BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
+
+            if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
+              echo "BLOCKED: Direct commits to $BRANCH are not allowed" >&2
+              echo "Please create a feature branch first" >&2
+              exit 2
+            fi
+
+            exit 0
+          timeout: 5
+    # Also block force push to main/master
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: |
+            #!/bin/bash
+            INPUT=$(cat)
+            COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
+
+            if echo "$COMMAND" | grep -qE 'git\s+push.*(-f|--force).*(main|master)'; then
+              echo "BLOCKED: Force push to main/master is not allowed" >&2
+              exit 2
+            fi
+
+            if echo "$COMMAND" | grep -qE 'git\s+push.*(main|master).*(-f|--force)'; then
+              echo "BLOCKED: Force push to main/master is not allowed" >&2
+              exit 2
+            fi
+
+            exit 0
+          timeout: 5

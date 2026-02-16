@@ -1,6 +1,6 @@
 """Task models for API."""
 
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -13,7 +13,7 @@ class TaskNotificationConfig(BaseModel):
     include_output: bool = Field(False, description="Include task output in notification")
 
 
-class TaskStatus(str, Enum):
+class TaskStatus(StrEnum):
     """Task execution status."""
     SUCCESS = "success"
     FAILURE = "failure"

@@ -6,3 +6,4 @@ export { useNotificationsStore } from './notifications.store';
 export { useExecutionsStore } from './executions.store';
 export { useProjectsStore } from './projects.store';
 export { useFilterStore } from './filter.store';
+export { useHooksStore } from './hooks.store';

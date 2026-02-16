@@ -5,13 +5,13 @@ that support inline buttons (Telegram, Discord, Slack, etc.).
 """
 
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Protocol, Self
 
 from codegeass.notifications.models import Channel
 
 
-class ButtonStyle(str, Enum):
+class ButtonStyle(StrEnum):
     """Style/color of a button."""
 
     PRIMARY = "primary"  # Blue/default

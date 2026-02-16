@@ -22,6 +22,7 @@ class ExecutionContext:
     session_id: str | None = None
     execution_id: str | None = None
     tracker: "ExecutionTracker | None" = None
+    hook_settings_path: Path | None = None  # Path to merged hook settings JSON
 
 
 class ExecutionStrategy(Protocol):

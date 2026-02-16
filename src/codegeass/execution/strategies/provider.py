@@ -63,7 +63,13 @@ class ProviderStrategy(BaseStrategy):
             List of command arguments
         """
         request = self._build_execution_request(context)
-        return self._provider.build_command(request)
+        cmd = self._provider.build_command(request)
+
+        # Add hook settings if configured (only for Claude provider)
+        if self._provider.name == "claude":
+            self._add_hook_settings(cmd, context)
+
+        return cmd
 
     def execute(self, context: ExecutionContext) -> ExecutionResult:
         """Execute using streaming from BaseStrategy.

@@ -1,0 +1,24 @@
+# Production Safety Hooks
+# Block dangerous commands that could affect production systems
+
+description: "Safety hooks for production tasks - blocks dangerous operations"
+
+hooks:
+  PreToolUse:
+    - matcher: "Bash"
+      hooks:
+        - type: command
+          command: |
+            #!/bin/bash
+            # Block dangerous production commands
+            INPUT=$(cat)
+            COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
+
+            # Dangerous patterns
+            if echo "$COMMAND" | grep -qE '(docker\s+push.*prod|kubectl.*delete|terraform\s+destroy|DROP\s+TABLE|DROP\s+DATABASE|rm\s+-rf\s+/)'; then
+              echo "BLOCKED: Potentially dangerous production command detected" >&2
+              exit 2
+            fi
+
+            exit 0
+          timeout: 5

@@ -66,6 +66,9 @@ class SkillStrategy(BaseStrategy):
         if context.task.autonomous:
             cmd.append("--dangerously-skip-permissions")
 
+        # Add hook settings if configured
+        self._add_hook_settings(cmd, context)
+
         return cmd
 
 
@@ -117,5 +120,8 @@ class AppendSystemPromptStrategy(BaseStrategy):
 
         if context.task.autonomous:
             cmd.append("--dangerously-skip-permissions")
+
+        # Add hook settings if configured
+        self._add_hook_settings(cmd, context)
 
         return cmd

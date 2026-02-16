@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, ListTodo, Wand2, FileText, Clock, Settings, FolderGit2 } from 'lucide-react';
+import { LayoutDashboard, ListTodo, Wand2, Anchor, FileText, Clock, Settings, FolderGit2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSchedulerStore } from '@/stores';
 import { useEffect } from 'react';
@@ -8,6 +8,7 @@ const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/tasks', icon: ListTodo, label: 'Tasks' },
   { to: '/skills', icon: Wand2, label: 'Skills' },
+  { to: '/hooks', icon: Anchor, label: 'Hooks' },
   { to: '/logs', icon: FileText, label: 'Logs' },
   { to: '/projects', icon: FolderGit2, label: 'Projects' },
   { to: '/settings', icon: Settings, label: 'Settings' },

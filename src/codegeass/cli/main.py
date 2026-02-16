@@ -248,6 +248,18 @@ class Context:
         return self._notification_service
 
     @property
+    def hook_repo(self):
+        """Get or create HookRepository singleton."""
+        if not hasattr(self, "_hook_repo") or self._hook_repo is None:
+            from codegeass.hooks.repository import HookRepository
+
+            self._hook_repo = HookRepository(
+                project_hooks_dir=self.project_dir / ".codegeass" / "hooks",
+                global_hooks_dir=Path.home() / ".codegeass" / "hooks",
+            )
+        return self._hook_repo
+
+    @property
     def scheduler(self):
         if self._scheduler is None:
             from codegeass.scheduling.scheduler import Scheduler
@@ -257,6 +269,7 @@ class Context:
                 skill_registry=self.skill_registry,
                 session_manager=self.session_manager,
                 log_repository=self.log_repo,
+                hook_repo=self.hook_repo,
             )
 
             # Register notification handler if notifications are configured
@@ -351,6 +364,7 @@ from codegeass.cli.commands import (  # noqa: E402
     dashboard,
     data,
     execution,
+    hooks,
     logs,
     notification,
     project,
@@ -372,6 +386,7 @@ cli.add_command(data.data)
 cli.add_command(execution.execution)
 cli.add_command(project.project)
 cli.add_command(provider.provider)
+cli.add_command(hooks.hooks)
 cli.add_command(dashboard.dashboard)
 cli.add_command(setup.setup)
 cli.add_command(setup.uninstall_scheduler)

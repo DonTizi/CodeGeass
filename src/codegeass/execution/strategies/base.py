@@ -29,6 +29,19 @@ class BaseStrategy(ABC):
         """Build the Claude command to execute."""
         ...
 
+    def _add_hook_settings(self, cmd: list[str], context: ExecutionContext) -> None:
+        """Add --settings flag if hooks are configured.
+
+        This helper method should be called by strategies after building
+        their command to add hook settings if present in the context.
+
+        Args:
+            cmd: Command list to modify in place
+            context: Execution context potentially containing hook_settings_path
+        """
+        if context.hook_settings_path:
+            cmd.extend(["--settings", str(context.hook_settings_path)])
+
     def execute(self, context: ExecutionContext) -> ExecutionResult:
         """Execute the command and return result.
 
