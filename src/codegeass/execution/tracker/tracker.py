@@ -1,8 +1,6 @@
 """Core execution tracker singleton."""
 
 import logging
-import os
-import signal
 import threading
 import time
 import uuid
@@ -166,20 +164,19 @@ class ExecutionTracker:
             self._mark_stopped(execution_id, task_id, task_name, "No process to stop")
             return True
 
-        try:
-            os.kill(pid, signal.SIGTERM)
-            logger.info(f"Sent SIGTERM to PID {pid} for execution {execution_id}")
-            time.sleep(0.5)
+        from codegeass.execution.platform import get_process_handler
 
-            try:
-                os.kill(pid, 0)
-                os.kill(pid, signal.SIGKILL)
-                logger.info(f"Sent SIGKILL to PID {pid}")
-            except OSError:
-                pass
+        process_handler = get_process_handler()
 
-        except OSError as e:
-            logger.warning(f"Failed to kill PID {pid}: {e}")
+        # Try graceful termination first
+        if process_handler.terminate(pid, force=False):
+            logger.info(f"Sent termination signal to PID {pid} for execution {execution_id}")
+        time.sleep(0.5)
+
+        # Force kill if still running
+        if process_handler.is_running(pid):
+            process_handler.terminate(pid, force=True)
+            logger.info(f"Sent force kill to PID {pid}")
 
         self._mark_stopped(execution_id, task_id, task_name, "Stopped by user")
         return True

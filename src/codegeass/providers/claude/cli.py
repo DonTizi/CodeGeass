@@ -51,12 +51,23 @@ def get_claude_executable() -> str:
         logger.debug(f"Using claude from PATH: {which_claude}")
         return which_claude
 
-    # Try common installation paths
-    common_paths = [
-        Path.home() / ".local" / "bin" / "claude",
-        Path("/usr/local/bin/claude"),
-        Path("/usr/bin/claude"),
-    ]
+    # Try common installation paths based on platform
+    import platform
+    import sys
+
+    if platform.system() == "Windows":
+        common_paths = [
+            Path.home() / "AppData" / "Local" / "Programs" / "claude" / "claude.exe",
+            Path.home() / "AppData" / "Local" / "claude" / "claude.exe",
+            Path(sys.prefix) / "Scripts" / "claude.exe",
+            Path.home() / ".local" / "bin" / "claude.exe",
+        ]
+    else:
+        common_paths = [
+            Path.home() / ".local" / "bin" / "claude",
+            Path("/usr/local/bin/claude"),
+            Path("/usr/bin/claude"),
+        ]
 
     for path in common_paths:
         if path.exists():

@@ -42,13 +42,16 @@ class CredentialManager:
 
     def _write(self, data: dict[str, dict[str, str]]) -> None:
         """Write credentials file."""
+        import platform
+
         self._ensure_dir()
 
         with open(self._file, "w") as f:
             yaml.dump(data, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
 
-        # Set restrictive permissions (owner read/write only)
-        self._file.chmod(0o600)
+        # Set restrictive permissions (owner read/write only) - Unix only
+        if platform.system() != "Windows":
+            self._file.chmod(0o600)
 
     def get(self, key: str) -> dict[str, str] | None:
         """Retrieve credentials for a key.

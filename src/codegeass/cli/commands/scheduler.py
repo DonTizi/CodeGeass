@@ -290,8 +290,15 @@ def daemon_mode(ctx: Context, poll_interval: float) -> None:
         callback_server.stop()
         sys.exit(0)
 
+    # Cross-platform signal handling
+    import platform
+
     signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
+    if platform.system() != "Windows":
+        signal.signal(signal.SIGTERM, signal_handler)
+    elif hasattr(signal, "SIGBREAK"):
+        # Windows: handle Ctrl+Break
+        signal.signal(signal.SIGBREAK, signal_handler)
 
     try:
         loop.run_until_complete(callback_server.start())

@@ -20,13 +20,21 @@ def get_codegeass_path() -> str:
     if codegeass_path:
         return codegeass_path
 
-    # Fall back to common locations
+    # Fall back to common locations based on platform
     home = Path.home()
-    candidates = [
-        home / ".local" / "bin" / "codegeass",
-        home / ".local" / "pipx" / "venvs" / "codegeass" / "bin" / "codegeass",
-        Path(sys.prefix) / "bin" / "codegeass",
-    ]
+
+    if platform.system() == "Windows":
+        candidates = [
+            Path(sys.prefix) / "Scripts" / "codegeass.exe",
+            home / "AppData" / "Local" / "Programs" / "Python" / "Scripts" / "codegeass.exe",
+            home / ".local" / "bin" / "codegeass.exe",
+        ]
+    else:
+        candidates = [
+            home / ".local" / "bin" / "codegeass",
+            home / ".local" / "pipx" / "venvs" / "codegeass" / "bin" / "codegeass",
+            Path(sys.prefix) / "bin" / "codegeass",
+        ]
 
     for candidate in candidates:
         if candidate.exists():
@@ -42,42 +50,15 @@ def is_scheduler_installed() -> tuple[bool, str]:
     Returns:
         Tuple of (is_installed, scheduler_type)
     """
-    system = platform.system()
-    home = Path.home()
+    from codegeass.scheduling.registry import get_scheduler_registry
 
-    if system == "Darwin":
-        plist_path = home / "Library" / "LaunchAgents" / "com.codegeass.scheduler.plist"
-        if plist_path.exists():
-            # Check if it's actually running
-            result = subprocess.run(
-                ["launchctl", "list"],
-                capture_output=True,
-                text=True,
-            )
-            if "com.codegeass.scheduler" in result.stdout:
-                return True, "launchd (running)"
-            return True, "launchd (installed but not running)"
-        return False, ""
+    registry = get_scheduler_registry()
 
-    elif system == "Linux":
-        timer_path = home / ".config" / "systemd" / "user" / "codegeass-scheduler.timer"
-        if timer_path.exists():
-            # Check if it's actually running
-            result = subprocess.run(
-                ["systemctl", "--user", "is-active", "codegeass-scheduler.timer"],
-                capture_output=True,
-                text=True,
-            )
-            if result.returncode == 0:
-                return True, "systemd (running)"
-            return True, "systemd (installed but not running)"
-
-        # Check cron
-        result = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
-        if result.returncode == 0 and "codegeass" in result.stdout:
-            return True, "cron"
-
-        return False, ""
+    for provider in registry.get_available_providers():
+        status = provider.status()
+        if status.installed:
+            running_str = "(running)" if status.running else "(installed but not running)"
+            return True, f"{provider.display_name} {running_str}"
 
     return False, ""
 
@@ -264,39 +245,14 @@ def install_cron_fallback() -> tuple[bool, str]:
 
 def remove_scheduler_silent() -> None:
     """Remove scheduler without output (used during uninstall)."""
-    system = platform.system()
-    home = Path.home()
+    from codegeass.scheduling.registry import get_scheduler_registry
 
-    if system == "Darwin":
-        plist_path = home / "Library" / "LaunchAgents" / "com.codegeass.scheduler.plist"
-        if plist_path.exists():
-            subprocess.run(["launchctl", "unload", str(plist_path)], capture_output=True)
-            plist_path.unlink(missing_ok=True)
+    registry = get_scheduler_registry()
 
-    elif system == "Linux":
-        timer_path = home / ".config" / "systemd" / "user" / "codegeass-scheduler.timer"
-        service_path = home / ".config" / "systemd" / "user" / "codegeass-scheduler.service"
-
-        if timer_path.exists():
-            subprocess.run(
-                ["systemctl", "--user", "disable", "--now", "codegeass-scheduler.timer"],
-                capture_output=True,
-            )
-            timer_path.unlink(missing_ok=True)
-            service_path.unlink(missing_ok=True)
-            subprocess.run(["systemctl", "--user", "daemon-reload"], capture_output=True)
-
-    # Remove cron entries
-    try:
-        result = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
-        if result.returncode == 0 and "codegeass" in result.stdout:
-            new_crontab = "\n".join(
-                line for line in result.stdout.splitlines() if "codegeass" not in line
-            )
-            process = subprocess.Popen(["crontab", "-"], stdin=subprocess.PIPE, text=True)
-            process.communicate(input=new_crontab + "\n")
-    except Exception:
-        pass
+    for provider in registry.get_available_providers():
+        status = provider.status()
+        if status.installed:
+            provider.uninstall()
 
 
 @click.command()
@@ -360,33 +316,29 @@ def setup(scheduler: bool, force: bool) -> None:
         else:
             console.print("\n[bold]Installing 24/7 scheduler...[/bold]")
 
-        if system == "Darwin":
-            console.print("[dim]Using launchd (macOS native)[/dim]")
-            success, message = install_launchd_macos()
-            scheduler_type = "launchd"
-            check_cmd = "launchctl list | grep codegeass"
-            stop_cmd = "codegeass uninstall-scheduler"
+        from codegeass.scheduling.registry import get_scheduler_registry
 
-        elif system == "Linux":
-            console.print("[dim]Using systemd user service[/dim]")
-            success, message = install_systemd_linux()
-            scheduler_type = "systemd"
-            check_cmd = "systemctl --user status codegeass-scheduler.timer"
-            stop_cmd = "codegeass uninstall-scheduler"
+        registry = get_scheduler_registry()
+        provider = registry.get_default()
 
-            if not success:
-                console.print("[yellow]systemd failed, falling back to cron[/yellow]")
-                success, message = install_cron_fallback()
-                scheduler_type = "cron"
-                check_cmd = "crontab -l | grep codegeass"
-                stop_cmd = "codegeass uninstall-scheduler"
+        console.print(f"[dim]Using {provider.display_name}[/dim]")
+        success, message = provider.install(codegeass_path)
 
-        else:
-            console.print("[dim]Using cron (fallback)[/dim]")
-            success, message = install_cron_fallback()
-            scheduler_type = "cron"
-            check_cmd = "crontab -l | grep codegeass"
-            stop_cmd = "codegeass uninstall-scheduler"
+        config = provider.get_config()
+        scheduler_type = config.display_name
+        check_cmd = config.check_command
+        stop_cmd = config.stop_command
+
+        # If default provider fails on Linux, try cron fallback
+        if not success and system == "Linux" and provider.name == "systemd":
+            console.print("[yellow]systemd failed, falling back to cron[/yellow]")
+            provider = registry.get("cron")
+            success, message = provider.install(codegeass_path)
+
+            config = provider.get_config()
+            scheduler_type = config.display_name
+            check_cmd = config.check_command
+            stop_cmd = config.stop_command
 
         if success:
             action = "Reinstalled" if already_installed else "Installed"
@@ -426,46 +378,18 @@ def setup(scheduler: bool, force: bool) -> None:
 
 def _remove_scheduler() -> bool:
     """Remove the scheduler and return True if something was removed."""
-    system = platform.system()
-    home = Path.home()
+    from codegeass.scheduling.registry import get_scheduler_registry
+
+    registry = get_scheduler_registry()
     removed_something = False
 
-    if system == "Darwin":
-        plist_path = home / "Library" / "LaunchAgents" / "com.codegeass.scheduler.plist"
-        if plist_path.exists():
-            subprocess.run(["launchctl", "unload", str(plist_path)], capture_output=True)
-            plist_path.unlink()
-            console.print("[green]\u2713 Scheduler service removed[/green]")
-            removed_something = True
-
-    elif system == "Linux":
-        timer_path = home / ".config" / "systemd" / "user" / "codegeass-scheduler.timer"
-        service_path = home / ".config" / "systemd" / "user" / "codegeass-scheduler.service"
-
-        if timer_path.exists():
-            subprocess.run(
-                ["systemctl", "--user", "disable", "--now", "codegeass-scheduler.timer"],
-                capture_output=True,
-            )
-            timer_path.unlink(missing_ok=True)
-            service_path.unlink(missing_ok=True)
-            subprocess.run(["systemctl", "--user", "daemon-reload"], capture_output=True)
-            console.print("[green]\u2713 Scheduler service removed[/green]")
-            removed_something = True
-
-    # Check cron too
-    try:
-        result = subprocess.run(["crontab", "-l"], capture_output=True, text=True)
-        if result.returncode == 0 and "codegeass" in result.stdout:
-            new_crontab = "\n".join(
-                line for line in result.stdout.splitlines() if "codegeass" not in line
-            )
-            process = subprocess.Popen(["crontab", "-"], stdin=subprocess.PIPE, text=True)
-            process.communicate(input=new_crontab + "\n")
-            console.print("[green]\u2713 Cron entry removed[/green]")
-            removed_something = True
-    except Exception:
-        pass
+    for provider in registry.get_available_providers():
+        status = provider.status()
+        if status.installed:
+            success, message = provider.uninstall()
+            if success:
+                console.print(f"[green]✓ {provider.display_name} scheduler removed[/green]")
+                removed_something = True
 
     return removed_something
 
